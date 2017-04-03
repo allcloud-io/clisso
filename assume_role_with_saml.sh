@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#if [ "$#" -ne 2 ]; then
-#    echo "Usage: $0 <client_secret> <client_id>"
-#    exit 1
-#fi
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <role_arn> <principal_arn>"
+    exit 1
+fi
 
 role_arn=$1
 principal_arn=$2
