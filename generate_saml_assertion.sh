@@ -40,4 +40,4 @@ response=$(curl -s "https://api.us.onelogin.com/api/1/saml_assertion/verify_fact
     \"state_token\": \"$state_token\"
 }")
 
-echo $response
+echo $response | jq '.data' | tr -d '"'
