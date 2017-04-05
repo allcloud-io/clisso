@@ -10,7 +10,11 @@ func main() {
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
 
-	response := onelogin.GenerateToken(secret, id)
+	err, response := onelogin.GenerateTokens(secret, id)
 
-	fmt.Println("Response: %v", response)
+	if err != nil {
+		fmt.Println("Token generation failed: ", err)
+	} else {
+		fmt.Printf("Response: %v", response)
+	}
 }
