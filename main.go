@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	// TODO Add handling for missing env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
 
