@@ -15,6 +15,6 @@ func main() {
 	if err != nil {
 		fmt.Println("Token generation failed: ", err)
 	} else {
-		fmt.Printf("Response: %v", response)
+		fmt.Printf("Access token: %v\n", response)
 	}
 }
