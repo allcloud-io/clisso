@@ -81,11 +81,11 @@ func GenerateTokens(secret string, id string) (error, *GenerateTokensResponse) {
 	// Get data from response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	bodyBytes := []byte(body)
+	b := []byte(body)
 
 	// Parse JSON
 	var generateTokenResponse GenerateTokensResponse
-	if err := json.Unmarshal(bodyBytes, &generateTokenResponse); err != nil {
+	if err := json.Unmarshal(b, &generateTokenResponse); err != nil {
 		panic(err)
 	}
 
