@@ -27,7 +27,8 @@ type GenerateTokensResponse struct {
 	} `json:"data"`
 }
 
-func GenerateTokens(secret string, id string) (error, string) {
+func GenerateTokens(secret string, id string) (error, *GenerateTokensResponse) {
+	// Construct HTTP request
 	var data = []byte(`{"grant_type":"client_credentials"}`)
 	req, err := http.NewRequest(
 		"POST",
@@ -40,6 +41,7 @@ func GenerateTokens(secret string, id string) (error, string) {
 	)
 	req.Header.Set("Content-Type", "application/json")
 
+	// Send HTTP request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
@@ -48,19 +50,19 @@ func GenerateTokens(secret string, id string) (error, string) {
 	}
 
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Authentication failed: %d", resp.StatusCode)), ""
+		return errors.New(fmt.Sprintf("Request failed: Got %d as a response", resp.StatusCode)), nil
 	}
 
+	// Get data from response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	bodyBytes := []byte(body)
 
-	byt := []byte(body)
-
+	// Parse JSON
 	var generateTokenResponse GenerateTokensResponse
-
-	if err := json.Unmarshal(byt, &generateTokenResponse); err != nil {
+	if err := json.Unmarshal(bodyBytes, &generateTokenResponse); err != nil {
 		panic(err)
 	}
 
-	return nil, generateTokenResponse.Data[0].AccessToken
+	return nil, &generateTokenResponse
 }
