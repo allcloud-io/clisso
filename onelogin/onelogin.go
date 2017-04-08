@@ -27,6 +27,31 @@ type GenerateTokensResponse struct {
 	} `json:"data"`
 }
 
+// TODO This one assumes MFA is enabled. Need to handle all cases.
+type GenerateSamlAssertionResponse struct {
+	Status struct {
+		Error   bool   `json:"error"`
+		Code    int    `json:"code"`
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	} `json:"status"`
+	Data []struct {
+		StateToken string `json:"state_token"`
+		Devices    []struct {
+			DeviceId   int    `json:"device_id"`
+			DeviceType string `json:"device_type"`
+		}
+		CallbackUrl string `json:"callback_url"`
+		User        struct {
+			Lastname  string `json:"lastname"`
+			Username  string `json:"username"`
+			Email     string `json:"email"`
+			Firstname string `json:"firstname"`
+			Id        int    `json:"id"`
+		}
+	}
+}
+
 func GenerateTokens(secret string, id string) (error, *GenerateTokensResponse) {
 	// Construct HTTP request
 	var data = []byte(`{"grant_type":"client_credentials"}`)
