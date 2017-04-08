@@ -1,29 +1,29 @@
 package onelogin
 
 import (
-	"net/http"
-	"fmt"
-	"io/ioutil"
 	"bytes"
 	"encoding/json"
-	"time"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"time"
 )
 
 type GenerateTokensResponse struct {
 	Status struct {
-		       Error   bool `json:"error"`
-		       Code    int `json:"code"`
-		       Type    string `json:"type"`
-		       Message string `json:"message"`
-	       } `json:"status"`
-	Data   []struct {
-		AccessToken  string `json:"access_token"`
+		Error   bool   `json:"error"`
+		Code    int    `json:"code"`
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	} `json:"status"`
+	Data []struct {
+		AccessToken  string    `json:"access_token"`
 		CreatedAt    time.Time `json:"created_at"`
-		ExpiresIn    int `json:"expires_in"`
-		RefreshToken string `json:"refresh_token"`
-		TokenType    string `json:"token_type"`
-		AccountID    int `json:"account_id"`
+		ExpiresIn    int       `json:"expires_in"`
+		RefreshToken string    `json:"refresh_token"`
+		TokenType    string    `json:"token_type"`
+		AccountID    int       `json:"account_id"`
 	} `json:"data"`
 }
 
