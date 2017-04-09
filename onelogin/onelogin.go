@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+type GenerateTokensParams struct {
+	Secret string
+	Id     string
+}
+
 type GenerateTokensResponse struct {
 	Status struct {
 		Error   bool   `json:"error"`
@@ -25,6 +30,19 @@ type GenerateTokensResponse struct {
 		TokenType    string    `json:"token_type"`
 		AccountID    int       `json:"account_id"`
 	} `json:"data"`
+}
+
+type GenerateSamlAssertionParams struct {
+	Headers struct {
+		AccessToken string
+	}
+	RequestData struct {
+		UsernameOrEmail string `json:"username_or_email"`
+		Password        string `json:"password"`
+		AppId           string `json:"app_id"`
+		Subdomain       string `json:"subdomain"`
+		IpAddress       string `json:"ip_address"`
+	}
 }
 
 // TODO This one assumes MFA is enabled. Need to handle all cases.
@@ -52,7 +70,9 @@ type GenerateSamlAssertionResponse struct {
 	}
 }
 
-func GenerateTokens(secret string, id string) (error, *GenerateTokensResponse) {
+// GenerateTokens generates the tokens required for interacting with the OneLogin
+// API.
+func GenerateTokens(p *GenerateTokensParams) (error, *GenerateTokensResponse) {
 	// Construct HTTP request
 	var data = []byte(`{"grant_type":"client_credentials"}`)
 	req, err := http.NewRequest(
@@ -62,20 +82,21 @@ func GenerateTokens(secret string, id string) (error, *GenerateTokensResponse) {
 	)
 	req.Header.Set(
 		"Authorization",
-		fmt.Sprintf("client_id:%v, client_secret:%v", id, secret),
+		fmt.Sprintf("client_id:%v, client_secret:%v", p.Id, p.Secret),
 	)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send HTTP request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	c := &http.Client{}
+	resp, err := c.Do(req)
 
 	if err != nil {
-		fmt.Println("An error has occurred")
+		return errors.New("HTTP request failed"), nil
 	}
 
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Request failed: Got %d as a response", resp.StatusCode)), nil
+		s := fmt.Sprintf("Request failed: Got %d as a response", resp.StatusCode)
+		return errors.New(s), nil
 	}
 
 	// Get data from response
@@ -84,10 +105,54 @@ func GenerateTokens(secret string, id string) (error, *GenerateTokensResponse) {
 	b := []byte(body)
 
 	// Parse JSON
-	var generateTokenResponse GenerateTokensResponse
-	if err := json.Unmarshal(b, &generateTokenResponse); err != nil {
+	var r GenerateTokensResponse
+	if err := json.Unmarshal(b, &r); err != nil {
 		panic(err)
 	}
 
-	return nil, &generateTokenResponse
+	return nil, &r
+}
+
+func GenerateSamlAssertion(p *GenerateSamlAssertionParams) (error, *GenerateSamlAssertionResponse) {
+	// Construct HTTP request
+	j, err := json.Marshal(p.RequestData)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest(
+		"POST",
+		"https://api.us.onelogin.com/api/1/saml_assertion",
+		bytes.NewBuffer(j),
+	)
+	req.Header.Set(
+		"Authorization",
+		fmt.Sprintf("bearer:%v", p.Headers.AccessToken),
+	)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send HTTP request
+	c := http.Client{}
+	resp, err := c.Do(req)
+
+	if err != nil {
+		return errors.New("HTTP request failed"), nil
+	}
+
+	if resp.StatusCode != 200 {
+		s := fmt.Sprintf("Request failed: Got %d as a response", resp.StatusCode)
+		return errors.New(s), nil
+	}
+
+	// Get data from response
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	b := []byte(body)
+
+	// Parse JSON
+	var r GenerateSamlAssertionResponse
+	if err := json.Unmarshal(b, &r); err != nil {
+		panic(err)
+	}
+
+	return nil, &r
 }
