@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
 	"errors"
 	"fmt"
 	"os"
 
+	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
 	"github.com/howeyc/gopass"
 )
 
