@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"bufio"
+	"errors"
 )
 
 func getToken(secret, id string) string {
@@ -20,8 +21,8 @@ func getToken(secret, id string) string {
 	return resp.Data[0].AccessToken
 }
 
-func getSaml(token, user, pass, appId, ipAddress, subdomain string) string {
-	fmt.Print("Generating SAML assertion... ")
+func getSaml(token, user, pass, appId, ipAddress, subdomain string) (error, string) {
+	fmt.Print("Requesting SAML assertion... ")
 	pSaml := onelogin.GenerateSamlAssertionParams{}
 	pSaml.Headers.AccessToken = token
 	pSaml.RequestData.UsernameOrEmail = user
@@ -33,11 +34,21 @@ func getSaml(token, user, pass, appId, ipAddress, subdomain string) string {
 	fmt.Println("done")
 
 	if err != nil {
-		fmt.Println("Couldn't get SAML assertion: ", err)
+		fmt.Println("Couldn't get SAML assertion")
+		fmt.Println(err)
 		os.Exit(2)
 	}
 
-	return resp.Data[0].StateToken
+	// Handle response
+	status := resp.Status
+
+	if status.Type != "success" {
+		return errors.New(fmt.Sprintf("SAML assertion failed: %v", status.Message)), ""
+	}
+
+	data := resp.Data[0]
+
+	return nil, data.StateToken
 }
 
 func main() {
@@ -55,6 +66,11 @@ func main() {
 	fmt.Print("OneLogin password: ")
 	pass, _ := r.ReadString('\n')
 
-	st := getSaml(t, user, pass, "123456", "testing", "")
+	err, st := getSaml(t, user, string(pass), appId, "", "emind")
+	if err != nil {
+		fmt.Println("Couldn't get state token")
+		fmt.Println(err)
+		os.Exit(2)
+	}
 	fmt.Println("State token: ", st)
 }

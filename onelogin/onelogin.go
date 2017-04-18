@@ -138,11 +138,6 @@ func GenerateSamlAssertion(p *GenerateSamlAssertionParams) (error, *GenerateSaml
 		return errors.New("HTTP request failed"), nil
 	}
 
-	if resp.StatusCode != 200 {
-		s := fmt.Sprintf("Request failed: Got %d as a response", resp.StatusCode)
-		return errors.New(s), nil
-	}
-
 	// Get data from response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
