@@ -2,10 +2,11 @@ package main
 
 import (
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
+	"errors"
 	"fmt"
 	"os"
-	"bufio"
-	"errors"
+
+	"github.com/howeyc/gopass"
 )
 
 func getToken(secret, id string) string {
@@ -55,16 +56,20 @@ func main() {
 	// TODO Add handling for missing env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
+	var appId = os.Args[1]
 
 	// Get OneLogin access token
 	t := getToken(secret, id)
 
 	// Get credentials from user
-	r := bufio.NewReader(os.Stdin)
 	fmt.Print("OneLogin username: ")
-	user, _ := r.ReadString('\n')
+	var user string
+	fmt.Scanln(&user)
 	fmt.Print("OneLogin password: ")
-	pass, _ := r.ReadString('\n')
+	pass, err := gopass.GetPasswd()
+	if err != nil {
+		panic("Couldn't read password from terminal")
+	}
 
 	err, st := getSaml(t, user, string(pass), appId, "", "emind")
 	if err != nil {
