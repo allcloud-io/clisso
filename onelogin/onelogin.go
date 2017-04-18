@@ -141,6 +141,9 @@ func GenerateSamlAssertion(p *GenerateSamlAssertionParams) (error, *GenerateSaml
 	// Get data from response
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
 	b := []byte(body)
 
 	// Parse JSON
