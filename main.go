@@ -1,81 +1,54 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"net/http"
 	"os"
 
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
-	"github.com/howeyc/gopass"
+	//"github.com/howeyc/gopass"
+	"encoding/json"
 )
-
-func getToken(secret, id string) string {
-	fmt.Print("Generating OneLogin API token... ")
-	p := onelogin.GenerateTokensParams{Secret: secret, Id: id}
-	err, resp := onelogin.GenerateTokens(&p)
-	fmt.Println("done")
-
-	if err != nil {
-		fmt.Println("Token generation failed: ", err)
-		os.Exit(2)
-	}
-	return resp.Data[0].AccessToken
-}
-
-func getSaml(token, user, pass, appId, ipAddress, subdomain string) (error, string) {
-	fmt.Print("Requesting SAML assertion... ")
-	pSaml := onelogin.GenerateSamlAssertionParams{}
-	pSaml.Headers.AccessToken = token
-	pSaml.RequestData.UsernameOrEmail = user
-	pSaml.RequestData.Password = pass
-	pSaml.RequestData.AppId = appId
-	pSaml.RequestData.Subdomain = subdomain
-	pSaml.RequestData.IpAddress = ipAddress
-	err, resp := onelogin.GenerateSamlAssertion(&pSaml)
-	fmt.Println("done")
-
-	if err != nil {
-		fmt.Println("Couldn't get SAML assertion")
-		fmt.Println(err)
-		os.Exit(2)
-	}
-
-	// Handle response
-	status := resp.Status
-
-	if status.Type != "success" {
-		return errors.New(fmt.Sprintf("SAML assertion failed: %v", status.Message)), ""
-	}
-
-	data := resp.Data[0]
-
-	return nil, data.StateToken
-}
 
 func main() {
 	// TODO Add handling for missing env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
-	var appId = os.Args[1]
+	//var appId = os.Args[1]
+
+	// Create HTTP client
+	// TODO find a good way to pass the client to the functions in onelogin.go
+	c := http.Client{}
 
 	// Get OneLogin access token
-	t := getToken(secret, id)
-
-	// Get credentials from user
-	fmt.Print("OneLogin username: ")
-	var user string
-	fmt.Scanln(&user)
-	fmt.Print("OneLogin password: ")
-	pass, err := gopass.GetPasswd()
-	if err != nil {
-		panic("Couldn't read password from terminal")
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", id, secret),
+		"Content-Type": "application/json",
+	}
+	params := onelogin.GenerateTokensParams{
+		GrantType: "client_credentials",
 	}
 
-	err, st := getSaml(t, user, string(pass), appId, "", "emind")
+	err, req := onelogin.CreateRequest(
+		http.MethodPost,
+		onelogin.GenerateTokensUrl,
+		headers,
+		&params,
+	)
 	if err != nil {
-		fmt.Println("Couldn't get state token")
-		fmt.Println(err)
-		os.Exit(2)
+		panic(err)
 	}
-	fmt.Println("State token: ", st)
+
+	err, data := onelogin.DoRequest(&c, req)
+	if err != nil {
+		panic(err)
+	}
+
+	var resp onelogin.GenerateTokensResponse
+
+	if err := json.Unmarshal([]byte(data), &resp); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(resp.Data[0].AccessToken)
 }
