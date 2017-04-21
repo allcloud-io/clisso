@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"fmt"
 )
 
 // TODO Add support for eu.onelogin.com
@@ -129,7 +130,9 @@ func DoRequest(c *http.Client, r *http.Request) (error, string) {
 		return errors.New("Could not send HTTP request"), ""
 	}
 
-	// TODO handle errors
+	if resp.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("Got HTTP status code %v", resp.StatusCode)), ""
+	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
