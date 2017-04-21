@@ -10,6 +10,8 @@ import (
 	"fmt"
 )
 
+// TODO Review error handling
+
 // TODO Add support for eu.onelogin.com
 const (
 	GenerateTokensUrl string = "https://api.us.onelogin.com/auth/oauth2/token"
@@ -97,10 +99,9 @@ type VerifyFactorResponse struct {
 
 // Request constructs an HTTP request and returns a pointer to it.
 func createRequest(method string, url string, headers map[string]string, body interface{}) (error, *http.Request) {
-	// TODO error handling
 	json, err := json.Marshal(body)
 	if err != nil {
-		panic(err)
+		return errors.New("Error parsing body"), nil
 	}
 
 	req, err := http.NewRequest(
@@ -109,7 +110,7 @@ func createRequest(method string, url string, headers map[string]string, body in
 		bytes.NewBuffer(json),
 	)
 	if err != nil {
-		panic(err)
+		return errors.New("Failed to create HTTP request"), nil
 	}
 
 	for k, v := range headers {
