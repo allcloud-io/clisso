@@ -122,7 +122,7 @@ func CreateRequest(method string, url string, headers map[string]string, data in
 }
 
 // DoRequest gets a pointer to an HTTP request and an HTTP client, executes the request
-// using the client, handles  any HTTP-related errors and returns any data as a string.
+// using the client, handles any HTTP-related errors and returns any data as a string.
 func DoRequest(c *http.Client, r *http.Request) (error, string) {
 	resp, err := c.Do(r)
 	if err != nil {
