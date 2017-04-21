@@ -41,16 +41,11 @@ type GenerateTokensResponse struct {
 }
 
 type GenerateSamlAssertionParams struct {
-	Headers struct {
-		AccessToken string
-	}
-	RequestData struct {
-		UsernameOrEmail string `json:"username_or_email"`
-		Password        string `json:"password"`
-		AppId           string `json:"app_id"`
-		Subdomain       string `json:"subdomain"`
-		IpAddress       string `json:"ip_address"`
-	}
+	UsernameOrEmail string `json:"username_or_email"`
+	Password        string `json:"password"`
+	AppId           string `json:"app_id"`
+	Subdomain       string `json:"subdomain"`
+	IpAddress       string `json:"ip_address"`
 }
 
 // TODO This one assumes MFA is enabled. Need to handle all cases.
@@ -101,9 +96,9 @@ type VerifyFactorResponse struct {
 }
 
 // Request constructs an HTTP request and returns a pointer to it.
-func createRequest(method string, url string, headers map[string]string, data interface{}) (error, *http.Request) {
+func createRequest(method string, url string, headers map[string]string, body interface{}) (error, *http.Request) {
 	// TODO error handling
-	json, err := json.Marshal(data)
+	json, err := json.Marshal(body)
 	if err != nil {
 		panic(err)
 	}
@@ -132,6 +127,7 @@ func doRequest(c *http.Client, r *http.Request) (error, string) {
 		return errors.New("Could not send HTTP request"), ""
 	}
 
+	// TODO show the error message to the user
 	if resp.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("Got HTTP status code %v", resp.StatusCode)), ""
 	}
@@ -160,13 +156,13 @@ func GenerateTokens(clientId, clientSecret string) (error, string) {
 		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientId, clientSecret),
 		"Content-Type": "application/json",
 	}
-	params := GenerateTokensParams{GrantType: "client_credentials"}
+	body := GenerateTokensParams{GrantType: "client_credentials"}
 
 	err, req := createRequest(
 		http.MethodPost,
 		GenerateTokensUrl,
 		headers,
-		&params,
+		&body,
 	)
 	if err != nil {
 		return errors.New("Could not create request"), ""
@@ -184,4 +180,39 @@ func GenerateTokens(clientId, clientSecret string) (error, string) {
 	}
 
 	return nil, resp.Data[0].AccessToken
+}
+
+// GenerateSamlAssertion gets a pointer to GenerateSamlAssertionParams and returns a
+// GenerateSamlAssertionResponse.
+// TODO improve doc
+func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (error, *GenerateSamlAssertionResponse) {
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("bearer:%v", token),
+		"Content-Type": "application/json",
+	}
+	body := p
+
+	err, req := createRequest(
+		http.MethodPost,
+		GenerateSamlAssertionUrl,
+		headers,
+		&body,
+	)
+	if err != nil {
+		return errors.New("Could not create request"), nil
+	}
+
+	err, data := doRequest(&Client, req)
+	if err != nil {
+		fmt.Println(err)
+		return errors.New("HTTP request failed"), nil
+	}
+
+	var resp GenerateSamlAssertionResponse
+
+	if err := handleResponse(data, &resp); err != nil {
+		return errors.New("Could not parse HTTP response"), nil
+	}
+
+	return nil, &resp
 }
