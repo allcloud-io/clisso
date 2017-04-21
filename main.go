@@ -7,7 +7,6 @@ import (
 
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
 	//"github.com/howeyc/gopass"
-	"encoding/json"
 )
 
 func main() {
@@ -46,7 +45,7 @@ func main() {
 
 	var resp onelogin.GenerateTokensResponse
 
-	if err := json.Unmarshal([]byte(data), &resp); err != nil {
+	if err := onelogin.HandleResponse(data, &resp); err != nil {
 		panic(err)
 	}
 

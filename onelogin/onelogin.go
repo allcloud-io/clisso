@@ -141,6 +141,16 @@ func DoRequest(c *http.Client, r *http.Request) (error, string) {
 	return nil, string(b)
 }
 
+// HandleResponse gets a JSON-encoded HTTP response data and loads it into the given struct.
+func HandleResponse(j string, d interface{}) error {
+	err := json.Unmarshal([]byte(j), d)
+	if err != nil {
+		return errors.New("Couldn't parse JSON")
+	}
+
+	return nil
+}
+
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
 //func GenerateTokens(clientId, clientSecret string) (error, string) {
