@@ -17,6 +17,8 @@ const (
 	VerifyFactorUrl string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
+var Client = http.Client{}
+
 type GenerateTokensParams struct {
 	GrantType string `json:"grant_type"`
 }
@@ -99,7 +101,7 @@ type VerifyFactorResponse struct {
 }
 
 // Request constructs an HTTP request and returns a pointer to it.
-func CreateRequest(method string, url string, headers map[string]string, data interface{}) (error, *http.Request) {
+func createRequest(method string, url string, headers map[string]string, data interface{}) (error, *http.Request) {
 	// TODO error handling
 	json, err := json.Marshal(data)
 	if err != nil {
@@ -124,7 +126,7 @@ func CreateRequest(method string, url string, headers map[string]string, data in
 
 // DoRequest gets a pointer to an HTTP request and an HTTP client, executes the request
 // using the client, handles any HTTP-related errors and returns any data as a string.
-func DoRequest(c *http.Client, r *http.Request) (error, string) {
+func doRequest(c *http.Client, r *http.Request) (error, string) {
 	resp, err := c.Do(r)
 	if err != nil {
 		return errors.New("Could not send HTTP request"), ""
@@ -142,7 +144,7 @@ func DoRequest(c *http.Client, r *http.Request) (error, string) {
 }
 
 // HandleResponse gets a JSON-encoded HTTP response data and loads it into the given struct.
-func HandleResponse(j string, d interface{}) error {
+func handleResponse(j string, d interface{}) error {
 	err := json.Unmarshal([]byte(j), d)
 	if err != nil {
 		return errors.New("Couldn't parse JSON")
@@ -153,6 +155,33 @@ func HandleResponse(j string, d interface{}) error {
 
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
-//func GenerateTokens(clientId, clientSecret string) (error, string) {
-//	// TODO
-//}
+func GenerateTokens(clientId, clientSecret string) (error, string) {
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientId, clientSecret),
+		"Content-Type": "application/json",
+	}
+	params := GenerateTokensParams{GrantType: "client_credentials"}
+
+	err, req := createRequest(
+		http.MethodPost,
+		GenerateTokensUrl,
+		headers,
+		&params,
+	)
+	if err != nil {
+		return errors.New("Could not create request"), ""
+	}
+
+	err, data := doRequest(&Client, req)
+	if err != nil {
+		return errors.New("HTTP request failed"), ""
+	}
+
+	var resp GenerateTokensResponse
+
+	if err := handleResponse(data, &resp); err != nil {
+		return errors.New("Could not parse HTTP response"), ""
+	}
+
+	return nil, resp.Data[0].AccessToken
+}
