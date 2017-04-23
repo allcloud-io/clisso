@@ -11,6 +11,7 @@ import (
 )
 
 // TODO Review error handling
+// TODO Move to named returns?
 
 // TODO Add support for eu.onelogin.com
 const (
@@ -98,10 +99,11 @@ type VerifyFactorResponse struct {
 }
 
 // Request constructs an HTTP request and returns a pointer to it.
-func createRequest(method string, url string, headers map[string]string, body interface{}) (error, *http.Request) {
+// TODO Wrap arguments in a type
+func createRequest(method string, url string, headers map[string]string, body interface{}) (*http.Request, error) {
 	json, err := json.Marshal(body)
 	if err != nil {
-		return errors.New("Error parsing body"), nil
+		return nil, errors.New("Error parsing body")
 	}
 
 	req, err := http.NewRequest(
@@ -110,34 +112,34 @@ func createRequest(method string, url string, headers map[string]string, body in
 		bytes.NewBuffer(json),
 	)
 	if err != nil {
-		return errors.New("Failed to create HTTP request"), nil
+		return nil, errors.New("Failed to create HTTP request")
 	}
 
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
 
-	return nil, req
+	return req, nil
 }
 
 // DoRequest gets a pointer to an HTTP request and an HTTP client, executes the request
 // using the client, handles any HTTP-related errors and returns any data as a string.
-func doRequest(c *http.Client, r *http.Request) (error, string) {
+func doRequest(c *http.Client, r *http.Request) (string, error) {
 	resp, err := c.Do(r)
 	if err != nil {
-		return errors.New("Could not send HTTP request"), ""
+		return "", errors.New("Could not send HTTP request")
 	}
 
 	// TODO show the error message to the user
 	if resp.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Got HTTP status code %v", resp.StatusCode)), ""
+		return "", errors.New(fmt.Sprintf("Got HTTP status code %v", resp.StatusCode))
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	b := []byte(body)
 
-	return nil, string(b)
+	return string(b), nil
 }
 
 // HandleResponse gets a JSON-encoded HTTP response data and loads it into the given struct.
@@ -152,68 +154,68 @@ func handleResponse(j string, d interface{}) error {
 
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
-func GenerateTokens(clientId, clientSecret string) (error, string) {
+func GenerateTokens(clientId, clientSecret string) (string, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientId, clientSecret),
 		"Content-Type": "application/json",
 	}
 	body := GenerateTokensParams{GrantType: "client_credentials"}
 
-	err, req := createRequest(
+	req, err := createRequest(
 		http.MethodPost,
 		GenerateTokensUrl,
 		headers,
 		&body,
 	)
 	if err != nil {
-		return errors.New("Could not create request"), ""
+		return "", errors.New("Could not create request")
 	}
 
-	err, data := doRequest(&Client, req)
+	data, err := doRequest(&Client, req)
 	if err != nil {
-		return errors.New("HTTP request failed"), ""
+		return "", errors.New("HTTP request failed")
 	}
 
 	var resp GenerateTokensResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return errors.New("Could not parse HTTP response"), ""
+		return "", errors.New("Could not parse HTTP response")
 	}
 
-	return nil, resp.Data[0].AccessToken
+	return resp.Data[0].AccessToken, nil
 }
 
 // GenerateSamlAssertion gets a pointer to GenerateSamlAssertionParams and returns a
 // GenerateSamlAssertionResponse.
 // TODO improve doc
-func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (error, *GenerateSamlAssertionResponse) {
+func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type": "application/json",
 	}
 	body := p
 
-	err, req := createRequest(
+	req, err := createRequest(
 		http.MethodPost,
 		GenerateSamlAssertionUrl,
 		headers,
 		&body,
 	)
 	if err != nil {
-		return errors.New("Could not create request"), nil
+		return nil, errors.New("Could not create request")
 	}
 
-	err, data := doRequest(&Client, req)
+	data, err := doRequest(&Client, req)
 	if err != nil {
 		fmt.Println(err)
-		return errors.New("HTTP request failed"), nil
+		return nil, errors.New("HTTP request failed")
 	}
 
 	var resp GenerateSamlAssertionResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return errors.New("Could not parse HTTP response"), nil
+		return nil, errors.New("Could not parse HTTP response")
 	}
 
-	return nil, &resp
+	return &resp, nil
 }

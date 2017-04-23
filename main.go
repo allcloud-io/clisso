@@ -32,7 +32,7 @@ func main() {
 	}
 
 	// Get OneLogin access token
-	err, token := onelogin.GenerateTokens(id, secret)
+	token, err := onelogin.GenerateTokens(id, secret)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func main() {
 		Subdomain:       "emind",
 	}
 
-	err, resp := onelogin.GenerateSamlAssertion(token, &p)
+	resp, err := onelogin.GenerateSamlAssertion(token, &p)
 	if err != nil {
 		log.Fatal(err)
 	}
