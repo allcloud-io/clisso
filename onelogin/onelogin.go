@@ -4,20 +4,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"fmt"
 )
 
 // TODO Review error handling
 // TODO Move to named returns?
+// TODO Convert prints to logging
 
 // TODO Add support for eu.onelogin.com
 const (
-	GenerateTokensUrl string = "https://api.us.onelogin.com/auth/oauth2/token"
+	GenerateTokensUrl        string = "https://api.us.onelogin.com/auth/oauth2/token"
 	GenerateSamlAssertionUrl string = "https://api.us.onelogin.com/api/1/saml_assertion"
-	VerifyFactorUrl string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
+	VerifyFactorUrl          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
 var Client = http.Client{}
@@ -77,15 +78,10 @@ type GenerateSamlAssertionResponse struct {
 }
 
 type VerifyFactorParams struct {
-	Headers struct {
-		AccessToken string
-	}
-	RequestData struct {
-		AppId      string `json:"app_id"`
-		DeviceId   string `json:"device_id"`
-		StateToken string `json:"state_token"`
-		OtpToken   string `json:"otp_token"`
-	}
+	AppId      string `json:"app_id"`
+	DeviceId   string `json:"device_id"`
+	StateToken string `json:"state_token"`
+	OtpToken   string `json:"otp_token"`
 }
 
 type VerifyFactorResponse struct {
@@ -97,6 +93,20 @@ type VerifyFactorResponse struct {
 	} `json:"status"`
 	Data string `json:"data"`
 }
+
+// OneLoginError represents an error response received from the OneLogin API. In addition
+// to the standard error string it contains the HTTP status code to assist in identifying
+// the real cause for the error. This is necessary because the actual calls to the OneLogin
+// API are made inside doRequest(), so we need a way to determine the HTTP status code outside
+// that function.
+//type OneLoginError struct {
+//	err        string
+//	StatusCode int
+//}
+//
+//func (e *OneLoginError) Error() string {
+//	return e.err
+//}
 
 // Request constructs an HTTP request and returns a pointer to it.
 // TODO Wrap arguments in a type
@@ -130,9 +140,8 @@ func doRequest(c *http.Client, r *http.Request) (string, error) {
 		return "", errors.New("Could not send HTTP request")
 	}
 
-	// TODO show the error message to the user
 	if resp.StatusCode != 200 {
-		return "", errors.New(fmt.Sprintf("Got HTTP status code %v", resp.StatusCode))
+		return "", errors.New(resp.Status)
 	}
 
 	defer resp.Body.Close()
@@ -157,7 +166,7 @@ func handleResponse(j string, d interface{}) error {
 func GenerateTokens(clientId, clientSecret string) (string, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientId, clientSecret),
-		"Content-Type": "application/json",
+		"Content-Type":  "application/json",
 	}
 	body := GenerateTokensParams{GrantType: "client_credentials"}
 
@@ -173,25 +182,25 @@ func GenerateTokens(clientId, clientSecret string) (string, error) {
 
 	data, err := doRequest(&Client, req)
 	if err != nil {
-		return "", errors.New("HTTP request failed")
+		return "", fmt.Errorf("HTTP request failed: %v", err)
 	}
 
 	var resp GenerateTokensResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return "", errors.New("Could not parse HTTP response")
+		return "", fmt.Errorf("Could not parse HTTP response: %v", err)
 	}
 
 	return resp.Data[0].AccessToken, nil
 }
 
-// GenerateSamlAssertion gets a pointer to GenerateSamlAssertionParams and returns a
-// GenerateSamlAssertionResponse.
+// GenerateSamlAssertion gets a OneLogin access token and a GenerateSamlAssertionParams struct
+// and returns a GenerateSamlAssertionResponse.
 // TODO improve doc
 func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
-		"Content-Type": "application/json",
+		"Content-Type":  "application/json",
 	}
 	body := p
 
@@ -207,14 +216,50 @@ func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*Gener
 
 	data, err := doRequest(&Client, req)
 	if err != nil {
-		fmt.Println(err)
-		return nil, errors.New("HTTP request failed")
+		//if oneLoginError, ok := err.(*OneLoginError); ok {
+		//	fmt.Println(oneLoginError.StatusCode)
+		//}
+		return nil, fmt.Errorf("HTTP request failed: %v", err)
 	}
 
 	var resp GenerateSamlAssertionResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return nil, errors.New("Could not parse HTTP response")
+		return nil, fmt.Errorf("Could not parse HTTP response: %v", err)
+	}
+
+	return &resp, nil
+}
+
+// VerifyFactor gets a OneLogin access token and a VerifyFactorParams struct and returns a
+// VerifyFactorResponse.
+func VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("bearer:%v", token),
+		"Content-Type":  "application/json",
+	}
+	body := p
+
+	req, err := createRequest(
+		http.MethodPost,
+		VerifyFactorUrl,
+		headers,
+		&body,
+	)
+	if err != nil {
+		// TODO Let the user know which method generated the error
+		return nil, errors.New("Could not create request")
+	}
+
+	data, err := doRequest(&Client, req)
+	if err != nil {
+		return nil, fmt.Errorf("HTTP request failed: %v", err)
+	}
+
+	var resp VerifyFactorResponse
+
+	if err := handleResponse(data, &resp); err != nil {
+		return nil, fmt.Errorf("Could not parse HTTP response: %v", err)
 	}
 
 	return &resp, nil

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
 	"github.com/howeyc/gopass"
@@ -32,6 +33,7 @@ func main() {
 	}
 
 	// Get OneLogin access token
+	log.Println("Generating OneLogin access tokens")
 	token, err := onelogin.GenerateTokens(id, secret)
 	if err != nil {
 		log.Fatal(err)
@@ -49,17 +51,40 @@ func main() {
 	}
 
 	// Generate SAML assertion
-	p := onelogin.GenerateSamlAssertionParams{
+	log.Println("Generating SAML assertion")
+	pSaml := onelogin.GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
 		AppId:           appId,
 		Subdomain:       "emind",
 	}
 
-	resp, err := onelogin.GenerateSamlAssertion(token, &p)
+	rSaml, err := onelogin.GenerateSamlAssertion(token, &pSaml)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(resp.Data[0].StateToken)
+	st := rSaml.Data[0].StateToken
+	// TODO Handle multiple devices
+	deviceId := strconv.Itoa(rSaml.Data[0].Devices[0].DeviceId)
+
+	fmt.Print("Please enter your OneLogin OTP: ")
+	var otp string
+	fmt.Scanln(&otp)
+
+	// Verify MFA
+	pMfa := onelogin.VerifyFactorParams{
+		AppId:      appId,
+		DeviceId:   string(deviceId),
+		StateToken: st,
+		OtpToken:   otp,
+	}
+
+	rMfa, err := onelogin.VerifyFactor(token, &pMfa)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	samlAssertion := rMfa.Data
+	log.Println(samlAssertion)
 }
