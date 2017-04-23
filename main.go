@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
@@ -9,15 +10,31 @@ import (
 )
 
 func main() {
-	// TODO Add handling for missing env vars
+	// TODO Use Cobra?
+
+	// Get CLI arguments
+	if len(os.Args) != 2 {
+		fmt.Printf("Usage: %v <app_id>\n", os.Args[0])
+		os.Exit(1)
+	}
+	var appId = os.Args[1]
+
+	// Get env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
-	var appId = os.Args[1]
+
+	if secret == "" {
+		log.Fatal("The ONELOGIN_CLIENT_SECRET environment variable must bet set.")
+	}
+
+	if id == "" {
+		log.Fatal("The ONELOGIN_CLIENT_ID environment variable must bet set.")
+	}
 
 	// Get OneLogin access token
 	err, token := onelogin.GenerateTokens(id, secret)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Get credentials from the user
@@ -28,7 +45,7 @@ func main() {
 	fmt.Print("OneLogin password: ")
 	pass, err := gopass.GetPasswd()
 	if err != nil {
-		panic("Couldn't read password from terminal")
+		log.Fatal("Couldn't read password from terminal")
 	}
 
 	// Generate SAML assertion
@@ -41,8 +58,8 @@ func main() {
 
 	err, resp := onelogin.GenerateSamlAssertion(token, &p)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	fmt.Println(resp.Data[0].StateToken)
+	log.Println(resp.Data[0].StateToken)
 }
