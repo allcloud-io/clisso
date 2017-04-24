@@ -14,27 +14,27 @@ import (
 )
 
 func main() {
-	// TODO Use Cobra?
-
-	// Get CLI arguments
-	if len(os.Args) != 2 {
-		fmt.Printf("Usage: %v <app_id>\n", os.Args[0])
-		os.Exit(1)
-	}
-	var appId = os.Args[1]
-
 	// Get env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
-	var principal = os.Getenv("ONELOGIN_PRINCIPAL_ARN")
-	var role = os.Getenv("ONELOGIN_ROLE_ARN")
+	var appId string = os.Getenv("ONELOGIN_APP_ID")
+	var principal string = os.Getenv("ONELOGIN_PRINCIPAL_ARN")
+	var role string = os.Getenv("ONELOGIN_ROLE_ARN")
 
 	if secret == "" {
-		log.Fatal("The ONELOGIN_CLIENT_SECRET environment variable must bet set.")
+		log.Fatal("The ONELOGIN_CLIENT_SECRET environment variable must bet set")
 	}
-
 	if id == "" {
-		log.Fatal("The ONELOGIN_CLIENT_ID environment variable must bet set.")
+		log.Fatal("The ONELOGIN_CLIENT_ID environment variable must bet set")
+	}
+	if appId == "" {
+		log.Fatal("The ONELOGIN_APP_ID environment variable must bet set")
+	}
+	if principal == "" {
+		log.Fatal("The ONELOGIN_PRINCIPAL_ARN environment variable must bet set")
+	}
+	if role == "" {
+		log.Fatal("The ONELOGIN_ROLE_ARN environment variable must bet set")
 	}
 
 	// Get OneLogin access token
