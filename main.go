@@ -7,6 +7,9 @@ import (
 	"strconv"
 
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
 )
 
@@ -23,6 +26,8 @@ func main() {
 	// Get env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
+	var principal = os.Getenv("ONELOGIN_PRINCIPAL_ARN")
+	var role = os.Getenv("ONELOGIN_ROLE_ARN")
 
 	if secret == "" {
 		log.Fatal("The ONELOGIN_CLIENT_SECRET environment variable must bet set.")
@@ -86,5 +91,31 @@ func main() {
 	}
 
 	samlAssertion := rMfa.Data
-	log.Println(samlAssertion)
+
+	// Assume role
+	pAssumeRole := sts.AssumeRoleWithSAMLInput{
+		PrincipalArn:  aws.String(principal),
+		RoleArn:       aws.String(role),
+		SAMLAssertion: aws.String(samlAssertion),
+	}
+
+	sess := session.Must(session.NewSession())
+	svc := sts.New(sess)
+
+	resp, err := svc.AssumeRoleWithSAML(&pAssumeRole)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	keyId := *resp.Credentials.AccessKeyId
+	secretKey := *resp.Credentials.SecretAccessKey
+	sessionToken := *resp.Credentials.SessionToken
+
+	// Set temporary credentials in environment
+	// TODO Error if already set
+	fmt.Println("Paste the following in your terminal:")
+	fmt.Println()
+	fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyId)
+	fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
+	fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
 }
