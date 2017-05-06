@@ -108,7 +108,7 @@ type VerifyFactorResponse struct {
 //	return e.err
 //}
 
-// Request constructs an HTTP request and returns a pointer to it.
+// createRequest constructs an HTTP request and returns a pointer to it.
 // TODO Wrap arguments in a type
 func createRequest(method string, url string, headers map[string]string, body interface{}) (*http.Request, error) {
 	json, err := json.Marshal(body)
@@ -158,7 +158,7 @@ func doRequest(hd HTTPDoer, r *http.Request) (string, error) {
 	return string(b), nil
 }
 
-// HandleResponse gets a JSON-encoded HTTP response data and loads it into the given struct.
+// handleResponse gets a JSON-encoded HTTP response data and loads it into the given struct.
 func handleResponse(j string, d interface{}) error {
 	err := json.Unmarshal([]byte(j), d)
 	if err != nil {
