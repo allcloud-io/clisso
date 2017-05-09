@@ -199,7 +199,7 @@ func GenerateTokens(url, clientId, clientSecret string) (string, error) {
 // GenerateSamlAssertion gets a OneLogin access token and a GenerateSamlAssertionParams struct
 // and returns a GenerateSamlAssertionResponse.
 // TODO improve doc
-func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
+func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type":  "application/json",
@@ -208,7 +208,7 @@ func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*Gener
 
 	req, err := createRequest(
 		http.MethodPost,
-		GenerateSamlAssertionUrl,
+		url,
 		headers,
 		&body,
 	)
@@ -235,7 +235,7 @@ func GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*Gener
 
 // VerifyFactor gets a OneLogin access token and a VerifyFactorParams struct and returns a
 // VerifyFactorResponse.
-func VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
+func VerifyFactor(url, token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type":  "application/json",
@@ -244,7 +244,7 @@ func VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFactorResponse, e
 
 	req, err := createRequest(
 		http.MethodPost,
-		VerifyFactorUrl,
+		url,
 		headers,
 		&body,
 	)

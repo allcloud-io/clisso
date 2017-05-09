@@ -64,7 +64,9 @@ func main() {
 		Subdomain:       "emind",
 	}
 
-	rSaml, err := onelogin.GenerateSamlAssertion(token, &pSaml)
+	rSaml, err := onelogin.GenerateSamlAssertion(
+		onelogin.GenerateSamlAssertionUrl, token, &pSaml,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,7 +87,7 @@ func main() {
 		OtpToken:   otp,
 	}
 
-	rMfa, err := onelogin.VerifyFactor(token, &pMfa)
+	rMfa, err := onelogin.VerifyFactor(onelogin.VerifyFactorUrl, token, &pMfa)
 	if err != nil {
 		log.Fatal(err)
 	}
