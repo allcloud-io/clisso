@@ -1,25 +1,10 @@
 package onelogin
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
-
-type FakeHTTPClient struct{}
-
-func (c *FakeHTTPClient) Do(r *http.Request) (*http.Response, error) {
-	fmt.Println("Fake HTTP client called")
-
-	resp, err := c.Do(r)
-	if err != nil {
-		return nil, errors.New("Error processing HTTP request")
-	}
-
-	return resp, nil
-}
 
 func TestGenerateTokens(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
