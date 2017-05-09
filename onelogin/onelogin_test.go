@@ -42,3 +42,47 @@ func TestGenerateTokens(t *testing.T) {
 		t.Errorf("Oops: %s", err)
 	}
 }
+
+func TestGenerateSamlAssertion(t *testing.T) {
+	resp := `{
+    "status": {
+        "type": "success",
+        "message": "MFA is required for this user",
+        "code": 200,
+        "error": false
+    },
+    "data": [
+        {
+            "state_token": "fake",
+            "devices": [
+                {
+                    "device_id": 666666,
+                    "device_type": "Google Authenticator"
+                }
+            ],
+            "callback_url": "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor",
+            "user": {
+                "lastname": "test",
+                "username": "test",
+                "email": "test@onelogin.com",
+                "firstname": "test",
+                "id": 88888888
+            }
+        }
+    ]
+}`
+	ts := getTestServer(resp)
+	defer ts.Close()
+
+	p := GenerateSamlAssertionParams{
+		UsernameOrEmail: "test",
+		Password:        "test",
+		AppId:           "test",
+		Subdomain:       "test",
+	}
+
+	_, err := GenerateSamlAssertion(ts.URL, "test", &p)
+	if err != nil {
+		t.Errorf("Oops: %s", err)
+	}
+}
