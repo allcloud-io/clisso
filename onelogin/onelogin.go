@@ -163,7 +163,7 @@ func handleResponse(j string, d interface{}) error {
 
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
-func GenerateTokens(clientId, clientSecret string) (string, error) {
+func GenerateTokens(url, clientId, clientSecret string) (string, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientId, clientSecret),
 		"Content-Type":  "application/json",
@@ -172,7 +172,7 @@ func GenerateTokens(clientId, clientSecret string) (string, error) {
 
 	req, err := createRequest(
 		http.MethodPost,
-		GenerateTokensUrl,
+		url,
 		headers,
 		&body,
 	)
@@ -190,6 +190,8 @@ func GenerateTokens(clientId, clientSecret string) (string, error) {
 	if err := handleResponse(data, &resp); err != nil {
 		return "", fmt.Errorf("Could not parse HTTP response: %v", err)
 	}
+
+	// TODO add handling for valid JSON with wrong response
 
 	return resp.Data[0].AccessToken, nil
 }

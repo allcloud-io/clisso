@@ -39,7 +39,7 @@ func main() {
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := onelogin.GenerateTokens(id, secret)
+	token, err := onelogin.GenerateTokens(onelogin.GenerateTokensUrl, id, secret)
 	if err != nil {
 		log.Fatal(err)
 	}
