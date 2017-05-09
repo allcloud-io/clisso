@@ -6,9 +6,16 @@ import (
 	"testing"
 )
 
-func TestGenerateTokens(t *testing.T) {
+func getTestServer(resp string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{
+		w.Write([]byte(resp))
+	}))
+
+	return ts
+}
+
+func TestGenerateTokens(t *testing.T) {
+	resp := `{
     "status": {
         "error": false,
         "code": 200,
@@ -25,12 +32,12 @@ func TestGenerateTokens(t *testing.T) {
             "account_id": 555555
         }
  ]
-}`))
-	}))
+}`
+
+	ts := getTestServer(resp)
 	defer ts.Close()
 
-	//	Client = &FakeHTTPClient{}
-	_, err := GenerateTokens(ts.URL, "abcd", "efgh")
+	_, err := GenerateTokens(ts.URL, "test", "test")
 	if err != nil {
 		t.Errorf("Oops: %s", err)
 	}
