@@ -6,16 +6,16 @@ import (
 	"testing"
 )
 
-func getTestServer(resp string) *httptest.Server {
+func getTestServer(data string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(resp))
+		w.Write([]byte(data))
 	}))
 
 	return ts
 }
 
 func TestGenerateTokens(t *testing.T) {
-	resp := `{
+	data := `{
     "status": {
         "error": false,
         "code": 200,
@@ -24,7 +24,7 @@ func TestGenerateTokens(t *testing.T) {
     },
     "data": [
         {
-            "access_token": "fake",
+            "access_token": "fake_token",
             "created_at": "2015-11-11T03:36:18.714Z",
             "expires_in": 36000,
             "refresh_token": "fake",
@@ -34,17 +34,20 @@ func TestGenerateTokens(t *testing.T) {
  ]
 }`
 
-	ts := getTestServer(resp)
+	ts := getTestServer(data)
 	defer ts.Close()
 
-	_, err := GenerateTokens(ts.URL, "test", "test")
+	resp, err := GenerateTokens(ts.URL, "test", "test")
 	if err != nil {
-		t.Errorf("Oops: %s", err)
+		t.Errorf("GenerateTokens failed: %s", err)
+	}
+	if resp != "fake_token" {
+		t.Errorf("Wrong response, got: %v, want: %v", resp, "fake_token")
 	}
 }
 
 func TestGenerateSamlAssertion(t *testing.T) {
-	resp := `{
+	data := `{
     "status": {
         "type": "success",
         "message": "MFA is required for this user",
@@ -53,7 +56,7 @@ func TestGenerateSamlAssertion(t *testing.T) {
     },
     "data": [
         {
-            "state_token": "fake",
+            "state_token": "fake_state_token",
             "devices": [
                 {
                     "device_id": 666666,
@@ -71,7 +74,7 @@ func TestGenerateSamlAssertion(t *testing.T) {
         }
     ]
 }`
-	ts := getTestServer(resp)
+	ts := getTestServer(data)
 	defer ts.Close()
 
 	p := GenerateSamlAssertionParams{
@@ -81,8 +84,14 @@ func TestGenerateSamlAssertion(t *testing.T) {
 		Subdomain:       "test",
 	}
 
-	_, err := GenerateSamlAssertion(ts.URL, "test", &p)
+	resp, err := GenerateSamlAssertion(ts.URL, "test", &p)
 	if err != nil {
-		t.Errorf("Oops: %s", err)
+		t.Errorf("GenerateSamlAssertion: %s", err)
+	}
+	if resp.Data[0].StateToken != "fake_state_token" {
+		t.Errorf(
+			"Wrong response, got: %v, want: %v",
+			resp.Data[0].StateToken, "fake_state_token",
+		)
 	}
 }
