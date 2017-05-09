@@ -132,17 +132,10 @@ func createRequest(method string, url string, headers map[string]string, body in
 	return req, nil
 }
 
-// An HTTPDoer represents something which can Do() an HTTP request - mainly an HTTP client.
-// The main reason for this abstraction is to allow replacing a real HTTP client with
-// a mock client for unit testing.
-type HTTPDoer interface {
-	Do(*http.Request) (*http.Response, error)
-}
-
-// doRequest gets a pointer to an HTTP request and an HTTP client, executes the request
+// DoRequest gets a pointer to an HTTP request and an HTTP client, executes the request
 // using the client, handles any HTTP-related errors and returns any data as a string.
-func doRequest(hd HTTPDoer, r *http.Request) (string, error) {
-	resp, err := hd.Do(r)
+func doRequest(c *http.Client, r *http.Request) (string, error) {
+	resp, err := c.Do(r)
 	if err != nil {
 		return "", errors.New("Could not send HTTP request")
 	}
