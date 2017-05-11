@@ -95,3 +95,37 @@ func TestGenerateSamlAssertion(t *testing.T) {
 		)
 	}
 }
+
+func TestVerifyFactor(t *testing.T) {
+	data := `{
+    "status": {
+        "type": "success",
+        "message": "Success",
+        "code": 200,
+        "error": false
+    },
+    "data": "abcd"
+}`
+
+	ts := getTestServer(data)
+	defer ts.Close()
+
+	p := VerifyFactorParams{
+		AppId:      "test",
+		DeviceId:   "test",
+		StateToken: "test",
+		OtpToken:   "test",
+	}
+
+	resp, err := VerifyFactor(ts.URL, "test", &p)
+	if err != nil {
+		t.Errorf("VerifyFactor: %s", err)
+	}
+
+	if resp.Data != "abcd" {
+		t.Errorf(
+			"Wrong response, got: %v, want: %v",
+			resp.Data, "abcd",
+		)
+	}
+}
