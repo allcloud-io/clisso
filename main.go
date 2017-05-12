@@ -115,6 +115,7 @@ func main() {
 
 	// Set temporary credentials in environment
 	// TODO Error if already set
+	// TODO Write vars to creds file
 	fmt.Println("Paste the following in your terminal:")
 	fmt.Println()
 	fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyId)
