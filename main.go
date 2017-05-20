@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
 	"github.com/aws/aws-sdk-go/aws"
@@ -72,17 +71,32 @@ func main() {
 	}
 
 	st := rSaml.Data[0].StateToken
-	// TODO Handle multiple devices
-	deviceId := strconv.Itoa(rSaml.Data[0].Devices[0].DeviceId)
 
-	fmt.Print("Please enter your OneLogin OTP: ")
+	devices := rSaml.Data[0].Devices
+
+	var deviceId string
+	if len(devices) > 1 {
+		for i, d := range devices {
+			fmt.Printf("%d. %d - %s\n", i + 1, d.DeviceId, d.DeviceType)
+		}
+
+		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
+		var selection int
+		fmt.Scanln(&selection)
+
+		deviceId = fmt.Sprintf("%v", devices[selection - 1].DeviceId)
+	} else {
+		deviceId = fmt.Sprintf("%v", devices[0].DeviceId)
+	}
+
+	fmt.Print("Please enter the OTP from your MFA device: ")
 	var otp string
 	fmt.Scanln(&otp)
 
 	// Verify MFA
 	pMfa := onelogin.VerifyFactorParams{
 		AppId:      appId,
-		DeviceId:   string(deviceId),
+		DeviceId:   deviceId,
 		StateToken: st,
 		OtpToken:   otp,
 	}
