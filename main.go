@@ -12,6 +12,9 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+// TODO Allow configuration using config file
+// TODO Allow configuration from CLI (CLI > env var > config file)
+
 func main() {
 	// Get env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
