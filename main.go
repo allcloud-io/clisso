@@ -80,14 +80,14 @@ func main() {
 	var deviceId string
 	if len(devices) > 1 {
 		for i, d := range devices {
-			fmt.Printf("%d. %d - %s\n", i + 1, d.DeviceId, d.DeviceType)
+			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
 		}
 
 		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
 		var selection int
 		fmt.Scanln(&selection)
 
-		deviceId = fmt.Sprintf("%v", devices[selection - 1].DeviceId)
+		deviceId = fmt.Sprintf("%v", devices[selection-1].DeviceId)
 	} else {
 		deviceId = fmt.Sprintf("%v", devices[0].DeviceId)
 	}
