@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"bitbucket.org/emindsys/onelogin-aws-cli/onelogin"
+	"bitbucket.org/emindsys/csso/onelogin"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
