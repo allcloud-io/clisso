@@ -21,6 +21,7 @@ const (
 	VerifyFactorUrl          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
+// TODO Global state - need to remove this
 var Client = http.Client{}
 
 type GenerateTokensParams struct {
