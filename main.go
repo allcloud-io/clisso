@@ -63,7 +63,9 @@ func main() {
 		UsernameOrEmail: user,
 		Password:        string(pass),
 		AppId:           appId,
-		Subdomain:       "emind",
+		// TODO Move Subdomain this to config. Also, at the moment when there is a mismatch between
+		// Subdomain and the domain in the username, the user is getting HTTP 400.
+		Subdomain: "emind",
 	}
 
 	rSaml, err := onelogin.GenerateSamlAssertion(
