@@ -218,6 +218,8 @@ func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*
 	}
 
 	data, err := doRequest(&Client, req)
+	// TODO An invalid Onelogin app ID gives HTTP 404 here. Need to show a nice
+	// error in this case.
 	if err != nil {
 		//if oneLoginError, ok := err.(*OneLoginError); ok {
 		//	fmt.Println(oneLoginError.StatusCode)
