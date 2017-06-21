@@ -10,12 +10,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
 	"github.com/johananl/csso/onelogin"
+	"github.com/spf13/cobra"
 )
 
 // TODO Allow configuration using config file
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
-func main() {
+func get() {
 	// Get env vars
 	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
 	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
@@ -140,4 +141,21 @@ func main() {
 	fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyId)
 	fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
 	fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
+}
+
+func main() {
+	var cmdGet = &cobra.Command{
+		Use:   "get",
+		Short: "Get temporary credentials",
+		Long: `Obtain temporary credentials for the currently-selected account
+		by generating a SAML assertion at the identity provider and using this
+		assertion to retrieve temporary credentials from the cloud vendor.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			get()
+		},
+	}
+
+	var rootCmd = &cobra.Command{Use: "csso"}
+	rootCmd.AddCommand(cmdGet)
+	rootCmd.Execute()
 }
