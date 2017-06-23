@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	"bitbucket.org/emindsys/csso/onelogin"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
+	"github.com/johananl/csso/onelogin"
 )
 
 // TODO Allow configuration using config file
