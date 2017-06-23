@@ -1,4 +1,4 @@
-# CSSO - Command-line Single-Sign-On
+# CSSO: Command-line Single Sign-On
 
 *CSSO* allows you to retrieve temporary credentials for cloud
 providers and APIs by authenticating with an identity provider (IdP).
