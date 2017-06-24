@@ -26,15 +26,15 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 		}
 		app := args[0]
 
-		idp := viper.GetString(fmt.Sprintf("apps.%s.idp", app))
-		if idp == "" {
+		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
+		if provider == "" {
 			log.Fatalf("Could not get IdP for app '%s'", app)
 		}
 
-		if idp == "onelogin" {
+		if provider == "onelogin" {
 			onelogin.Get(app)
 		} else {
-			log.Fatalf("Unknown identity provider '%s' for app '%s'", idp, app)
+			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
 		}
 	},
 }
