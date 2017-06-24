@@ -16,27 +16,27 @@ import (
 
 func Get() {
 	// Read config
-	secret := viper.GetString("onelogin.client-secret")
-	id := viper.GetString("onelogin.client-id")
-	appId := viper.GetString("onelogin.app-id")
-	principal := viper.GetString("onelogin.principal-arn")
-	role := viper.GetString("onelogin.role-arn")
+	secret := viper.GetString("onelogin.clientSecret")
+	id := viper.GetString("onelogin.clientId")
+	appId := viper.GetString("onelogin.appId")
+	principal := viper.GetString("onelogin.principalArn")
+	role := viper.GetString("onelogin.roleArn")
 	subdomain := viper.GetString("onelogin.subdomain")
 
 	if secret == "" {
-		log.Fatal("onelogin.client-secret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
+		log.Fatal("onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
 	}
 	if id == "" {
-		log.Fatal("onelogin.client-id config value or ONELOGIN_CLIENT_ID environment variable must bet set")
+		log.Fatal("onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
 	}
 	if appId == "" {
-		log.Fatal("onelogin.app-id config value or ONELOGIN_APP_ID environment variable must bet set")
+		log.Fatal("onelogin.appId config value or ONELOGIN_APP_ID environment variable must bet set")
 	}
 	if principal == "" {
-		log.Fatal("onelogin.principal-arn config value or ONELOGIN_PRINCIPAL_ARN environment variable must bet set")
+		log.Fatal("onelogin.principalArn config value or ONELOGIN_PRINCIPAL_ARN environment variable must bet set")
 	}
 	if role == "" {
-		log.Fatal("onelogin.role-arn config value or ONELOGIN_ROLE_ARN environment variable must bet set")
+		log.Fatal("onelogin.roleArn config value or ONELOGIN_ROLE_ARN environment variable must bet set")
 	}
 	if subdomain == "" {
 		log.Fatal("onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
