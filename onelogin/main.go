@@ -3,43 +3,43 @@ package onelogin
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
+	"github.com/spf13/viper"
 )
 
 // TODO Allow configuration using config file
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
 func Get() {
-	// Get env vars
-	var secret string = os.Getenv("ONELOGIN_CLIENT_SECRET")
-	var id string = os.Getenv("ONELOGIN_CLIENT_ID")
-	var appId string = os.Getenv("ONELOGIN_APP_ID")
-	var principal string = os.Getenv("ONELOGIN_PRINCIPAL_ARN")
-	var role string = os.Getenv("ONELOGIN_ROLE_ARN")
-	var subdomain string = os.Getenv("ONELOGIN_SUBDOMAIN")
+	// Read config
+	secret := viper.GetString("onelogin.client-secret")
+	id := viper.GetString("onelogin.client-id")
+	appId := viper.GetString("onelogin.app-id")
+	principal := viper.GetString("onelogin.principal-arn")
+	role := viper.GetString("onelogin.role-arn")
+	subdomain := viper.GetString("onelogin.subdomain")
 
 	if secret == "" {
-		log.Fatal("The ONELOGIN_CLIENT_SECRET environment variable must bet set")
+		log.Fatal("onelogin.client-secret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
 	}
 	if id == "" {
-		log.Fatal("The ONELOGIN_CLIENT_ID environment variable must bet set")
+		log.Fatal("onelogin.client-id config value or ONELOGIN_CLIENT_ID environment variable must bet set")
 	}
 	if appId == "" {
-		log.Fatal("The ONELOGIN_APP_ID environment variable must bet set")
+		log.Fatal("onelogin.app-id config value or ONELOGIN_APP_ID environment variable must bet set")
 	}
 	if principal == "" {
-		log.Fatal("The ONELOGIN_PRINCIPAL_ARN environment variable must bet set")
+		log.Fatal("onelogin.principal-arn config value or ONELOGIN_PRINCIPAL_ARN environment variable must bet set")
 	}
 	if role == "" {
-		log.Fatal("The ONELOGIN_ROLE_ARN environment variable must bet set")
+		log.Fatal("onelogin.role-arn config value or ONELOGIN_ROLE_ARN environment variable must bet set")
 	}
 	if subdomain == "" {
-		log.Fatal("The ONELOGIN_SUBDOMAIN environment variable must bet set")
+		log.Fatal("onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
 	}
 
 	// Get OneLogin access token
