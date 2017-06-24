@@ -23,6 +23,7 @@ func get() {
 	var appId string = os.Getenv("ONELOGIN_APP_ID")
 	var principal string = os.Getenv("ONELOGIN_PRINCIPAL_ARN")
 	var role string = os.Getenv("ONELOGIN_ROLE_ARN")
+	var subdomain string = os.Getenv("ONELOGIN_SUBDOMAIN")
 
 	if secret == "" {
 		log.Fatal("The ONELOGIN_CLIENT_SECRET environment variable must bet set")
@@ -38,6 +39,9 @@ func get() {
 	}
 	if role == "" {
 		log.Fatal("The ONELOGIN_ROLE_ARN environment variable must bet set")
+	}
+	if subdomain == "" {
+		log.Fatal("The ONELOGIN_SUBDOMAIN environment variable must bet set")
 	}
 
 	// Get OneLogin access token
@@ -64,9 +68,9 @@ func get() {
 		UsernameOrEmail: user,
 		Password:        string(pass),
 		AppId:           appId,
-		// TODO Move Subdomain this to config. Also, at the moment when there is a mismatch between
-		// Subdomain and the domain in the username, the user is getting HTTP 400.
-		Subdomain: "emind",
+		// TODO At the moment when there is a mismatch between Subdomain and
+		// the domain in the username, the user is getting HTTP 400.
+		Subdomain: subdomain,
 	}
 
 	rSaml, err := onelogin.GenerateSamlAssertion(
