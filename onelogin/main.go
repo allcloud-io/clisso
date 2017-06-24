@@ -16,22 +16,22 @@ import (
 
 func Get(app string) {
 	// Read config
-	secret := viper.GetString("onelogin.clientSecret")
-	id := viper.GetString("onelogin.clientId")
-	subdomain := viper.GetString("onelogin.subdomain")
+	secret := viper.GetString("providers.onelogin.clientSecret")
+	id := viper.GetString("providers.onelogin.clientId")
+	subdomain := viper.GetString("providers.onelogin.subdomain")
 
 	appId := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
 	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
 	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
 
 	if secret == "" {
-		log.Fatal("onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
+		log.Fatal("providers.onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
 	}
 	if id == "" {
-		log.Fatal("onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
+		log.Fatal("providers.onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
 	}
 	if subdomain == "" {
-		log.Fatal("onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
+		log.Fatal("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
 	}
 
 	if appId == "" {
