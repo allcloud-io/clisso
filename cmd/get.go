@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/johananl/csso/onelogin"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -16,6 +20,21 @@ var cmdGet = &cobra.Command{
 generating a SAML assertion at the identity provider and using this
 assertion to retrieve temporary credentials from the cloud provider.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		onelogin.Get()
+		if len(args) == 0 {
+			log.Fatal("Must specify app")
+			// TODO Allow currently-selected app (default)
+		}
+		app := args[0]
+
+		idp := viper.GetString(fmt.Sprintf("apps.%s.idp", app))
+		if idp == "" {
+			log.Fatalf("Could not get IdP for app '%s'", app)
+		}
+
+		if idp == "onelogin" {
+			onelogin.Get(app)
+		} else {
+			log.Fatalf("Unknown identity provider '%s' for app '%s'", idp, app)
+		}
 	},
 }

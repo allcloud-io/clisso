@@ -14,14 +14,15 @@ import (
 // TODO Allow configuration using config file
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
-func Get() {
+func Get(app string) {
 	// Read config
 	secret := viper.GetString("onelogin.clientSecret")
 	id := viper.GetString("onelogin.clientId")
-	appId := viper.GetString("onelogin.appId")
-	principal := viper.GetString("onelogin.principalArn")
-	role := viper.GetString("onelogin.roleArn")
 	subdomain := viper.GetString("onelogin.subdomain")
+
+	appId := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
+	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
+	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
 
 	if secret == "" {
 		log.Fatal("onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
@@ -29,17 +30,18 @@ func Get() {
 	if id == "" {
 		log.Fatal("onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
 	}
-	if appId == "" {
-		log.Fatal("onelogin.appId config value or ONELOGIN_APP_ID environment variable must bet set")
-	}
-	if principal == "" {
-		log.Fatal("onelogin.principalArn config value or ONELOGIN_PRINCIPAL_ARN environment variable must bet set")
-	}
-	if role == "" {
-		log.Fatal("onelogin.roleArn config value or ONELOGIN_ROLE_ARN environment variable must bet set")
-	}
 	if subdomain == "" {
 		log.Fatal("onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
+	}
+
+	if appId == "" {
+		log.Fatalf("Can't find appId for %s in config file", app)
+	}
+	if principal == "" {
+		log.Fatalf("Can't find principalArn for %s in config file", app)
+	}
+	if role == "" {
+		log.Fatalf("Can't find roleArn for %s in config file", app)
 	}
 
 	// Get OneLogin access token
