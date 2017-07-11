@@ -7,6 +7,8 @@ import (
 	"github.com/johananl/csso/onelogin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/johananl/csso/aws"
+	"os"
 )
 
 func init() {
@@ -32,7 +34,22 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 		}
 
 		if provider == "onelogin" {
-			onelogin.Get(app)
+			creds, err := onelogin.Get(app)
+			if err != nil {
+				log.Fatal("Could not get temporary credentials: ", err)
+			}
+
+			filename := "/var/tmp/test.txt"
+			f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
+			if err != nil {
+				log.Fatal("Error opening credentials file: ", err)
+			}
+
+			if err := aws.WriteCredentialsToFile(creds, f); err != nil {
+				log.Fatal("Error writing credentials to file: ", err)
+			}
+
+			log.Printf("Temporary credentials were successfully written to %s", filename)
 		} else {
 			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
 		}

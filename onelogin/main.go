@@ -8,13 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
+	awsprovider "github.com/johananl/csso/aws"
 	"github.com/spf13/viper"
+	"errors"
 )
 
 // TODO Allow configuration using config file
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
-func Get(app string) {
+func Get(app string) (*awsprovider.Credentials, error) {
 	// Read config
 	secret := viper.GetString("providers.onelogin.clientSecret")
 	id := viper.GetString("providers.onelogin.clientId")
@@ -25,30 +27,30 @@ func Get(app string) {
 	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
 
 	if secret == "" {
-		log.Fatal("providers.onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
+		return nil, errors.New("providers.onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
 	}
 	if id == "" {
-		log.Fatal("providers.onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
+		return nil, errors.New("providers.onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
 	}
 	if subdomain == "" {
-		log.Fatal("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
+		return nil, errors.New("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
 	}
 
 	if appId == "" {
-		log.Fatalf("Can't find appId for %s in config file", app)
+		return nil, fmt.Errorf("Can't find appId for %s in config file", app)
 	}
 	if principal == "" {
-		log.Fatalf("Can't find principalArn for %s in config file", app)
+		return nil, fmt.Errorf("Can't find principalArn for %s in config file", app)
 	}
 	if role == "" {
-		log.Fatalf("Can't find roleArn for %s in config file", app)
+		return nil, fmt.Errorf("Can't find roleArn for %s in config file", app)
 	}
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
 	token, err := GenerateTokens(GenerateTokensUrl, id, secret)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// Get credentials from the user
@@ -59,7 +61,7 @@ func Get(app string) {
 	fmt.Print("OneLogin password: ")
 	pass, err := gopass.GetPasswd()
 	if err != nil {
-		log.Fatal("Couldn't read password from terminal")
+		return nil, fmt.Errorf("Couldn't read password from terminal")
 	}
 
 	// Generate SAML assertion
@@ -77,7 +79,7 @@ func Get(app string) {
 		GenerateSamlAssertionUrl, token, &pSaml,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	st := rSaml.Data[0].StateToken
@@ -113,7 +115,7 @@ func Get(app string) {
 
 	rMfa, err := VerifyFactor(VerifyFactorUrl, token, &pMfa)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	samlAssertion := rMfa.Data
@@ -130,7 +132,7 @@ func Get(app string) {
 
 	resp, err := svc.AssumeRoleWithSAML(&pAssumeRole)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	keyId := *resp.Credentials.AccessKeyId
@@ -140,9 +142,16 @@ func Get(app string) {
 	// Set temporary credentials in environment
 	// TODO Error if already set
 	// TODO Write vars to creds file
-	fmt.Println("Paste the following in your terminal:")
-	fmt.Println()
-	fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyId)
-	fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
-	fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
+	//fmt.Println("Paste the following in your terminal:")
+	//fmt.Println()
+	//fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyId)
+	//fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
+	//fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
+	creds := awsprovider.Credentials{
+		AccessKeyId: keyId,
+		SecretAccessKey: secretKey,
+		SessionToken: sessionToken,
+	}
+
+	return &creds, nil
 }
