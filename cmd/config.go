@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/johananl/csso/onelogin"
+	"github.com/johananl/clisso/onelogin"
 	"github.com/spf13/cobra"
 )
 

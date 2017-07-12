@@ -6,8 +6,8 @@ import (
 
 	"os"
 
-	"github.com/johananl/csso/aws"
-	"github.com/johananl/csso/onelogin"
+	"github.com/johananl/clisso/aws"
+	"github.com/johananl/clisso/onelogin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

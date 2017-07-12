@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
-	awsprovider "github.com/johananl/csso/aws"
+	awsprovider "github.com/johananl/clisso/aws"
 	"github.com/spf13/viper"
 )
 

@@ -11,7 +11,7 @@ import (
 
 var cfgFile string
 
-var RootCmd = &cobra.Command{Use: "csso"}
+var RootCmd = &cobra.Command{Use: "clisso"}
 
 func init() {
 	cobra.OnInitialize(initConfig)
@@ -33,7 +33,7 @@ func initConfig() {
 
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".csso")
+		viper.SetConfigName(".clisso")
 	}
 
 	if err := viper.ReadInConfig(); err != nil {

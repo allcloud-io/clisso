@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/johananl/csso/cmd"
+	"github.com/johananl/clisso/cmd"
 )
 
 func main() {
