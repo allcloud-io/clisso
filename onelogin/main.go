@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"log"
 
+	"errors"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
 	awsprovider "github.com/johananl/csso/aws"
 	"github.com/spf13/viper"
-	"errors"
 )
 
 // TODO Allow configuration using config file
@@ -148,9 +149,9 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	//fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
 	//fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
 	creds := awsprovider.Credentials{
-		AccessKeyId: keyId,
+		AccessKeyId:     keyId,
 		SecretAccessKey: secretKey,
-		SessionToken: sessionToken,
+		SessionToken:    sessionToken,
 	}
 
 	return &creds, nil

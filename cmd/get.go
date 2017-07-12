@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"log"
 
+	"os"
+
+	"github.com/johananl/csso/aws"
 	"github.com/johananl/csso/onelogin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/johananl/csso/aws"
-	"os"
 )
 
 func init() {
