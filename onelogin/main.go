@@ -22,6 +22,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	secret := viper.GetString("providers.onelogin.clientSecret")
 	id := viper.GetString("providers.onelogin.clientId")
 	subdomain := viper.GetString("providers.onelogin.subdomain")
+	user := viper.GetString("providers.onelogin.username")
 
 	appId := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
 	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
@@ -54,10 +55,11 @@ func Get(app string) (*awsprovider.Credentials, error) {
 		return nil, err
 	}
 
-	// Get credentials from the user
-	fmt.Print("OneLogin username: ")
-	var user string
-	fmt.Scanln(&user)
+	if user == "" {
+		// Get credentials from the user
+		fmt.Print("OneLogin username: ")
+		fmt.Scanln(&user)
+	}
 
 	fmt.Print("OneLogin password: ")
 	pass, err := gopass.GetPasswd()
