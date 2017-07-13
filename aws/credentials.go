@@ -3,6 +3,7 @@ package aws
 import (
 	"fmt"
 	"io"
+	"time"
 )
 
 // Credentials represents a set of temporary credentials received from AWS STS
@@ -11,12 +12,13 @@ type Credentials struct {
 	AccessKeyId     string
 	SecretAccessKey string
 	SessionToken    string
+	Expiration      time.Time
 }
 
 // WriteCredentialsToFile gets a set of temporary AWS credentials and writes them
 // to a file.
 func WriteCredentialsToFile(c *Credentials, w io.Writer) error {
-	b := []byte(fmt.Sprintf("%s\n%s\n%s\n", c.AccessKeyId, c.SecretAccessKey, c.SessionToken))
+	b := []byte(fmt.Sprintf("%s\n%s\n%s\n%d", c.AccessKeyId, c.SecretAccessKey, c.SessionToken, c.Expiration.Unix()))
 	_, err := w.Write(b)
 	if err != nil {
 		return err

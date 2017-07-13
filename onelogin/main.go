@@ -139,6 +139,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	keyId := *resp.Credentials.AccessKeyId
 	secretKey := *resp.Credentials.SecretAccessKey
 	sessionToken := *resp.Credentials.SessionToken
+	expiration := *resp.Credentials.Expiration
 
 	// Set temporary credentials in environment
 	// TODO Error if already set
@@ -152,6 +153,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 		AccessKeyId:     keyId,
 		SecretAccessKey: secretKey,
 		SessionToken:    sessionToken,
+		Expiration:      expiration,
 	}
 
 	return &creds, nil
