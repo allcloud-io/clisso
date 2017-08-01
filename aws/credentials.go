@@ -24,3 +24,14 @@ func WriteCredentialsToFile(c *Credentials, w io.Writer) error {
 
 	return nil
 }
+
+// GetBashCommands gets a set of temporary AWS credentials and returns the Bash
+// commands for setting them in the shell.
+func GetBashCommands(c *Credentials) string {
+	return fmt.Sprintf(
+		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
+		c.AccessKeyId,
+		c.SecretAccessKey,
+		c.SessionToken,
+	)
+}

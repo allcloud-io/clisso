@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"os"
-
 	"github.com/johananl/clisso/aws"
 	"github.com/johananl/clisso/onelogin"
 	"github.com/spf13/cobra"
@@ -40,17 +38,8 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
 
-			filename := "/var/tmp/test.txt"
-			f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
-			if err != nil {
-				log.Fatal("Error opening credentials file: ", err)
-			}
-
-			if err := aws.WriteCredentialsToFile(creds, f); err != nil {
-				log.Fatal("Error writing credentials to file: ", err)
-			}
-
-			log.Printf("Temporary credentials were successfully written to %s", filename)
+			fmt.Println("\nPaste the following in your shell:")
+			fmt.Print(aws.GetBashCommands(creds))
 		} else {
 			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
 		}
