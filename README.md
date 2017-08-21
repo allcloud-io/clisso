@@ -13,3 +13,30 @@ The following cloud providers are currently supported:
 The following identity providers are currently supported:
 
 - [OneLogin](https://www.onelogin.com/)
+
+## Configuration
+
+Create a file called `.clisso.yaml` in your home directory. Following is a
+sample configuration:
+
+    providers:
+      onelogin:
+        clientSecret: xxxxxxxx
+        clientId: xxxxxxxx
+        subdomain: mydomain
+    apps:
+      dev-account:
+        provider: onelogin
+        appId: 123456
+        principalArn: arn:aws:iam::000000000000:saml-provider/My-SAML-IdP
+        roleArn: arn:aws:iam::000000000000:role/My-IAM-Role
+      prod-account:
+        provider: onelogin
+        appId: 234567
+        principalArn: arn:aws:iam::000000000000:saml-provider/My-SAML-IdP
+        roleArn: arn:aws:iam::000000000000:role/My-IAM-Role
+
+
+### Usage
+
+Run `clisso get <app-name>`.
