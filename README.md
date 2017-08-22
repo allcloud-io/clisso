@@ -45,4 +45,5 @@ sample configuration:
 
 ## Usage
 
-Run `clisso get <app-name>`.
+Run `clisso get <app-name>` and enter your username, password and OTP
+to get temporary credentials.
