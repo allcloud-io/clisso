@@ -1,4 +1,4 @@
-# Clisso: Command-line Single Sign-On
+# Clisso: CLI Single Sign-On
 
 **WIP Warning! This project is still under development and isn't expected
 to work yet.**
