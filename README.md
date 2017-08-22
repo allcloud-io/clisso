@@ -43,6 +43,6 @@ sample configuration:
         roleArn: arn:aws:iam::000000000000:role/My-IAM-Role
 
 
-### Usage
+## Usage
 
 Run `clisso get <app-name>`.
