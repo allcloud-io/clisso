@@ -14,7 +14,7 @@ The following identity providers are currently supported:
 
 - [OneLogin](https://www.onelogin.com/)
 
-## Building
+## Installation
 
 1. Run `go get github.com/johananl/clisso`.
 1. Run `cd $GOPATH/src/github.com/johananl/clisso`.
