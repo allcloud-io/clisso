@@ -21,11 +21,21 @@ var cmdGet = &cobra.Command{
 generating a SAML assertion at the identity provider and using this
 assertion to retrieve temporary credentials from the cloud provider.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		app := ""
 		if len(args) == 0 {
-			log.Fatal("Must specify app")
-			// TODO Allow currently-selected app (default)
+			// No app specified.
+			defaultApp := viper.GetString("clisso.defaultApp")
+			if defaultApp == "" {
+				// No default app configured.
+				log.Fatal("No app specified and no default app configured")
+			}
+			app = defaultApp
+		} else {
+			// App specified - use it.
+			app = args[0]
 		}
-		app := args[0]
+
+		log.Printf("Getting credentials for app '%v'", app)
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
