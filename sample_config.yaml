@@ -1,0 +1,20 @@
+clisso:
+  defaultApp: dev
+providers:
+  onelogin:
+    clientSecret: xxxxxxxx
+    clientId: xxxxxxxx
+    subdomain: example.com
+    # Uncomment the following line to specify a default username.
+    #username: xxxxxxxx
+apps:
+  dev:
+    provider: onelogin
+    appId: 1234
+    principalArn: arn:aws:iam::123456789:saml-provider/another-provider-name
+    roleArn: arn:aws:iam::123456789:role/another-role
+  prod:
+    provider: onelogin
+    appId: 5678
+    principalArn: arn:aws:iam::123456789:saml-provider/provider-name
+    roleArn: arn:aws:iam::123456789:role/a-role
