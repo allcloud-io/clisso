@@ -37,7 +37,6 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	if subdomain == "" {
 		return nil, errors.New("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
 	}
-
 	if appId == "" {
 		return nil, fmt.Errorf("Can't find appId for %s in config file", app)
 	}
