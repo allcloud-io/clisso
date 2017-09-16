@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// TODO Allow configuration using config file
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
 func Get(app string) (*awsprovider.Credentials, error) {
