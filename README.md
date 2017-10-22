@@ -16,9 +16,8 @@ The following identity providers are currently supported:
 
 ## Installation
 
-1. Run `go get github.com/johananl/clisso`.
-1. Run `cd $GOPATH/src/github.com/johananl/clisso`.
-1. Run `go build && go install`.
+1. Inside `$GOPATH/src/github.com/johananl/clisso` run `dep ensure` to install dependencies.
+1. Run `go install`. This will put the `clisso` binary in your `$GOPATH/bin` directory.
 
 ## Configuration
 
