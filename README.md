@@ -24,22 +24,26 @@ The following identity providers are currently supported:
 Create a file called `.clisso.yaml` in your home directory. Following is a
 sample configuration:
 
+    clisso:
+      defaultApp: dev
     providers:
       onelogin:
         clientSecret: xxxxxxxx
         clientId: xxxxxxxx
-        subdomain: mydomain
+        subdomain: example.com
+        # Uncomment the following line to specify a default username.
+        #username: xxxxxxxx
     apps:
-      dev-account:
+      dev:
         provider: onelogin
-        appId: 123456
-        principalArn: arn:aws:iam::000000000000:saml-provider/My-SAML-IdP
-        roleArn: arn:aws:iam::000000000000:role/My-IAM-Role
-      prod-account:
+        appId: 1234
+        principalArn: arn:aws:iam::123456789:saml-provider/another-provider-name
+        roleArn: arn:aws:iam::123456789:role/another-role
+      prod:
         provider: onelogin
-        appId: 234567
-        principalArn: arn:aws:iam::000000000000:saml-provider/My-SAML-IdP
-        roleArn: arn:aws:iam::000000000000:role/My-IAM-Role
+        appId: 5678
+        principalArn: arn:aws:iam::123456789:saml-provider/provider-name
+        roleArn: arn:aws:iam::123456789:role/a-role
 
 
 ## Usage
