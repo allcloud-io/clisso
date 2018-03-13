@@ -12,8 +12,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+var PrintToShell bool
+
 func init() {
 	RootCmd.AddCommand(cmdGet)
+	cmdGet.Flags().BoolVarP(
+		&PrintToShell,
+		"shell",
+		"s",
+		false,
+		"Print temporary credentials to shell instead of writing them to a file",
+	)
 }
 
 func expandFilename(filename string) string {
@@ -60,12 +69,17 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 			}
 
 			// Process credentials
-			f := expandFilename(viper.GetString("clisso.credentialsFilePath"))
-			err = aws.WriteToFile(creds, f, app)
-			if err != nil {
-				log.Fatalf("Could not write credentials to file: ", err)
+			if PrintToShell {
+				fmt.Println("\nPaste the following in your shell:")
+				fmt.Print(aws.GetBashCommands(creds))
+			} else {
+				f := expandFilename(viper.GetString("clisso.credentialsFilePath"))
+				err = aws.WriteToFile(creds, f, app)
+				if err != nil {
+					log.Fatalf("Could not write credentials to file: ", err)
+				}
+				log.Printf("Temporary credentials were written successfully to: %s", f)
 			}
-			log.Printf("Temporary credentials were written successfully to: %s", f)
 		} else {
 			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
 		}
