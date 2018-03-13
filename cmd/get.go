@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os/user"
+	"path/filepath"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/onelogin"
@@ -14,10 +16,19 @@ func init() {
 	RootCmd.AddCommand(cmdGet)
 }
 
+func expandFilename(filename string) string {
+	if filename[:2] == "~/" {
+		usr, _ := user.Current()
+		dir := usr.HomeDir
+		filename = filepath.Join(dir, filename[2:])
+	}
+	return filename
+}
+
 var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "Get temporary credentials",
-	Long: `Obtain temporary credentials for the currently-selected account by
+	Long: `Obtain temporary credentials for the currently-selected app by
 generating a SAML assertion at the identity provider and using this
 assertion to retrieve temporary credentials from the cloud provider.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -39,7 +50,7 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
-			log.Fatalf("Could not get IdP for app '%s'", app)
+			log.Fatalf("Could not get provider for app '%s'", app)
 		}
 
 		if provider == "onelogin" {
@@ -48,8 +59,13 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
 
-			fmt.Println("\nPaste the following in your shell:")
-			fmt.Print(aws.GetBashCommands(creds))
+			// Process credentials
+			f := expandFilename(viper.GetString("clisso.credentialsFilePath"))
+			err = aws.WriteToFile(creds, f, app)
+			if err != nil {
+				log.Fatalf("Could not write credentials to file: ", err)
+			}
+			log.Printf("Temporary credentials were written successfully to: %s", f)
 		} else {
 			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
 		}

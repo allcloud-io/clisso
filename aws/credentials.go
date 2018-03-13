@@ -2,8 +2,10 @@ package aws
 
 import (
 	"fmt"
-	"io"
+	"log"
 	"time"
+
+	"github.com/go-ini/ini"
 )
 
 // Credentials represents a set of temporary credentials received from AWS STS
@@ -15,16 +17,32 @@ type Credentials struct {
 	Expiration      time.Time
 }
 
-// WriteCredentialsToFile gets a set of temporary AWS credentials and writes them
-// to a file.
-func WriteCredentialsToFile(c *Credentials, w io.Writer) error {
-	b := []byte(fmt.Sprintf("%s\n%s\n%s\n%d", c.AccessKeyId, c.SecretAccessKey, c.SessionToken, c.Expiration.Unix()))
-	_, err := w.Write(b)
+// WriteToFile writes credentials to an AWS CLI credentials file
+// (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html).
+func WriteToFile(c *Credentials, filename string, section string) error {
+	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		return err
 	}
+	cfg.DeleteSection(section)
+	cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyId)
+	cfg.Section(section).NewKey("aws_secret_access_key", c.SecretAccessKey)
+	cfg.Section(section).NewKey("aws_session_token", c.SessionToken)
+	cfg.Section(section).NewKey("aws_expiration", c.Expiration.UTC().Format(time.RFC3339))
 
-	return nil
+	for _, s := range cfg.Sections() {
+		if s.HasKey("aws_expiration") {
+			v, err := s.Key("aws_expiration").TimeFormat(time.RFC3339)
+			if err == nil {
+				if time.Now().UTC().Unix() > v.Unix() {
+					cfg.DeleteSection(s.Name())
+				}
+			} else {
+				log.Printf("Cannot parse date (%v) in section %s: %s", s.Key("aws_expiration"), s.Name(), err)
+			}
+		}
+	}
+	return cfg.SaveTo(filename)
 }
 
 // GetBashCommands gets a set of temporary AWS credentials and returns the Bash
