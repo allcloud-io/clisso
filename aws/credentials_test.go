@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -69,5 +70,10 @@ func TestWriteToFile(t *testing.T) {
 	f := exp.UTC().Format(time.RFC3339)
 	if k.String() != f {
 		t.Fatalf("Wrong expiration: got %s, want %s", k.String(), f)
+	}
+
+	err = os.Remove(fn)
+	if err != nil {
+		t.Fatalf("Could not remove file %v during cleanup", fn)
 	}
 }
