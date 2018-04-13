@@ -41,7 +41,7 @@ var cmdGet = &cobra.Command{
 generating a SAML assertion at the identity provider and using this
 assertion to retrieve temporary credentials from the cloud provider.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app := ""
+		var app string
 		if len(args) == 0 {
 			// No app specified.
 			defaultApp := viper.GetString("clisso.defaultApp")
