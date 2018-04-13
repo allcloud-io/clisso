@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"time"
 
@@ -45,10 +46,11 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	return cfg.SaveTo(filename)
 }
 
-// GetBashCommands gets a set of temporary AWS credentials and returns the Bash
-// commands for setting them in the shell.
-func GetBashCommands(c *Credentials) string {
-	return fmt.Sprintf(
+// WriteToShell writes (prints) credentials to stdout.
+func WriteToShell(c *Credentials, w io.Writer) {
+	fmt.Println("# Please paste the following in your shell")
+	fmt.Fprintf(
+		w,
 		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
 		c.AccessKeyId,
 		c.SecretAccessKey,

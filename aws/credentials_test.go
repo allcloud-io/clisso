@@ -1,6 +1,8 @@
 package aws
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -75,5 +77,34 @@ func TestWriteToFile(t *testing.T) {
 	err = os.Remove(fn)
 	if err != nil {
 		t.Fatalf("Could not remove file %v during cleanup", fn)
+	}
+}
+
+func TestWriteToShell(t *testing.T) {
+	id := "testkey"
+	sec := "testsecret"
+	tok := "testtoken"
+	exp := time.Now()
+
+	c := Credentials{
+		AccessKeyId:     id,
+		SecretAccessKey: sec,
+		SessionToken:    tok,
+		Expiration:      exp,
+	}
+	var b bytes.Buffer
+
+	WriteToShell(&c, &b)
+
+	got := b.String()
+	want := fmt.Sprintf(
+		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
+		id,
+		sec,
+		tok,
+	)
+
+	if got != want {
+		t.Fatalf("Wrong info written to shell: got %v want %v", got, want)
 	}
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/user"
 	"path/filepath"
 
@@ -12,17 +13,27 @@ import (
 	"github.com/spf13/viper"
 )
 
-var PrintToShell bool
+var writeToShell bool
+var writeToFile bool
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
-	cmdGet.Flags().BoolVarP(
-		&PrintToShell,
-		"shell",
-		"s",
-		false,
-		"Print temporary credentials to shell instead of writing them to a file",
-	)
+	cmdGet.Flags().BoolVarP(&writeToShell, "shell", "s", false, "Write credentials to shell")
+	cmdGet.Flags().BoolVarP(&writeToFile, "file", "f", false, "Write credentials to file")
+}
+
+// Writes the given Credentials to a file or to the shell.
+func processCredentials(creds *aws.Credentials, app string) {
+	if writeToShell {
+		aws.WriteToShell(creds, os.Stdout)
+	}
+	if writeToFile {
+		f := expandFilename(viper.GetString("clisso.credentialsFilePath"))
+		err := aws.WriteToFile(creds, f, app)
+		if err != nil {
+			log.Printf("Could not write credentials to file: %v", err)
+		}
+	}
 }
 
 func expandFilename(filename string) string {
@@ -41,6 +52,11 @@ var cmdGet = &cobra.Command{
 generating a SAML assertion at the identity provider and using this
 assertion to retrieve temporary credentials from the cloud provider.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Write to shell if no other flag was specified.
+		if !writeToShell && !writeToFile {
+			writeToShell = true
+		}
+
 		var app string
 		if len(args) == 0 {
 			// No app specified.
@@ -67,19 +83,8 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 			if err != nil {
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
-
 			// Process credentials
-			if PrintToShell {
-				fmt.Println("\nPaste the following in your shell:")
-				fmt.Print(aws.GetBashCommands(creds))
-			} else {
-				f := expandFilename(viper.GetString("clisso.credentialsFilePath"))
-				err = aws.WriteToFile(creds, f, app)
-				if err != nil {
-					log.Fatalf("Could not write credentials to file: ", err)
-				}
-				log.Printf("Temporary credentials were written successfully to: %s", f)
-			}
+			processCredentials(creds, app)
 		} else {
 			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
 		}
