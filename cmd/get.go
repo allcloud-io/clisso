@@ -20,7 +20,7 @@ func init() {
 	cmdGet.Flags().BoolVarP(&writeToFile, "file", "f", false, "Write credentials to file")
 }
 
-// Writes the given Credentials to a file or to the shell.
+// Writes the given Credentials to a file and/or to the shell.
 func processCredentials(creds *aws.Credentials, app string) {
 	if writeToShell {
 		aws.WriteToShell(creds, os.Stdout)
