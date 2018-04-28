@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/user"
-	"path/filepath"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/onelogin"
@@ -28,21 +26,12 @@ func processCredentials(creds *aws.Credentials, app string) {
 		aws.WriteToShell(creds, os.Stdout)
 	}
 	if writeToFile {
-		f := expandFilename(viper.GetString("clisso.credentialsFilePath"))
+		f := viper.GetString("clisso.credentialsFilePath")
 		err := aws.WriteToFile(creds, f, app)
 		if err != nil {
 			log.Printf("Could not write credentials to file: %v", err)
 		}
 	}
-}
-
-func expandFilename(filename string) string {
-	if filename[:2] == "~/" {
-		usr, _ := user.Current()
-		dir := usr.HomeDir
-		filename = filepath.Join(dir, filename[2:])
-	}
-	return filename
 }
 
 var cmdGet = &cobra.Command{
