@@ -3,13 +3,13 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 BINARY_NAME=clisso
 
-.PHONY: test
-test:
-	$(GOCMD) test -v ./...
-
 .PHONY: build
 build:
 	$(GOBUILD) -o $(BINARY_NAME) -v
+
+.PHONY: test
+test:
+	$(GOCMD) test -v ./...
 
 .PHONY: darwin-386
 darwin-386:
