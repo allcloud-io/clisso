@@ -150,7 +150,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	//fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
 	//fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
 	creds := awsprovider.Credentials{
-		AccessKeyId:     keyId,
+		AccessKeyID:     keyId,
 		SecretAccessKey: secretKey,
 		SessionToken:    sessionToken,
 		Expiration:      expiration,

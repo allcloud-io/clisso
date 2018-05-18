@@ -17,7 +17,7 @@ func TestWriteToFile(t *testing.T) {
 	exp := time.Now()
 
 	c := Credentials{
-		AccessKeyId:     id,
+		AccessKeyID:     id,
 		SecretAccessKey: sec,
 		SessionToken:    tok,
 		Expiration:      exp,
@@ -87,7 +87,7 @@ func TestWriteToShell(t *testing.T) {
 	exp := time.Now()
 
 	c := Credentials{
-		AccessKeyId:     id,
+		AccessKeyID:     id,
 		SecretAccessKey: sec,
 		SessionToken:    tok,
 		Expiration:      exp,

@@ -12,7 +12,7 @@ import (
 // Credentials represents a set of temporary credentials received from AWS STS
 // (http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html).
 type Credentials struct {
-	AccessKeyId     string
+	AccessKeyID     string
 	SecretAccessKey string
 	SessionToken    string
 	Expiration      time.Time
@@ -26,7 +26,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 		return err
 	}
 	cfg.DeleteSection(section)
-	cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyId)
+	cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyID)
 	cfg.Section(section).NewKey("aws_secret_access_key", c.SecretAccessKey)
 	cfg.Section(section).NewKey("aws_session_token", c.SessionToken)
 	cfg.Section(section).NewKey("aws_expiration", c.Expiration.UTC().Format(time.RFC3339))
@@ -52,7 +52,7 @@ func WriteToShell(c *Credentials, w io.Writer) {
 	fmt.Fprintf(
 		w,
 		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
-		c.AccessKeyId,
+		c.AccessKeyID,
 		c.SecretAccessKey,
 		c.SessionToken,
 	)
