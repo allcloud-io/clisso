@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/johananl/clisso/cmd"
+	"github.com/allcloud-io/clisso/cmd"
 )
 
 func main() {

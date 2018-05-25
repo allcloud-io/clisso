@@ -6,11 +6,11 @@ import (
 
 	"errors"
 
+	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
-	awsprovider "github.com/johananl/clisso/aws"
 	"github.com/spf13/viper"
 )
 
