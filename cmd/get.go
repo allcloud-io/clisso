@@ -26,7 +26,7 @@ func processCredentials(creds *aws.Credentials, app string) {
 		aws.WriteToShell(creds, os.Stdout)
 	}
 	if writeToFile {
-		f := viper.GetString("clisso.credentialsFilePath")
+		f := viper.GetString("global.credentialsFilePath")
 		err := aws.WriteToFile(creds, f, app)
 		if err != nil {
 			log.Printf("Could not write credentials to file: %v", err)
@@ -49,7 +49,7 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 		var app string
 		if len(args) == 0 {
 			// No app specified.
-			defaultApp := viper.GetString("clisso.defaultApp")
+			defaultApp := viper.GetString("global.defaultApp")
 			if defaultApp == "" {
 				// No default app configured.
 				log.Fatal("No app specified and no default app configured")
