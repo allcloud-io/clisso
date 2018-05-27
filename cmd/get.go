@@ -67,15 +67,20 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 			log.Fatalf("Could not get provider for app '%s'", app)
 		}
 
-		if provider == "onelogin" {
-			creds, err := onelogin.Get(app)
+		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
+		if pType == "" {
+			log.Fatalf("Could not get provider type for provider '%s'", provider)
+		}
+
+		if pType == "onelogin" {
+			creds, err := onelogin.Get(app, provider)
 			if err != nil {
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
 			processCredentials(creds, app)
 		} else {
-			log.Fatalf("Unknown identity provider '%s' for app '%s'", provider, app)
+			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
 	},
 }

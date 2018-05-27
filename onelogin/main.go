@@ -16,12 +16,14 @@ import (
 
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
-func Get(app string) (*awsprovider.Credentials, error) {
+// Get gets temporary credentials for the given app.
+// TODO Move AWS logic outside this function.
+func Get(app, provider string) (*awsprovider.Credentials, error) {
 	// Read config
-	secret := viper.GetString("providers.onelogin.clientSecret")
-	id := viper.GetString("providers.onelogin.clientId")
-	subdomain := viper.GetString("providers.onelogin.subdomain")
-	user := viper.GetString("providers.onelogin.username")
+	secret := viper.GetString(fmt.Sprintf("providers.%s.clientSecret", provider))
+	id := viper.GetString(fmt.Sprintf("providers.%s.clientId", provider))
+	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", provider))
+	user := viper.GetString(fmt.Sprintf("providers.%s.username", provider))
 
 	appID := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
 	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
