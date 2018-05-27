@@ -16,14 +16,16 @@ import (
 
 // TODO Allow configuration from CLI (CLI > env var > config file)
 
-func Get(app string) (*awsprovider.Credentials, error) {
+// Get gets temporary credentials for the given app.
+// TODO Move AWS logic outside this function.
+func Get(app, provider string) (*awsprovider.Credentials, error) {
 	// Read config
-	secret := viper.GetString("providers.onelogin.clientSecret")
-	id := viper.GetString("providers.onelogin.clientId")
-	subdomain := viper.GetString("providers.onelogin.subdomain")
-	user := viper.GetString("providers.onelogin.username")
+	secret := viper.GetString(fmt.Sprintf("providers.%s.clientSecret", provider))
+	id := viper.GetString(fmt.Sprintf("providers.%s.clientId", provider))
+	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", provider))
+	user := viper.GetString(fmt.Sprintf("providers.%s.username", provider))
 
-	appId := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
+	appID := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
 	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
 	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
 
@@ -36,7 +38,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	if subdomain == "" {
 		return nil, errors.New("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
 	}
-	if appId == "" {
+	if appID == "" {
 		return nil, fmt.Errorf("Can't find appId for %s in config file", app)
 	}
 	if principal == "" {
@@ -67,17 +69,17 @@ func Get(app string) (*awsprovider.Credentials, error) {
 
 	// Generate SAML assertion
 	log.Println("Generating SAML assertion")
-	pSaml := GenerateSamlAssertionParams{
+	pSAML := GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
-		AppId:           appId,
+		AppId:           appID,
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
 		Subdomain: subdomain,
 	}
 
 	rSaml, err := GenerateSamlAssertion(
-		GenerateSamlAssertionUrl, token, &pSaml,
+		GenerateSamlAssertionUrl, token, &pSAML,
 	)
 	if err != nil {
 		return nil, err
@@ -108,7 +110,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 
 	// Verify MFA
 	pMfa := VerifyFactorParams{
-		AppId:      appId,
+		AppId:      appID,
 		DeviceId:   deviceId,
 		StateToken: st,
 		OtpToken:   otp,
@@ -136,7 +138,7 @@ func Get(app string) (*awsprovider.Credentials, error) {
 		return nil, err
 	}
 
-	keyId := *resp.Credentials.AccessKeyId
+	keyID := *resp.Credentials.AccessKeyId
 	secretKey := *resp.Credentials.SecretAccessKey
 	sessionToken := *resp.Credentials.SessionToken
 	expiration := *resp.Credentials.Expiration
@@ -146,11 +148,11 @@ func Get(app string) (*awsprovider.Credentials, error) {
 	// TODO Write vars to creds file
 	//fmt.Println("Paste the following in your terminal:")
 	//fmt.Println()
-	//fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyId)
+	//fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyID)
 	//fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
 	//fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
 	creds := awsprovider.Credentials{
-		AccessKeyId:     keyId,
+		AccessKeyID:     keyID,
 		SecretAccessKey: secretKey,
 		SessionToken:    sessionToken,
 		Expiration:      expiration,
