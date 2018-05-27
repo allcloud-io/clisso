@@ -15,19 +15,19 @@ var roleARN string
 var provider string
 
 func init() {
-	cmdCreate.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
-	cmdCreate.Flags().StringVar(&principalARN, "principal-arn", "", "ARN of the IdP on AWS")
-	cmdCreate.Flags().StringVar(&roleARN, "role-arn", "", "ARN of the IAM role on AWS")
-	cmdCreate.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
+	cmdAppsCreate.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
+	cmdAppsCreate.Flags().StringVar(&principalARN, "principal-arn", "", "ARN of the IdP on AWS")
+	cmdAppsCreate.Flags().StringVar(&roleARN, "role-arn", "", "ARN of the IAM role on AWS")
+	cmdAppsCreate.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 
-	cmdCreate.MarkFlagRequired("app-id")
-	cmdCreate.MarkFlagRequired("principal-arn")
-	cmdCreate.MarkFlagRequired("role-arn")
-	cmdCreate.MarkFlagRequired("provider")
+	cmdAppsCreate.MarkFlagRequired("app-id")
+	cmdAppsCreate.MarkFlagRequired("principal-arn")
+	cmdAppsCreate.MarkFlagRequired("role-arn")
+	cmdAppsCreate.MarkFlagRequired("provider")
 
 	RootCmd.AddCommand(cmdApps)
-	cmdApps.AddCommand(cmdList)
-	cmdApps.AddCommand(cmdCreate)
+	cmdApps.AddCommand(cmdAppsList)
+	cmdApps.AddCommand(cmdAppsCreate)
 }
 
 var cmdApps = &cobra.Command{
@@ -36,12 +36,17 @@ var cmdApps = &cobra.Command{
 	Long:  `View and change app configuration.`,
 }
 
-var cmdList = &cobra.Command{
+var cmdAppsList = &cobra.Command{
 	Use:   "ls",
 	Short: "List apps",
-	Long:  "List all existing apps",
+	Long:  "List all configured apps",
 	Run: func(cmd *cobra.Command, args []string) {
 		apps := viper.GetStringMap("apps")
+
+		if len(apps) == 0 {
+			fmt.Println("No apps configured")
+			return
+		}
 
 		// Sort apps alphabetically
 		keys := make([]string, 0, len(apps))
@@ -55,7 +60,7 @@ var cmdList = &cobra.Command{
 	},
 }
 
-var cmdCreate = &cobra.Command{
+var cmdAppsCreate = &cobra.Command{
 	Use:   "create [app name]",
 	Short: "Create a new app",
 	Long:  "Save a new app into the config file",
@@ -63,14 +68,20 @@ var cmdCreate = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 
-		if existing := viper.GetString(fmt.Sprintf("apps.%s", name)); existing != "" {
-			log.Fatalf("App '%s' already exists", name)
+		// Verify app doesn't exist
+		apps := viper.GetStringMap("apps")
+		if len(apps) > 0 {
+			for k := range apps {
+				if k == name {
+					log.Fatalf("App '%s' already exists", name)
+				}
+			}
 		}
 
 		conf := map[string]string{
-			"appid":        appID,
-			"principalarn": principalARN,
-			"rolearn":      roleARN,
+			"appID":        appID,
+			"principalARN": principalARN,
+			"roleARN":      roleARN,
 			"provider":     provider,
 		}
 		viper.Set(fmt.Sprintf("apps.%s", name), conf)
