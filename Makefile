@@ -37,6 +37,10 @@ zip:
 .PHONY: release
 release: clean all zip
 
+.PHONY: install
+install:
+	go install
+
 .PHONY: clean
 clean:
 	$(GOCLEAN)
