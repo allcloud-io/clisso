@@ -31,6 +31,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		if err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
 		}
+		log.Printf("Credentials written successfully to file '%s'", f)
 	}
 
 	return nil
@@ -62,7 +63,7 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 			app = args[0]
 		}
 
-		log.Printf("Getting credentials for app '%v'", app)
+		// log.Printf("Getting credentials for app '%v'", app)
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
