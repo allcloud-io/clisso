@@ -37,7 +37,7 @@ func initConfig() {
 		viper.SetConfigName(".clisso")
 
 		// Set default config values
-		viper.SetDefault("global.credentialsFilePath", fmt.Sprintf("%s/.aws/credentials", home))
+		viper.SetDefault("global.credentialsPath", fmt.Sprintf("%s/.aws/credentials", home))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
