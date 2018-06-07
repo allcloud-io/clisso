@@ -21,7 +21,7 @@ func init() {
 }
 
 // Writes the given Credentials to a file and/or to the shell.
-func processCredentials(creds *aws.Credentials, app string) {
+func processCredentials(creds *aws.Credentials, app string) error {
 	if writeToShell {
 		aws.WriteToShell(creds, os.Stdout)
 	}
@@ -29,9 +29,11 @@ func processCredentials(creds *aws.Credentials, app string) {
 		f := viper.GetString("global.credentialsFilePath")
 		err := aws.WriteToFile(creds, f, app)
 		if err != nil {
-			log.Printf("Could not write credentials to file: %v", err)
+			return fmt.Errorf("writing credentials to file: %v", err)
 		}
 	}
+
+	return nil
 }
 
 var cmdGet = &cobra.Command{
@@ -78,7 +80,10 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
-			processCredentials(creds, app)
+			err = processCredentials(creds, app)
+			if err != nil {
+				log.Fatalf("Error processing credentials: %v", err)
+			}
 		} else {
 			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
