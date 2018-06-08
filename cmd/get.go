@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/user"
+	"path/filepath"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/onelogin"
@@ -13,25 +15,39 @@ import (
 
 var writeToShell bool
 var writeToFile bool
+var credentialsPath string
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
-	cmdGet.Flags().BoolVarP(&writeToShell, "shell", "s", false, "Write credentials to shell")
-	cmdGet.Flags().BoolVarP(&writeToFile, "file", "f", false, "Write credentials to file")
+	cmdGet.Flags().BoolVarP(
+		&writeToShell, "write-to-shell", "s", false, "Write credentials to shell",
+	)
+	cmdGet.Flags().BoolVarP(
+		&writeToFile, "write-to-file", "w", false,
+		"Write credentials to default AWS credentials file",
+	)
+	cmdGet.Flags().StringVarP(
+		&credentialsPath, "credentials-path", "f", "",
+		"Write temporary credentials to this file (use with -w)",
+	)
+	viper.BindPFlag("global.credentialsPath", cmdGet.Flags().Lookup("credentials-path"))
 }
 
 // Writes the given Credentials to a file and/or to the shell.
-func processCredentials(creds *aws.Credentials, app string) {
+func processCredentials(creds *aws.Credentials, app string) error {
 	if writeToShell {
 		aws.WriteToShell(creds, os.Stdout)
 	}
 	if writeToFile {
-		f := viper.GetString("global.credentialsFilePath")
-		err := aws.WriteToFile(creds, f, app)
+		f := viper.GetString("global.credentialsPath")
+		err := aws.WriteToFile(creds, expandFilename(f), app)
 		if err != nil {
-			log.Printf("Could not write credentials to file: %v", err)
+			return fmt.Errorf("writing credentials to file: %v", err)
 		}
+		log.Printf("Credentials written successfully to file '%s'", f)
 	}
+
+	return nil
 }
 
 var cmdGet = &cobra.Command{
@@ -60,7 +76,7 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 			app = args[0]
 		}
 
-		log.Printf("Getting credentials for app '%v'", app)
+		// log.Printf("Getting credentials for app '%v'", app)
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
@@ -78,9 +94,22 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
-			processCredentials(creds, app)
+			err = processCredentials(creds, app)
+			if err != nil {
+				log.Fatalf("Error processing credentials: %v", err)
+			}
 		} else {
 			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
 	},
+}
+
+// expandFilename handles unix paths starting with '~/'.
+func expandFilename(filename string) string {
+	if filename[:2] == "~/" {
+		usr, _ := user.Current()
+		dir := usr.HomeDir
+		filename = filepath.Join(dir, filename[2:])
+	}
+	return filename
 }
