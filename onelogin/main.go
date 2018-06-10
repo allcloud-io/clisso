@@ -50,7 +50,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := GenerateTokens(GenerateTokensUrl, id, secret)
+	token, err := GenerateTokens(GenerateTokensURL, id, secret)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	rSaml, err := GenerateSamlAssertion(
-		GenerateSamlAssertionUrl, token, &pSAML,
+		GenerateSamlAssertionURL, token, &pSAML,
 	)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		OtpToken:   otp,
 	}
 
-	rMfa, err := VerifyFactor(VerifyFactorUrl, token, &pMfa)
+	rMfa, err := VerifyFactor(VerifyFactorURL, token, &pMfa)
 	if err != nil {
 		return nil, err
 	}

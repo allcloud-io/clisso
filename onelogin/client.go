@@ -16,9 +16,9 @@ import (
 
 // TODO Add support for eu.onelogin.com
 const (
-	GenerateTokensUrl        string = "https://api.us.onelogin.com/auth/oauth2/token"
-	GenerateSamlAssertionUrl string = "https://api.us.onelogin.com/api/1/saml_assertion"
-	VerifyFactorUrl          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
+	GenerateTokensURL        string = "https://api.us.onelogin.com/auth/oauth2/token"
+	GenerateSamlAssertionURL string = "https://api.us.onelogin.com/api/1/saml_assertion"
+	VerifyFactorURL          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
 // TODO Global state - need to remove this
