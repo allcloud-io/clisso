@@ -95,26 +95,12 @@ type VerifyFactorResponse struct {
 	Data string `json:"data"`
 }
 
-// OneLoginError represents an error response received from the OneLogin API. In addition
-// to the standard error string it contains the HTTP status code to assist in identifying
-// the real cause for the error. This is necessary because the actual calls to the OneLogin
-// API are made inside doRequest(), so we need a way to determine the HTTP status code outside
-// that function.
-//type OneLoginError struct {
-//	err        string
-//	StatusCode int
-//}
-//
-//func (e *OneLoginError) Error() string {
-//	return e.err
-//}
-
 // createRequest constructs an HTTP request and returns a pointer to it.
 // TODO Wrap arguments in a type
 func createRequest(method string, url string, headers map[string]string, body interface{}) (*http.Request, error) {
 	json, err := json.Marshal(body)
 	if err != nil {
-		return nil, errors.New("Error parsing body")
+		return nil, fmt.Errorf("parsing body: %v", err)
 	}
 
 	req, err := http.NewRequest(
@@ -123,7 +109,7 @@ func createRequest(method string, url string, headers map[string]string, body in
 		bytes.NewBuffer(json),
 	)
 	if err != nil {
-		return nil, errors.New("Failed to create HTTP request")
+		return nil, fmt.Errorf("creating HTTP request: %v", err)
 	}
 
 	for k, v := range headers {
@@ -138,7 +124,7 @@ func createRequest(method string, url string, headers map[string]string, body in
 func doRequest(c *http.Client, r *http.Request) (string, error) {
 	resp, err := c.Do(r)
 	if err != nil {
-		return "", errors.New("Could not send HTTP request")
+		return "", fmt.Errorf("sending HTTP request: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
@@ -156,7 +142,7 @@ func doRequest(c *http.Client, r *http.Request) (string, error) {
 func handleResponse(j string, d interface{}) error {
 	err := json.Unmarshal([]byte(j), d)
 	if err != nil {
-		return errors.New("Couldn't parse JSON")
+		return fmt.Errorf("parsing JSON: %v", err)
 	}
 
 	return nil
@@ -164,9 +150,9 @@ func handleResponse(j string, d interface{}) error {
 
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
-func GenerateTokens(url, clientId, clientSecret string) (string, error) {
+func GenerateTokens(url, clientID, clientSecret string) (string, error) {
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientId, clientSecret),
+		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientID, clientSecret),
 		"Content-Type":  "application/json",
 	}
 	body := GenerateTokensParams{GrantType: "client_credentials"}
@@ -178,18 +164,18 @@ func GenerateTokens(url, clientId, clientSecret string) (string, error) {
 		&body,
 	)
 	if err != nil {
-		return "", errors.New("Could not create request")
+		return "", fmt.Errorf("creating request: %v", err)
 	}
 
 	data, err := doRequest(&Client, req)
 	if err != nil {
-		return "", fmt.Errorf("HTTP request failed: %v", err)
+		return "", fmt.Errorf("doing HTTP request: %v", err)
 	}
 
 	var resp GenerateTokensResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return "", fmt.Errorf("Could not parse HTTP response: %v", err)
+		return "", fmt.Errorf("parsing HTTP response: %v", err)
 	}
 
 	// TODO add handling for valid JSON with wrong response
@@ -214,7 +200,7 @@ func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*
 		&body,
 	)
 	if err != nil {
-		return nil, errors.New("Could not create request")
+		return nil, fmt.Errorf("creating request: %v", err)
 	}
 
 	data, err := doRequest(&Client, req)
@@ -224,13 +210,13 @@ func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*
 		//if oneLoginError, ok := err.(*OneLoginError); ok {
 		//	fmt.Println(oneLoginError.StatusCode)
 		//}
-		return nil, fmt.Errorf("HTTP request failed: %v", err)
+		return nil, fmt.Errorf("doing HTTP request: %v", err)
 	}
 
 	var resp GenerateSamlAssertionResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return nil, fmt.Errorf("Could not parse HTTP response: %v", err)
+		return nil, fmt.Errorf("parsing HTTP response: %v", err)
 	}
 
 	return &resp, nil
@@ -253,18 +239,18 @@ func VerifyFactor(url, token string, p *VerifyFactorParams) (*VerifyFactorRespon
 	)
 	if err != nil {
 		// TODO Let the user know which method generated the error
-		return nil, errors.New("Could not create request")
+		return nil, fmt.Errorf("creating request: %v", err)
 	}
 
 	data, err := doRequest(&Client, req)
 	if err != nil {
-		return nil, fmt.Errorf("HTTP request failed: %v", err)
+		return nil, fmt.Errorf("doing HTTP request: %v", err)
 	}
 
 	var resp VerifyFactorResponse
 
 	if err := handleResponse(data, &resp); err != nil {
-		return nil, fmt.Errorf("Could not parse HTTP response: %v", err)
+		return nil, fmt.Errorf("parsing HTTP response: %v", err)
 	}
 
 	return &resp, nil
