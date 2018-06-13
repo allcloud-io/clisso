@@ -48,9 +48,11 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, fmt.Errorf("Can't find roleArn for %s in config file", app)
 	}
 
+	c := Client{}
+
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := GenerateTokens(GenerateTokensURL, id, secret)
+	token, err := c.GenerateTokens(GenerateTokensURL, id, secret)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +80,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		Subdomain: subdomain,
 	}
 
-	rSaml, err := GenerateSamlAssertion(
+	rSaml, err := c.GenerateSamlAssertion(
 		GenerateSamlAssertionURL, token, &pSAML,
 	)
 	if err != nil {
@@ -116,7 +118,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		OtpToken:   otp,
 	}
 
-	rMfa, err := VerifyFactor(VerifyFactorURL, token, &pMfa)
+	rMfa, err := c.VerifyFactor(VerifyFactorURL, token, &pMfa)
 	if err != nil {
 		return nil, err
 	}

@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-// TODO Review error handling
-// TODO Move to named returns?
-// TODO Convert prints to logging
-
 // TODO Add support for eu.onelogin.com
 const (
 	GenerateTokensURL        string = "https://api.us.onelogin.com/auth/oauth2/token"
@@ -21,8 +17,10 @@ const (
 	VerifyFactorURL          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
-// TODO Global state - need to remove this
-var Client = http.Client{}
+// Client represents a OneLogin API client.
+type Client struct {
+	http.Client
+}
 
 type GenerateTokensParams struct {
 	GrantType string `json:"grant_type"`
@@ -95,21 +93,17 @@ type VerifyFactorResponse struct {
 	Data string `json:"data"`
 }
 
-// createRequest constructs an HTTP request and returns a pointer to it.
+// makeRequest constructs an HTTP request and returns a pointer to it.
 // TODO Wrap arguments in a type
-func createRequest(method string, url string, headers map[string]string, body interface{}) (*http.Request, error) {
+func makeRequest(method string, url string, headers map[string]string, body interface{}) (*http.Request, error) {
 	json, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("parsing body: %v", err)
 	}
 
-	req, err := http.NewRequest(
-		method,
-		url,
-		bytes.NewBuffer(json),
-	)
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(json))
 	if err != nil {
-		return nil, fmt.Errorf("creating HTTP request: %v", err)
+		return nil, fmt.Errorf("making HTTP request: %v", err)
 	}
 
 	for k, v := range headers {
@@ -121,7 +115,7 @@ func createRequest(method string, url string, headers map[string]string, body in
 
 // DoRequest gets a pointer to an HTTP request and an HTTP client, executes the request
 // using the client, handles any HTTP-related errors and returns any data as a string.
-func doRequest(c *http.Client, r *http.Request) (string, error) {
+func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
 	if err != nil {
 		return "", fmt.Errorf("sending HTTP request: %v", err)
@@ -138,43 +132,31 @@ func doRequest(c *http.Client, r *http.Request) (string, error) {
 	return string(b), nil
 }
 
-// handleResponse gets a JSON-encoded HTTP response data and loads it into the given struct.
-func handleResponse(j string, d interface{}) error {
-	err := json.Unmarshal([]byte(j), d)
-	if err != nil {
-		return fmt.Errorf("parsing JSON: %v", err)
-	}
+// func doAuthenticatedRequest(c *http.Client, r *http.Request) (string, error) {
 
-	return nil
-}
+// }
 
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
-func GenerateTokens(url, clientID, clientSecret string) (string, error) {
+func (c *Client) GenerateTokens(url, clientID, clientSecret string) (string, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientID, clientSecret),
 		"Content-Type":  "application/json",
 	}
 	body := GenerateTokensParams{GrantType: "client_credentials"}
 
-	req, err := createRequest(
-		http.MethodPost,
-		url,
-		headers,
-		&body,
-	)
+	req, err := makeRequest(http.MethodPost, url, headers, &body)
 	if err != nil {
 		return "", fmt.Errorf("creating request: %v", err)
 	}
 
-	data, err := doRequest(&Client, req)
+	data, err := c.doRequest(req)
 	if err != nil {
 		return "", fmt.Errorf("doing HTTP request: %v", err)
 	}
 
 	var resp GenerateTokensResponse
-
-	if err := handleResponse(data, &resp); err != nil {
+	if err := json.Unmarshal([]byte(data), &resp); err != nil {
 		return "", fmt.Errorf("parsing HTTP response: %v", err)
 	}
 
@@ -186,24 +168,19 @@ func GenerateTokens(url, clientID, clientSecret string) (string, error) {
 // GenerateSamlAssertion gets a OneLogin access token and a GenerateSamlAssertionParams struct
 // and returns a GenerateSamlAssertionResponse.
 // TODO improve doc
-func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
+func (c *Client) GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type":  "application/json",
 	}
 	body := p
 
-	req, err := createRequest(
-		http.MethodPost,
-		url,
-		headers,
-		&body,
-	)
+	req, err := makeRequest(http.MethodPost, url, headers, &body)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}
 
-	data, err := doRequest(&Client, req)
+	data, err := c.doRequest(req)
 	// TODO An invalid Onelogin app ID gives HTTP 404 here. Need to show a nice
 	// error in this case.
 	if err != nil {
@@ -214,8 +191,7 @@ func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*
 	}
 
 	var resp GenerateSamlAssertionResponse
-
-	if err := handleResponse(data, &resp); err != nil {
+	if err := json.Unmarshal([]byte(data), &resp); err != nil {
 		return nil, fmt.Errorf("parsing HTTP response: %v", err)
 	}
 
@@ -224,32 +200,26 @@ func GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*
 
 // VerifyFactor gets a OneLogin access token and a VerifyFactorParams struct and returns a
 // VerifyFactorResponse.
-func VerifyFactor(url, token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
+func (c *Client) VerifyFactor(url, token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type":  "application/json",
 	}
 	body := p
 
-	req, err := createRequest(
-		http.MethodPost,
-		url,
-		headers,
-		&body,
-	)
+	req, err := makeRequest(http.MethodPost, url, headers, &body)
 	if err != nil {
 		// TODO Let the user know which method generated the error
 		return nil, fmt.Errorf("creating request: %v", err)
 	}
 
-	data, err := doRequest(&Client, req)
+	data, err := c.doRequest(req)
 	if err != nil {
 		return nil, fmt.Errorf("doing HTTP request: %v", err)
 	}
 
 	var resp VerifyFactorResponse
-
-	if err := handleResponse(data, &resp); err != nil {
+	if err := json.Unmarshal([]byte(data), &resp); err != nil {
 		return nil, fmt.Errorf("parsing HTTP response: %v", err)
 	}
 

@@ -14,6 +14,8 @@ func getTestServer(data string) *httptest.Server {
 	return ts
 }
 
+var c = Client{}
+
 func TestGenerateTokens(t *testing.T) {
 	data := `{
     "status": {
@@ -37,7 +39,7 @@ func TestGenerateTokens(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	resp, err := GenerateTokens(ts.URL, "test", "test")
+	resp, err := c.GenerateTokens(ts.URL, "test", "test")
 	if err != nil {
 		t.Errorf("GenerateTokens failed: %s", err)
 	}
@@ -84,7 +86,7 @@ func TestGenerateSamlAssertion(t *testing.T) {
 		Subdomain:       "test",
 	}
 
-	resp, err := GenerateSamlAssertion(ts.URL, "test", &p)
+	resp, err := c.GenerateSamlAssertion(ts.URL, "test", &p)
 	if err != nil {
 		t.Errorf("GenerateSamlAssertion: %s", err)
 	}
@@ -117,7 +119,7 @@ func TestVerifyFactor(t *testing.T) {
 		OtpToken:   "test",
 	}
 
-	resp, err := VerifyFactor(ts.URL, "test", &p)
+	resp, err := c.VerifyFactor(ts.URL, "test", &p)
 	if err != nil {
 		t.Errorf("VerifyFactor: %s", err)
 	}
