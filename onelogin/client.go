@@ -17,9 +17,18 @@ const (
 	VerifyFactorURL          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
+// Endpoints represent the OneLogin API HTTP endpoints.
+type Endpoints struct {
+	GenerateTokens        string
+	GenerateSamlAssertion string
+	GetUserByEmail        string
+	VerifyFactor          string
+}
+
 // Client represents a OneLogin API client.
 type Client struct {
 	http.Client
+	Endpoints Endpoints
 }
 
 type GenerateTokensParams struct {
@@ -138,14 +147,14 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
-func (c *Client) GenerateTokens(url, clientID, clientSecret string) (string, error) {
+func (c *Client) GenerateTokens(clientID, clientSecret string) (string, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("client_id:%v, client_secret:%v", clientID, clientSecret),
 		"Content-Type":  "application/json",
 	}
 	body := GenerateTokensParams{GrantType: "client_credentials"}
 
-	req, err := makeRequest(http.MethodPost, url, headers, &body)
+	req, err := makeRequest(http.MethodPost, c.Endpoints.GenerateTokens, headers, &body)
 	if err != nil {
 		return "", fmt.Errorf("creating request: %v", err)
 	}
@@ -168,14 +177,14 @@ func (c *Client) GenerateTokens(url, clientID, clientSecret string) (string, err
 // GenerateSamlAssertion gets a OneLogin access token and a GenerateSamlAssertionParams struct
 // and returns a GenerateSamlAssertionResponse.
 // TODO improve doc
-func (c *Client) GenerateSamlAssertion(url, token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
+func (c *Client) GenerateSamlAssertion(token string, p *GenerateSamlAssertionParams) (*GenerateSamlAssertionResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type":  "application/json",
 	}
 	body := p
 
-	req, err := makeRequest(http.MethodPost, url, headers, &body)
+	req, err := makeRequest(http.MethodPost, c.Endpoints.GenerateSamlAssertion, headers, &body)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}
@@ -200,14 +209,14 @@ func (c *Client) GenerateSamlAssertion(url, token string, p *GenerateSamlAsserti
 
 // VerifyFactor gets a OneLogin access token and a VerifyFactorParams struct and returns a
 // VerifyFactorResponse.
-func (c *Client) VerifyFactor(url, token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
+func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFactorResponse, error) {
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("bearer:%v", token),
 		"Content-Type":  "application/json",
 	}
 	body := p
 
-	req, err := makeRequest(http.MethodPost, url, headers, &body)
+	req, err := makeRequest(http.MethodPost, c.Endpoints.VerifyFactor, headers, &body)
 	if err != nil {
 		// TODO Let the user know which method generated the error
 		return nil, fmt.Errorf("creating request: %v", err)
