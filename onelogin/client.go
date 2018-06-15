@@ -14,6 +14,7 @@ import (
 const (
 	GenerateTokensURL        string = "https://api.us.onelogin.com/auth/oauth2/token"
 	GenerateSamlAssertionURL string = "https://api.us.onelogin.com/api/1/saml_assertion"
+	GetUserByEmailURL        string = "https://api.us.onelogin.com/api/1/users?email=%s"
 	VerifyFactorURL          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
 )
 
@@ -100,6 +101,37 @@ type VerifyFactorResponse struct {
 		Message string `json:"message"`
 	} `json:"status"`
 	Data string `json:"data"`
+}
+
+type GetUserByEmailResponse struct {
+	Status struct {
+		Error   bool   `json:"error"`
+		Code    int    `json:"code"`
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	} `json:"status"`
+	Data []struct {
+		// ActivatedAt          string `json:"activated_at"`
+		// CreatedAt            string `json:"created_at"`
+		// Email                string `json:"email"`
+		// Username             string `json:"username"`
+		// Firstname            string `json:"firstname"`
+		// GroupID              int    `json:"group_id"`
+		ID int `json:"id"`
+		// InvalidLoginAttempts int    `json:"invalid_login_attempts"`
+		// InvitationSentAt     string `json:"invitation_sent_at"`
+		// LastLogin            string `json:"last_login"`
+		// Lastname             string `json:"lastname"`
+		// LockedUntil          string `json:"locked_until"`
+		// Notes                string `json:"notes"`
+		// OpenIDName           string `json:"openid_name"`
+		// LocaleCode           string `json:"locale_code"`
+		// PasswordChangedAt    string `json:"password_changed_at"`
+		// Phone                string `json:"phone"`
+		// Status               int    `json:"status"`
+		// UpdatedAt            string `json:"updated_at"`
+		// DistinguishedEmail   string `json:"distinguished_name"`
+	}
 }
 
 // makeRequest constructs an HTTP request and returns a pointer to it.
@@ -228,6 +260,36 @@ func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFacto
 	}
 
 	var resp VerifyFactorResponse
+	if err := json.Unmarshal([]byte(data), &resp); err != nil {
+		return nil, fmt.Errorf("parsing HTTP response: %v", err)
+	}
+
+	return &resp, nil
+}
+
+// GetUserByEmail queries the OneLogin API for a user based on the user's email and returns a user
+// ID.
+func (c *Client) GetUserByEmail(token, email string) (*GetUserByEmailResponse, error) {
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("bearer:%v", token),
+		"Content-Type":  "application/json",
+	}
+
+	req, err := http.NewRequest(http.MethodGet, c.Endpoints.GetUserByEmail, nil)
+	if err != nil {
+		return nil, fmt.Errorf("making HTTP request: %v", err)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
+	data, err := c.doRequest(req)
+	if err != nil {
+		return nil, fmt.Errorf("doing HTTP request: %v", err)
+	}
+
+	var resp GetUserByEmailResponse
 	if err := json.Unmarshal([]byte(data), &resp); err != nil {
 		return nil, fmt.Errorf("parsing HTTP response: %v", err)
 	}
