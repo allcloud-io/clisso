@@ -19,8 +19,8 @@ const (
 
 // Endpoints represent the OneLogin API HTTP endpoints.
 type Endpoints struct {
-	GenerateTokens        string
 	GenerateSamlAssertion string
+	GenerateTokens        string
 	GetUserByEmail        string
 	VerifyFactor          string
 }
