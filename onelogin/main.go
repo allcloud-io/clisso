@@ -143,14 +143,6 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	sessionToken := *resp.Credentials.SessionToken
 	expiration := *resp.Credentials.Expiration
 
-	// Set temporary credentials in environment
-	// TODO Error if already set
-	// TODO Write vars to creds file
-	//fmt.Println("Paste the following in your terminal:")
-	//fmt.Println()
-	//fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyID)
-	//fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
-	//fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
 	creds := awsprovider.Credentials{
 		AccessKeyID:     keyID,
 		SecretAccessKey: secretKey,
