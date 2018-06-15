@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"errors"
-
 	awsprovider "github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
-	"github.com/spf13/viper"
 )
 
 // TODO Allow configuration from CLI (CLI > env var > config file)
@@ -20,43 +18,26 @@ import (
 // TODO Move AWS logic outside this function.
 func Get(app, provider string) (*awsprovider.Credentials, error) {
 	// Read config
-	secret := viper.GetString(fmt.Sprintf("providers.%s.clientSecret", provider))
-	id := viper.GetString(fmt.Sprintf("providers.%s.clientId", provider))
-	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", provider))
-	user := viper.GetString(fmt.Sprintf("providers.%s.username", provider))
+	pConf, err := config.GetProvider(provider)
+	if err != nil {
+		return nil, fmt.Errorf("reading provider config: %v", err)
+	}
 
-	appID := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
-	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
-	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
-
-	if secret == "" {
-		return nil, errors.New("providers.onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
-	}
-	if id == "" {
-		return nil, errors.New("providers.onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
-	}
-	if subdomain == "" {
-		return nil, errors.New("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
-	}
-	if appID == "" {
-		return nil, fmt.Errorf("Can't find appId for %s in config file", app)
-	}
-	if principal == "" {
-		return nil, fmt.Errorf("Can't find principalArn for %s in config file", app)
-	}
-	if role == "" {
-		return nil, fmt.Errorf("Can't find roleArn for %s in config file", app)
+	appConf, err := config.GetApp(app)
+	if err != nil {
+		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}
 
 	c := NewClient()
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := c.GenerateTokens(id, secret)
+	token, err := c.GenerateTokens(pConf.ID, pConf.Secret)
 	if err != nil {
 		return nil, err
 	}
 
+	user := pConf.Username
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
@@ -74,10 +55,10 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	pSAML := GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
-		AppId:           appID,
+		AppId:           appConf.ID,
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
-		Subdomain: subdomain,
+		Subdomain: pConf.Subdomain,
 	}
 
 	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
@@ -89,7 +70,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	devices := rSaml.Data[0].Devices
 
-	var deviceId string
+	var deviceID string
 	if len(devices) > 1 {
 		for i, d := range devices {
 			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
@@ -99,9 +80,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		var selection int
 		fmt.Scanln(&selection)
 
-		deviceId = fmt.Sprintf("%v", devices[selection-1].DeviceId)
+		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
 	} else {
-		deviceId = fmt.Sprintf("%v", devices[0].DeviceId)
+		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
 	}
 
 	fmt.Print("Please enter the OTP from your MFA device: ")
@@ -110,8 +91,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Verify MFA
 	pMfa := VerifyFactorParams{
-		AppId:      appID,
-		DeviceId:   deviceId,
+		AppId:      appConf.ID,
+		DeviceId:   deviceID,
 		StateToken: st,
 		OtpToken:   otp,
 	}
@@ -125,8 +106,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  aws.String(principal),
-		RoleArn:       aws.String(role),
+		PrincipalArn:  aws.String(appConf.PrincipalARN),
+		RoleArn:       aws.String(appConf.RoleARN),
 		SAMLAssertion: aws.String(samlAssertion),
 	}
 
