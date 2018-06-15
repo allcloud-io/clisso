@@ -48,14 +48,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, fmt.Errorf("Can't find roleArn for %s in config file", app)
 	}
 
-	c := Client{
-		Endpoints: Endpoints{
-			GenerateTokens:        GenerateTokensURL,
-			GenerateSamlAssertion: GenerateSamlAssertionURL,
-			GetUserByEmail:        GetUserByEmailURL,
-			VerifyFactor:          VerifyFactorURL,
-		},
-	}
+	c := NewClient()
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")

@@ -234,3 +234,15 @@ func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFacto
 
 	return &resp, nil
 }
+
+// NewClient creates a new Client and returns a pointer to it.
+func NewClient() *Client {
+	return &Client{
+		Endpoints: Endpoints{
+			GenerateSamlAssertion: GenerateSamlAssertionURL,
+			GenerateTokens:        GenerateTokensURL,
+			GetUserByEmail:        GetUserByEmailURL,
+			VerifyFactor:          VerifyFactorURL,
+		},
+	}
+}
