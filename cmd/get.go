@@ -52,8 +52,8 @@ func processCredentials(creds *aws.Credentials, app string) error {
 
 var cmdGet = &cobra.Command{
 	Use:   "get",
-	Short: "Get temporary credentials",
-	Long: `Obtain temporary credentials for the currently-selected app by
+	Short: "Get temporary credentials for an app",
+	Long: `Obtain temporary credentials for the specified app by
 generating a SAML assertion at the identity provider and using this
 assertion to retrieve temporary credentials from the cloud provider.`,
 	Run: func(cmd *cobra.Command, args []string) {
