@@ -78,6 +78,12 @@ var cmdAppsCreate = &cobra.Command{
 			}
 		}
 
+		// Verify provider exists
+		providers := viper.GetStringMap("providers")
+		if _, ok := providers[provider]; !ok {
+			log.Fatalf("Provider '%s' doesn't exist", provider)
+		}
+
 		conf := map[string]string{
 			"appID":        appID,
 			"principalARN": principalARN,

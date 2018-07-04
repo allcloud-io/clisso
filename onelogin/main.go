@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"errors"
-
 	awsprovider "github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
-	"github.com/spf13/viper"
 )
 
 // TODO Allow configuration from CLI (CLI > env var > config file)
@@ -20,41 +18,26 @@ import (
 // TODO Move AWS logic outside this function.
 func Get(app, provider string) (*awsprovider.Credentials, error) {
 	// Read config
-	secret := viper.GetString(fmt.Sprintf("providers.%s.clientSecret", provider))
-	id := viper.GetString(fmt.Sprintf("providers.%s.clientId", provider))
-	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", provider))
-	user := viper.GetString(fmt.Sprintf("providers.%s.username", provider))
+	p, err := config.GetProvider(provider)
+	if err != nil {
+		return nil, fmt.Errorf("reading provider config: %v", err)
+	}
 
-	appID := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
-	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
-	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
+	a, err := config.GetApp(app)
+	if err != nil {
+		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
+	}
 
-	if secret == "" {
-		return nil, errors.New("providers.onelogin.clientSecret config value or ONELOGIN_CLIENT_SECRET environment variable must bet set")
-	}
-	if id == "" {
-		return nil, errors.New("providers.onelogin.clientId config value or ONELOGIN_CLIENT_ID environment variable must bet set")
-	}
-	if subdomain == "" {
-		return nil, errors.New("providers.onelogin.subdomain config value ONELOGIN_SUBDOMAIN environment variable must bet set")
-	}
-	if appID == "" {
-		return nil, fmt.Errorf("Can't find appId for %s in config file", app)
-	}
-	if principal == "" {
-		return nil, fmt.Errorf("Can't find principalArn for %s in config file", app)
-	}
-	if role == "" {
-		return nil, fmt.Errorf("Can't find roleArn for %s in config file", app)
-	}
+	c := NewClient()
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := GenerateTokens(GenerateTokensUrl, id, secret)
+	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
 	if err != nil {
 		return nil, err
 	}
 
+	user := p.Username
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
@@ -72,15 +55,13 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	pSAML := GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
-		AppId:           appID,
+		AppId:           a.ID,
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
-		Subdomain: subdomain,
+		Subdomain: p.Subdomain,
 	}
 
-	rSaml, err := GenerateSamlAssertion(
-		GenerateSamlAssertionUrl, token, &pSAML,
-	)
+	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +70,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	devices := rSaml.Data[0].Devices
 
-	var deviceId string
+	var deviceID string
 	if len(devices) > 1 {
 		for i, d := range devices {
 			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
@@ -99,9 +80,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		var selection int
 		fmt.Scanln(&selection)
 
-		deviceId = fmt.Sprintf("%v", devices[selection-1].DeviceId)
+		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
 	} else {
-		deviceId = fmt.Sprintf("%v", devices[0].DeviceId)
+		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
 	}
 
 	fmt.Print("Please enter the OTP from your MFA device: ")
@@ -110,13 +91,13 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Verify MFA
 	pMfa := VerifyFactorParams{
-		AppId:      appID,
-		DeviceId:   deviceId,
+		AppId:      a.ID,
+		DeviceId:   deviceID,
 		StateToken: st,
 		OtpToken:   otp,
 	}
 
-	rMfa, err := VerifyFactor(VerifyFactorUrl, token, &pMfa)
+	rMfa, err := c.VerifyFactor(token, &pMfa)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +106,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  aws.String(principal),
-		RoleArn:       aws.String(role),
+		PrincipalArn:  aws.String(a.PrincipalARN),
+		RoleArn:       aws.String(a.RoleARN),
 		SAMLAssertion: aws.String(samlAssertion),
 	}
 
@@ -143,14 +124,6 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	sessionToken := *resp.Credentials.SessionToken
 	expiration := *resp.Credentials.Expiration
 
-	// Set temporary credentials in environment
-	// TODO Error if already set
-	// TODO Write vars to creds file
-	//fmt.Println("Paste the following in your terminal:")
-	//fmt.Println()
-	//fmt.Printf("export AWS_ACCESS_KEY_ID=%v\n", keyID)
-	//fmt.Printf("export AWS_SECRET_ACCESS_KEY=%v\n", secretKey)
-	//fmt.Printf("export AWS_SESSION_TOKEN=%v\n", sessionToken)
 	creds := awsprovider.Credentials{
 		AccessKeyID:     keyID,
 		SecretAccessKey: secretKey,
