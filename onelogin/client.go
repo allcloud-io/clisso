@@ -111,26 +111,7 @@ type GetUserByEmailResponse struct {
 		Message string `json:"message"`
 	} `json:"status"`
 	Data []struct {
-		// ActivatedAt          string `json:"activated_at"`
-		// CreatedAt            string `json:"created_at"`
-		// Email                string `json:"email"`
-		// Username             string `json:"username"`
-		// Firstname            string `json:"firstname"`
-		// GroupID              int    `json:"group_id"`
 		ID int `json:"id"`
-		// InvalidLoginAttempts int    `json:"invalid_login_attempts"`
-		// InvitationSentAt     string `json:"invitation_sent_at"`
-		// LastLogin            string `json:"last_login"`
-		// Lastname             string `json:"lastname"`
-		// LockedUntil          string `json:"locked_until"`
-		// Notes                string `json:"notes"`
-		// OpenIDName           string `json:"openid_name"`
-		// LocaleCode           string `json:"locale_code"`
-		// PasswordChangedAt    string `json:"password_changed_at"`
-		// Phone                string `json:"phone"`
-		// Status               int    `json:"status"`
-		// UpdatedAt            string `json:"updated_at"`
-		// DistinguishedEmail   string `json:"distinguished_name"`
 	}
 }
 
