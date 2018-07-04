@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var VERSION string
+
 var cfgFile string
 
 var RootCmd = &cobra.Command{Use: "clisso"}
@@ -18,7 +20,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 }
 
-func Execute() {
+func Execute(version string) {
+	VERSION = version
 	RootCmd.Execute()
 }
 

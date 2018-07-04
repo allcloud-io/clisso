@@ -4,6 +4,8 @@ import (
 	"github.com/allcloud-io/clisso/cmd"
 )
 
+var version = "undefined"
+
 func main() {
-	cmd.RootCmd.Execute()
+	cmd.Execute(version)
 }

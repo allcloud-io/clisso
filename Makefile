@@ -2,10 +2,11 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 BINARY_NAME=clisso
+VERSION=`git describe --always`
 
 .PHONY: build
 build:
-	$(GOBUILD) -o $(BINARY_NAME) -v
+	$(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME) -v
 
 .PHONY: test
 test:
