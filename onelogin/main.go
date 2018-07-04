@@ -18,12 +18,12 @@ import (
 // TODO Move AWS logic outside this function.
 func Get(app, provider string) (*awsprovider.Credentials, error) {
 	// Read config
-	pConf, err := config.GetProvider(provider)
+	p, err := config.GetProvider(provider)
 	if err != nil {
 		return nil, fmt.Errorf("reading provider config: %v", err)
 	}
 
-	appConf, err := config.GetApp(app)
+	a, err := config.GetApp(app)
 	if err != nil {
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}
@@ -32,12 +32,12 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := c.GenerateTokens(pConf.ClientID, pConf.ClientSecret)
+	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
 	if err != nil {
 		return nil, err
 	}
 
-	user := pConf.Username
+	user := p.Username
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
@@ -55,10 +55,10 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	pSAML := GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
-		AppId:           appConf.ID,
+		AppId:           a.ID,
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
-		Subdomain: pConf.Subdomain,
+		Subdomain: p.Subdomain,
 	}
 
 	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
@@ -91,7 +91,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Verify MFA
 	pMfa := VerifyFactorParams{
-		AppId:      appConf.ID,
+		AppId:      a.ID,
 		DeviceId:   deviceID,
 		StateToken: st,
 		OtpToken:   otp,
@@ -106,8 +106,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  aws.String(appConf.PrincipalARN),
-		RoleArn:       aws.String(appConf.RoleARN),
+		PrincipalArn:  aws.String(a.PrincipalARN),
+		RoleArn:       aws.String(a.RoleARN),
 		SAMLAssertion: aws.String(samlAssertion),
 	}
 
