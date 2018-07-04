@@ -248,36 +248,6 @@ func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFacto
 	return &resp, nil
 }
 
-// GetUserByEmail queries the OneLogin API for a user based on the user's email and returns a user
-// ID.
-func (c *Client) GetUserByEmail(token, email string) (*GetUserByEmailResponse, error) {
-	headers := map[string]string{
-		"Authorization": fmt.Sprintf("bearer:%v", token),
-		"Content-Type":  "application/json",
-	}
-
-	req, err := http.NewRequest(http.MethodGet, c.Endpoints.GetUserByEmail, nil)
-	if err != nil {
-		return nil, fmt.Errorf("making HTTP request: %v", err)
-	}
-
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
-	data, err := c.doRequest(req)
-	if err != nil {
-		return nil, fmt.Errorf("doing HTTP request: %v", err)
-	}
-
-	var resp GetUserByEmailResponse
-	if err := json.Unmarshal([]byte(data), &resp); err != nil {
-		return nil, fmt.Errorf("parsing HTTP response: %v", err)
-	}
-
-	return &resp, nil
-}
-
 // NewClient creates a new Client and returns a pointer to it.
 func NewClient() *Client {
 	return &Client{
