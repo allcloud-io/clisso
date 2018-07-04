@@ -32,7 +32,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	// Get OneLogin access token
 	log.Println("Generating OneLogin access tokens")
-	token, err := c.GenerateTokens(pConf.ID, pConf.Secret)
+	token, err := c.GenerateTokens(pConf.ClientID, pConf.ClientSecret)
 	if err != nil {
 		return nil, err
 	}

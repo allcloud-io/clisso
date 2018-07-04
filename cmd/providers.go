@@ -17,9 +17,11 @@ var username string
 
 func init() {
 	cmdProvidersCreate.Flags().StringVar(&clientID, "client-id", "", "OneLogin API client ID")
-	cmdProvidersCreate.Flags().StringVar(&clientSecret, "client-secret", "", "OneLogin API client secret")
+	cmdProvidersCreate.Flags().StringVar(&clientSecret, "client-secret", "",
+		"OneLogin API client secret")
 	cmdProvidersCreate.Flags().StringVar(&subdomain, "subdomain", "", "OneLogin subdomain")
-	cmdProvidersCreate.Flags().StringVar(&pType, "type", "", "Provider type (valid values: onelogin)")
+	cmdProvidersCreate.Flags().StringVar(&pType, "type", "",
+		"Provider type (valid values: onelogin)")
 	cmdProvidersCreate.Flags().StringVar(&username, "username", "",
 		"Don't ask for a username and use this instead")
 
