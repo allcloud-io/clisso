@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/okta"
 	"github.com/allcloud-io/clisso/onelogin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -90,6 +91,16 @@ assertion to retrieve temporary credentials from the cloud provider.`,
 
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider)
+			if err != nil {
+				log.Fatal("Could not get temporary credentials: ", err)
+			}
+			// Process credentials
+			err = processCredentials(creds, app)
+			if err != nil {
+				log.Fatalf("Error processing credentials: %v", err)
+			}
+		} else if pType == "okta" {
+			creds, err := okta.Get(app, provider)
 			if err != nil {
 				log.Fatal("Could not get temporary credentials: ", err)
 			}
