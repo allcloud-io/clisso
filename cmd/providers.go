@@ -74,13 +74,13 @@ var cmdProvidersList = &cobra.Command{
 }
 
 var cmdProvidersCreate = &cobra.Command{
-	Use:   "create [provider name]",
+	Use:   "create",
 	Short: "Create a new provider",
 	Long:  "Save a new provider into the config file.",
 }
 
 var cmdProvidersCreateOneLogin = &cobra.Command{
-	Use:   "onelogin",
+	Use:   "onelogin [provider name]",
 	Short: "Create a new OneLogin provider",
 	Long:  "Save a new OneLogin provider into the config file.",
 	Args:  cobra.ExactArgs(1),
@@ -120,7 +120,7 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 }
 
 var cmdProvidersCreateOkta = &cobra.Command{
-	Use:   "okta",
+	Use:   "okta [provider name]",
 	Short: "Create a new Okta provider",
 	Long:  "Save a new Okta provider into the config file.",
 	Args:  cobra.ExactArgs(1),
