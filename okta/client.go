@@ -31,27 +31,27 @@ type GetSessionTokenResponse struct {
 
 // GetSessionToken performs a login operation against the Okta API and returns a session token upon
 // successful login.
-func (c *Client) GetSessionToken(p *GetSessionTokenParams) (string, error) {
+func (c *Client) GetSessionToken(p *GetSessionTokenParams) (*GetSessionTokenResponse, error) {
 	h := map[string]string{
 		"Accept":       "application/json",
 		"Content-Type": "application/json",
 	}
 	req, err := makeRequest(http.MethodPost, c.BaseURL+"/api/v1/authn", h, p)
 	if err != nil {
-		return "", fmt.Errorf("creating request: %v", err)
+		return nil, fmt.Errorf("creating request: %v", err)
 	}
 
 	data, err := c.doRequest(req)
 	if err != nil {
-		return "", fmt.Errorf("doing HTTP request: %v", err)
+		return nil, fmt.Errorf("doing HTTP request: %v", err)
 	}
 
 	var resp GetSessionTokenResponse
 	if err := json.Unmarshal([]byte(data), &resp); err != nil {
-		return "", fmt.Errorf("parsing HTTP response: %v", err)
+		return nil, fmt.Errorf("parsing HTTP response: %v", err)
 	}
 
-	return resp.SessionToken, nil
+	return &resp, nil
 }
 
 // doRequest gets a pointer to an HTTP request and an HTTP client, executes the request

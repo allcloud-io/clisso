@@ -45,11 +45,11 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		Username: user,
 		Password: string(pass),
 	}
-	t, err := c.GetSessionToken(&params)
+	resp, err := c.GetSessionToken(&params)
 	if err != nil {
 		log.Fatalf("getting session token: %v", err)
 	}
-	log.Printf("Session token: %s", t)
+	log.Printf("Session token: %s", resp.SessionToken)
 
 	// Verify MFA
 
