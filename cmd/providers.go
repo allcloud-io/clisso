@@ -33,6 +33,8 @@ func init() {
 
 	// Okta
 	cmdProvidersCreateOkta.Flags().StringVar(&baseURL, "base-url", "", "Okta base URL")
+	cmdProvidersCreateOkta.Flags().StringVar(&username, "username", "",
+		"Don't ask for a username and use this instead")
 	cmdProvidersCreateOkta.MarkFlagRequired("base-url")
 
 	// Build command tree
