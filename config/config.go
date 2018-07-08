@@ -25,10 +25,10 @@ func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 	user := viper.GetString(fmt.Sprintf("providers.%s.username", p))
 
 	if clientSecret == "" {
-		return nil, errors.New("authClientSecret config value must bet set")
+		return nil, errors.New("clientSecret config value must bet set")
 	}
 	if clientID == "" {
-		return nil, errors.New("authClientID config value must bet set")
+		return nil, errors.New("clientID config value must bet set")
 	}
 	if subdomain == "" {
 		return nil, errors.New("subdomain config value must bet set")
