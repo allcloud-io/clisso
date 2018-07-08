@@ -37,7 +37,7 @@ func TestGetSessionToken(t *testing.T) {
 	}
 }
 
-func TestGetSessionTokenMFA(t *testing.T) {
+func TestGetSessionTokenMFARequired(t *testing.T) {
 	data := `{
 		"stateToken": "fake_token",
 		"expiresAt": "2018-07-08T13:47:53.000Z",
