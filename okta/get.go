@@ -41,17 +41,41 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Get session token
-	params := GetSessionTokenParams{
+	resp, err := c.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
 		Password: string(pass),
-	}
-	resp, err := c.GetSessionToken(&params)
+	})
 	if err != nil {
-		log.Fatalf("getting session token: %v", err)
+		log.Fatalf("Error getting session token: %v", err)
 	}
-	log.Printf("Session token: %s", resp.SessionToken)
 
-	// Verify MFA
+	var st string
+
+	// TODO Handle multiple MFA devices (allow user to choose)
+	// TODO Verify MFA type?
+	switch resp.Status {
+	case StatusSuccess:
+		st = resp.SessionToken
+	case StatusMFARequired:
+		fmt.Print("Please enter the OTP from your MFA device: ")
+		var otp string
+		fmt.Scanln(&otp)
+
+		vfResp, err := c.VerifyFactor(&VerifyFactorParams{
+			FactorID:   resp.Embedded.Factors[0].ID,
+			PassCode:   otp,
+			StateToken: resp.StateToken,
+		})
+		if err != nil {
+			log.Fatalf("Performing MFA verification: %v", err)
+		}
+
+		st = vfResp.SessionToken
+	default:
+		log.Fatalf("Invalid status %s", resp.Status)
+	}
+
+	log.Printf("Session token: %s", st)
 
 	// Launch Okta app with session token
 
