@@ -135,7 +135,7 @@ func makeRequest(method string, url string, headers map[string]string, body inte
 	return req, nil
 }
 
-// DoRequest gets a pointer to an HTTP request and an HTTP client, executes the request
+// doRequest gets a pointer to an HTTP request and an HTTP client, executes the request
 // using the client, handles any HTTP-related errors and returns any data as a string.
 func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
