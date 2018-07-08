@@ -154,10 +154,6 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 	return string(b), nil
 }
 
-// func doAuthenticatedRequest(c *http.Client, r *http.Request) (string, error) {
-
-// }
-
 // GenerateTokens generates the tokens required for interacting with the OneLogin
 // API.
 func (c *Client) GenerateTokens(clientID, clientSecret string) (string, error) {
