@@ -18,12 +18,12 @@ import (
 // TODO Move AWS logic outside this function.
 func Get(app, provider string) (*awsprovider.Credentials, error) {
 	// Read config
-	p, err := config.GetProvider(provider)
+	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
 		return nil, fmt.Errorf("reading provider config: %v", err)
 	}
 
-	a, err := config.GetApp(app)
+	a, err := config.GetOneLoginApp(app)
 	if err != nil {
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}

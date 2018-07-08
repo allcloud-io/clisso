@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ProviderConfig represents a provider's configuration.
-type ProviderConfig struct {
+// OneLoginProviderConfig represents a OneLogin provider configuration.
+type OneLoginProviderConfig struct {
 	ClientID     string
 	ClientSecret string
 	Subdomain    string
@@ -16,8 +16,9 @@ type ProviderConfig struct {
 	Username     string
 }
 
-// GetProvider returns a ProviderConfig struct containing the configuration for provider "p".
-func GetProvider(p string) (*ProviderConfig, error) {
+// GetOneLoginProvider returns a OneLoginProviderConfig struct containing the configuration for
+// provider p.
+func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 	clientSecret := viper.GetString(fmt.Sprintf("providers.%s.clientSecret", p))
 	clientID := viper.GetString(fmt.Sprintf("providers.%s.clientID", p))
 	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", p))
@@ -33,7 +34,7 @@ func GetProvider(p string) (*ProviderConfig, error) {
 		return nil, errors.New("subdomain config value must bet set")
 	}
 
-	c := ProviderConfig{
+	c := OneLoginProviderConfig{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Subdomain:    subdomain,
@@ -43,16 +44,16 @@ func GetProvider(p string) (*ProviderConfig, error) {
 	return &c, nil
 }
 
-// AppConfig represents an app's configuration.
-type AppConfig struct {
+// OneLoginAppConfig represents an app's configuration.
+type OneLoginAppConfig struct {
 	ID           string
 	PrincipalARN string
 	Provider     string
 	RoleARN      string
 }
 
-// GetApp returns an AppConfig struct containing the configuration for app "app".
-func GetApp(app string) (*AppConfig, error) {
+// GetOneLoginApp returns a OneLoginAppConfig struct containing the configuration for app.
+func GetOneLoginApp(app string) (*OneLoginAppConfig, error) {
 	appID := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
 	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
 	provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
@@ -68,7 +69,7 @@ func GetApp(app string) (*AppConfig, error) {
 		return nil, errors.New("roleARN config value must be set")
 	}
 
-	c := AppConfig{
+	c := OneLoginAppConfig{
 		ID:           appID,
 		PrincipalARN: principal,
 		Provider:     provider,
