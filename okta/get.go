@@ -6,6 +6,9 @@ import (
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
 )
 
@@ -79,16 +82,37 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Launch Okta app with session token
-	saml, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
+	samlAssertion, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("SAML assertion: %s", *saml)
-
 	// Assume role
+	input := sts.AssumeRoleWithSAMLInput{
+		PrincipalArn:  aws.String(a.PrincipalARN),
+		RoleArn:       aws.String(a.RoleARN),
+		SAMLAssertion: aws.String(*samlAssertion),
+	}
 
-	return &awsprovider.Credentials{
-		AccessKeyID: "fake", SecretAccessKey: "fake", SessionToken: "fake",
-	}, nil
+	sess := session.Must(session.NewSession())
+	svc := sts.New(sess)
+
+	aResp, err := svc.AssumeRoleWithSAML(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	keyID := *aResp.Credentials.AccessKeyId
+	secretKey := *aResp.Credentials.SecretAccessKey
+	sessionToken := *aResp.Credentials.SessionToken
+	expiration := *aResp.Credentials.Expiration
+
+	creds := awsprovider.Credentials{
+		AccessKeyID:     keyID,
+		SecretAccessKey: secretKey,
+		SessionToken:    sessionToken,
+		Expiration:      expiration,
+	}
+
+	return &creds, nil
 }
