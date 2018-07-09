@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ProviderConfig represents a provider's configuration.
-type ProviderConfig struct {
+// OneLoginProviderConfig represents a OneLogin provider configuration.
+type OneLoginProviderConfig struct {
 	ClientID     string
 	ClientSecret string
 	Subdomain    string
@@ -16,24 +16,25 @@ type ProviderConfig struct {
 	Username     string
 }
 
-// GetProvider returns a ProviderConfig struct containing the configuration for provider "p".
-func GetProvider(p string) (*ProviderConfig, error) {
-	clientSecret := viper.GetString(fmt.Sprintf("providers.%s.clientSecret", p))
-	clientID := viper.GetString(fmt.Sprintf("providers.%s.clientID", p))
+// GetOneLoginProvider returns a OneLoginProviderConfig struct containing the configuration for
+// provider p.
+func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
+	clientSecret := viper.GetString(fmt.Sprintf("providers.%s.client-secret", p))
+	clientID := viper.GetString(fmt.Sprintf("providers.%s.client-id", p))
 	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", p))
 	user := viper.GetString(fmt.Sprintf("providers.%s.username", p))
 
 	if clientSecret == "" {
-		return nil, errors.New("authClientSecret config value must bet set")
+		return nil, errors.New("client-secret config value must bet set")
 	}
 	if clientID == "" {
-		return nil, errors.New("authClientID config value must bet set")
+		return nil, errors.New("client-id config value must bet set")
 	}
 	if subdomain == "" {
 		return nil, errors.New("subdomain config value must bet set")
 	}
 
-	c := ProviderConfig{
+	c := OneLoginProviderConfig{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Subdomain:    subdomain,
@@ -43,37 +44,97 @@ func GetProvider(p string) (*ProviderConfig, error) {
 	return &c, nil
 }
 
-// AppConfig represents an app's configuration.
-type AppConfig struct {
+// OneLoginAppConfig represents a OneLogin app configuration.
+type OneLoginAppConfig struct {
 	ID           string
 	PrincipalARN string
 	Provider     string
 	RoleARN      string
 }
 
-// GetApp returns an AppConfig struct containing the configuration for app "app".
-func GetApp(app string) (*AppConfig, error) {
-	appID := viper.GetString(fmt.Sprintf("apps.%s.appId", app))
-	principal := viper.GetString(fmt.Sprintf("apps.%s.principalArn", app))
-	provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
-	role := viper.GetString(fmt.Sprintf("apps.%s.roleArn", app))
+// GetOneLoginApp returns a OneLoginAppConfig struct containing the configuration for app.
+func GetOneLoginApp(app string) (*OneLoginAppConfig, error) {
+	config := viper.GetStringMapString("apps." + app)
+	appID := config["app-id"]
+	principalARN := config["principal-arn"]
+	provider := config["provider"]
+	roleARN := config["role-arn"]
 
 	if appID == "" {
-		return nil, errors.New("appId config value must be set")
+		return nil, errors.New("app-id config value must be set")
 	}
-	if principal == "" {
-		return nil, errors.New("principalARN config value must be set")
+	if principalARN == "" {
+		return nil, errors.New("principa-arn config value must be set")
 	}
-	if role == "" {
-		return nil, errors.New("roleARN config value must be set")
+	if roleARN == "" {
+		return nil, errors.New("role-arn config value must be set")
 	}
 
-	c := AppConfig{
+	c := OneLoginAppConfig{
 		ID:           appID,
-		PrincipalARN: principal,
+		PrincipalARN: principalARN,
 		Provider:     provider,
-		RoleARN:      role,
+		RoleARN:      roleARN,
 	}
 
 	return &c, nil
+}
+
+// OktaProviderConfig represents an Okta provider configuration.
+type OktaProviderConfig struct {
+	BaseURL  string
+	Username string
+}
+
+// GetOktaProvider returns a OktaProviderConfig struct containing the configuration for provider p.
+func GetOktaProvider(p string) (*OktaProviderConfig, error) {
+	baseURL := viper.GetString(fmt.Sprintf("providers.%s.base-url", p))
+	username := viper.GetString(fmt.Sprintf("providers.%s.username", p))
+
+	if baseURL == "" {
+		return nil, errors.New("base-url config value must bet set")
+	}
+
+	return &OktaProviderConfig{BaseURL: baseURL, Username: username}, nil
+}
+
+// OktaAppConfig represents an Okta app configuration.
+type OktaAppConfig struct {
+	PrincipalARN string
+	Provider     string
+	RoleARN      string
+	URL          string
+}
+
+// GetOktaApp returns an OktaAppConfig struct containing the configuration for app.
+func GetOktaApp(app string) (*OktaAppConfig, error) {
+	config := viper.GetStringMapString("apps." + app)
+
+	principalARN := config["principal-arn"]
+	provider := config["provider"]
+	roleARN := config["role-arn"]
+	url := config["url"]
+
+	if principalARN == "" {
+		return nil, errors.New("principal-arn config value must be set")
+	}
+
+	if provider == "" {
+		return nil, errors.New("provider config value must be set")
+	}
+
+	if roleARN == "" {
+		return nil, errors.New("role-arn config value must be set")
+	}
+
+	if url == "" {
+		return nil, errors.New("url config value must be set")
+	}
+
+	return &OktaAppConfig{
+		PrincipalARN: principalARN,
+		Provider:     provider,
+		RoleARN:      roleARN,
+		URL:          url,
+	}, nil
 }
