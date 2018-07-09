@@ -14,19 +14,19 @@ test:
 
 .PHONY: darwin-386
 darwin-386:
-	GOOS=darwin GOARCH=386 $(GOBUILD) -o $(BINARY_NAME)-darwin-386 -v
+	GOOS=darwin GOARCH=386 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-darwin-386 -v
 
 .PHONY: darwin-amd64
 darwin-amd64:
-	GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME)-darwin-amd64 -v
+	GOOS=darwin GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-darwin-amd64 -v
 
 .PHONY: linux-386
 linux-386:
-	GOOS=linux GOARCH=386 $(GOBUILD) -o $(BINARY_NAME)-linux-386 -v
+	GOOS=linux GOARCH=386 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-linux-386 -v
 
 .PHONY: linux-amd64
 linux-amd64:
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME)-linux-amd64 -v
+	GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-linux-amd64 -v
 
 .PHONY: all
 all: darwin-386 darwin-amd64 linux-386 linux-amd64
