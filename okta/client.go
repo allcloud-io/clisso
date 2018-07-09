@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/cookiejar"
 	"time"
+
+	"golang.org/x/net/publicsuffix"
 )
 
 const (
@@ -141,8 +144,18 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 }
 
 // NewClient creates a new Client and returns a pointer to it.
-func NewClient(url string) *Client {
-	return &Client{BaseURL: url}
+func NewClient(url string) (*Client, error) {
+	// A cookie jar is required since the client needs to follow redirects with a session cookie.
+	options := cookiejar.Options{PublicSuffixList: publicsuffix.List}
+	jar, err := cookiejar.New(&options)
+	if err != nil {
+		return nil, fmt.Errorf("creating cookie jar: %v", err)
+	}
+
+	c := &Client{BaseURL: url}
+	c.Jar = jar
+
+	return c, nil
 }
 
 // makeRequest constructs an HTTP request and returns a pointer to it.
