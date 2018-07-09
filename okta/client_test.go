@@ -80,3 +80,7 @@ func TestGetSessionTokenMFARequired(t *testing.T) {
 		t.Errorf("Wrong response, got: %v, want: %v", resp.StateToken, "fake_token")
 	}
 }
+
+func TestVerifyFactor(t *testing.T) {
+	// TODO
+}
