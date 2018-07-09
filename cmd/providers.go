@@ -104,11 +104,11 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 		}
 
 		conf := map[string]string{
-			"clientID":     clientID,
-			"clientSecret": clientSecret,
-			"subdomain":    subdomain,
-			"type":         "onelogin",
-			"username":     username,
+			"client-id":     clientID,
+			"client-secret": clientSecret,
+			"subdomain":     subdomain,
+			"type":          "onelogin",
+			"username":      username,
 		}
 		viper.Set(fmt.Sprintf("providers.%s", name), conf)
 
@@ -144,7 +144,7 @@ var cmdProvidersCreateOkta = &cobra.Command{
 		}
 
 		conf := map[string]string{
-			"baseUrl":  baseURL,
+			"base-url": baseURL,
 			"type":     "okta",
 			"username": username,
 		}
