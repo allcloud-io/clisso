@@ -10,6 +10,7 @@ import (
 	"net/http/cookiejar"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -122,6 +123,46 @@ func (c *Client) VerifyFactor(p *VerifyFactorParams) (*VerifyFactorResponse, err
 	}
 
 	return &resp, nil
+}
+
+// LaunchAppParams represents the parameters for LaunchApp.
+type LaunchAppParams struct {
+	SessionToken string
+	URL          string
+}
+
+// LaunchApp launches an Okta app and returns a SAML assertion.
+// TODO Error handling
+func (c *Client) LaunchApp(p *LaunchAppParams) (*string, error) {
+	url := fmt.Sprintf("%s?sessionToken=%s", p.URL, p.SessionToken)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("constructing HTTP request: %v", err)
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("sending GET to app's root endpoint: %v", err)
+	}
+
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP error: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	// Parse HTML
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("loading HTML document: %v", err)
+	}
+
+	// Extract SAML assertion
+	var saml string
+	doc.Find("form#appForm input[name=SAMLResponse]").Each(func(i int, s *goquery.Selection) {
+		saml, _ = s.Attr("value")
+	})
+
+	return &saml, nil
 }
 
 // doRequest gets a pointer to an HTTP request and an HTTP client, executes the request

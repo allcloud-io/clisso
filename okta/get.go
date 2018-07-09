@@ -18,13 +18,16 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Get app config
-	// a, err := config.GetOktaApp(app)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("reading config for app %s: %v", app, err)
-	// }
+	a, err := config.GetOktaApp(app)
+	if err != nil {
+		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
+	}
 
 	// Initialize Okta client
-	c := NewClient(p.BaseURL)
+	c, err := NewClient(p.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("initializing Okta client: %v", err)
+	}
 
 	// Get user credentials
 	user := p.Username
@@ -75,15 +78,13 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		log.Fatalf("Invalid status %s", resp.Status)
 	}
 
-	log.Printf("Session token: %s", st)
-
 	// Launch Okta app with session token
+	saml, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Store cookie
-
-	// Follow redirect link(s) to SAML endpoint
-
-	// Extract SAML from response (HTML)
+	log.Printf("SAML assertion: %s", *saml)
 
 	// Assume role
 
