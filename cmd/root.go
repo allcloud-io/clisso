@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -35,8 +35,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatalf(color.RedString("Error getting home directory: %v"), err)
 		}
 
 		viper.SetConfigType("yaml")
@@ -48,7 +47,7 @@ func initConfig() {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			_, err := os.Create(file)
 			if err != nil {
-				log.Fatalf("Error creating config file: %v", err)
+				log.Fatalf(color.RedString("Error creating config file: %v"), err)
 			}
 		}
 
@@ -57,6 +56,6 @@ func initConfig() {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Can't read config: %v", err)
+		log.Fatalf(color.RedString("Can't read config: %v"), err)
 	}
 }

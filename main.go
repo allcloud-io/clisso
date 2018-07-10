@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/allcloud-io/clisso/cmd"
 )
 
@@ -8,5 +10,6 @@ import (
 var version = "undefined"
 
 func main() {
+	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	cmd.Execute(version)
 }

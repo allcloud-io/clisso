@@ -2,7 +2,6 @@ package onelogin
 
 import (
 	"fmt"
-	"log"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
@@ -31,10 +30,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	c := NewClient()
 
 	// Get OneLogin access token
-	log.Println("Generating OneLogin access tokens")
 	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generating access token: %s", err)
 	}
 
 	user := p.Username
@@ -51,7 +49,6 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Generate SAML assertion
-	log.Println("Generating SAML assertion")
 	pSAML := GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
@@ -63,7 +60,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
 
 	st := rSaml.Data[0].StateToken
@@ -99,7 +96,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	rMfa, err := c.VerifyFactor(token, &pMfa)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("verifying factor: %v", err)
 	}
 
 	samlAssertion := rMfa.Data
@@ -116,7 +113,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	resp, err := svc.AssumeRoleWithSAML(&pAssumeRole)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("assuming role: %v", err)
 	}
 
 	keyID := *resp.Credentials.AccessKeyId

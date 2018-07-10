@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/allcloud-io/clisso/aws"
@@ -42,7 +43,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		if err = aws.WriteToFile(creds, path, app); err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
 		}
-		log.Printf("Credentials written successfully to '%s'", path)
+		log.Printf(color.GreenString("Credentials written successfully to '%s'"), path)
 	}
 
 	return nil
@@ -63,7 +64,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			selected := viper.GetString("global.selected-app")
 			if selected == "" {
 				// No default app configured.
-				log.Fatal("No app specified and no default app configured")
+				log.Fatal(color.RedString("No app specified and no default app configured"))
 			}
 			app = selected
 		} else {
@@ -73,36 +74,36 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
-			log.Fatalf("Could not get provider for app '%s'", app)
+			log.Fatalf(color.RedString("Could not get provider for app '%s'"), app)
 		}
 
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType == "" {
-			log.Fatalf("Could not get provider type for provider '%s'", provider)
+			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider)
 			if err != nil {
-				log.Fatal("Could not get temporary credentials: ", err)
+				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
 			// Process credentials
 			err = processCredentials(creds, app)
 			if err != nil {
-				log.Fatalf("Error processing credentials: %v", err)
+				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
 			creds, err := okta.Get(app, provider)
 			if err != nil {
-				log.Fatal("Could not get temporary credentials: ", err)
+				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
 			// Process credentials
 			err = processCredentials(creds, app)
 			if err != nil {
-				log.Fatalf("Error processing credentials: %v", err)
+				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else {
-			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
+			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
 	},
 }

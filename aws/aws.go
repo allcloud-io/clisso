@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/go-ini/ini"
 )
 
@@ -39,7 +40,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 					cfg.DeleteSection(s.Name())
 				}
 			} else {
-				log.Printf("Cannot parse date (%v) in section %s: %s", s.Key("aws_expiration"), s.Name(), err)
+				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s", s.Key("aws_expiration")), s.Name(), err)
 			}
 		}
 	}
@@ -48,7 +49,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 
 // WriteToShell writes (prints) credentials to stdout.
 func WriteToShell(c *Credentials, w io.Writer) {
-	fmt.Println("# Please paste the following in your shell")
+	log.Println(color.GreenString("Please paste the following in your shell:"))
 	fmt.Fprintf(
 		w,
 		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",

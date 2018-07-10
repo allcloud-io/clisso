@@ -2,7 +2,6 @@ package okta
 
 import (
 	"fmt"
-	"log"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
@@ -52,7 +51,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		Password: string(pass),
 	})
 	if err != nil {
-		log.Fatalf("Error getting session token: %v", err)
+		return nil, fmt.Errorf("getting session token: %v", err)
 	}
 
 	var st string
@@ -73,18 +72,18 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 			StateToken: resp.StateToken,
 		})
 		if err != nil {
-			log.Fatalf("Performing MFA verification: %v", err)
+			return nil, fmt.Errorf("verifying MFA: %v", err)
 		}
 
 		st = vfResp.SessionToken
 	default:
-		log.Fatalf("Invalid status %s", resp.Status)
+		return nil, fmt.Errorf("Invalid status %s", resp.Status)
 	}
 
 	// Launch Okta app with session token
 	samlAssertion, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("Error launching app: %v", err)
 	}
 
 	// Assume role
@@ -99,7 +98,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	aResp, err := svc.AssumeRoleWithSAML(&input)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("assuming role: %v", err)
 	}
 
 	keyID := *aResp.Credentials.AccessKeyId
