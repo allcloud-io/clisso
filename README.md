@@ -31,11 +31,7 @@ perform the following:
 ### Building from Source
 
 Clisso uses [dep][5] for dependency management. You will need it to install dependencies. You will
-also need Go to compile the code, and Git which is used by `go get`.
-
-- Git
-- Go
-- dep
+also need **Go** to compile the code, and **Git** which is used by `go get`.
 
 To build Clisso from source, do the following:
 
