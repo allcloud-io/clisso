@@ -44,7 +44,8 @@ To build Clisso from source, do the following:
 
 ## Configuration
 
-Clisso stores configuration in a file called `.clisso.yaml` under the user's home directory.
+Clisso stores configuration in a file called `.clisso.yaml` under the user's home directory. You
+may specify a different config file using the `-c` flag.
 
 ## Usage
 
