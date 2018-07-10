@@ -48,7 +48,7 @@ release: clean all zip
 
 .PHONY: install
 install:
-	go install
+	go install -ldflags "-X main.version=$(VERSION)"
 
 .PHONY: clean
 clean:
