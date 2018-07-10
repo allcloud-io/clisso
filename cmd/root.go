@@ -18,6 +18,7 @@ var RootCmd = &cobra.Command{Use: "clisso"}
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.clisso.yaml)")
 }
 
 func Execute(version string) {
@@ -40,7 +41,7 @@ func initConfig() {
 		viper.SetConfigName(".clisso")
 
 		// Set default config values
-		viper.SetDefault("global.credentialsPath", fmt.Sprintf("%s/.aws/credentials", home))
+		viper.SetDefault("global.credentials-path", fmt.Sprintf("%s/.aws/credentials", home))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {

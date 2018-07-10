@@ -14,33 +14,27 @@ import (
 	"github.com/spf13/viper"
 )
 
-var writeToShell bool
-var writeToFile bool
-var credentialsPath string
+var printToShell bool
+var writeToFile string
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
 	cmdGet.Flags().BoolVarP(
-		&writeToShell, "write-to-shell", "s", false, "Write credentials to shell",
-	)
-	cmdGet.Flags().BoolVarP(
-		&writeToFile, "write-to-file", "w", false,
-		"Write credentials to default AWS credentials file",
+		&printToShell, "shell", "s", false, "Print credentials to shell",
 	)
 	cmdGet.Flags().StringVarP(
-		&credentialsPath, "credentials-path", "f", "",
-		"Write temporary credentials to this file (use with -w)",
+		&writeToFile, "write-to-file", "w", "",
+		"Write credentials to this file instead of the default (~/.aws/credentials)",
 	)
-	viper.BindPFlag("global.credentialsPath", cmdGet.Flags().Lookup("credentials-path"))
+	viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
 }
 
-// Writes the given Credentials to a file and/or to the shell.
+// processCredentials prints the given Credentials to a file and/or to the shell.
 func processCredentials(creds *aws.Credentials, app string) error {
-	if writeToShell {
+	if printToShell {
 		aws.WriteToShell(creds, os.Stdout)
-	}
-	if writeToFile {
-		f := viper.GetString("global.credentialsPath")
+	} else {
+		f := viper.GetString("global.credentials-path")
 		err := aws.WriteToFile(creds, expandFilename(f), app)
 		if err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
@@ -54,24 +48,21 @@ func processCredentials(creds *aws.Credentials, app string) error {
 var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "Get temporary credentials for an app",
-	Long: `Obtain temporary credentials for the specified app by
-generating a SAML assertion at the identity provider and using this
-assertion to retrieve temporary credentials from the cloud provider.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// Write to shell if no other flag was specified.
-		if !writeToShell && !writeToFile {
-			writeToShell = true
-		}
+	Long: `Obtain temporary credentials for the specified app by generating a SAML
+assertion at the identity provider and using this assertion to retrieve
+temporary credentials from the cloud provider.
 
+If no app is specified, the selected app (if configured) will be assumed.`,
+	Run: func(cmd *cobra.Command, args []string) {
 		var app string
 		if len(args) == 0 {
 			// No app specified.
-			defaultApp := viper.GetString("global.defaultApp")
-			if defaultApp == "" {
+			selected := viper.GetString("global.selected-app")
+			if selected == "" {
 				// No default app configured.
 				log.Fatal("No app specified and no default app configured")
 			}
-			app = defaultApp
+			app = selected
 		} else {
 			// App specified - use it.
 			app = args[0]

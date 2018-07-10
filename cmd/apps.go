@@ -47,6 +47,7 @@ func init() {
 	cmdApps.AddCommand(cmdAppsCreate)
 	cmdAppsCreate.AddCommand(cmdAppsCreateOneLogin)
 	cmdAppsCreate.AddCommand(cmdAppsCreateOkta)
+	cmdApps.AddCommand(cmdAppsSelect)
 }
 
 var cmdApps = &cobra.Command{
@@ -73,8 +74,15 @@ var cmdAppsList = &cobra.Command{
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
+
+		selected := viper.GetString("global.selected-app")
+
 		for _, k := range keys {
-			fmt.Println(k)
+			if k == selected {
+				fmt.Printf("* %s\n", k)
+			} else {
+				fmt.Printf("  %s\n", k)
+			}
 		}
 	},
 }
@@ -180,5 +188,32 @@ var cmdAppsCreateOkta = &cobra.Command{
 			log.Fatalf("Error writing config: %v", err)
 		}
 		log.Printf("App '%s' saved to config file", name)
+	},
+}
+
+var cmdAppsSelect = &cobra.Command{
+	Use:   "select [app name]",
+	Short: "Select an app to be used by default",
+	Long:  "Use the specified app when running `clisso get` without providing an app.",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app := args[0]
+
+		if app == "" {
+			viper.Set("global.selected-app", "")
+			log.Println("Unsetting selected app")
+		} else {
+			if exists := viper.Get("apps." + app); exists == nil {
+				log.Fatalf("App '%s' doesn't exist", app)
+			}
+			log.Printf("Setting selected app to '%s'", app)
+			viper.Set("global.selected-app", app)
+		}
+
+		// Write config to file
+		err := viper.WriteConfig()
+		if err != nil {
+			log.Fatalf("Error writing config: %v", err)
+		}
 	},
 }
