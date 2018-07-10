@@ -44,25 +44,7 @@ To build Clisso from source, do the following:
 
 ## Configuration
 
-Create a file called `.clisso.yaml` in your home directory. Following is a
-sample configuration:
-
-    apps:
-      sandbox:
-        appid: "123456"
-        principalarn: arn:aws:iam::123456789:saml-provider/OneLoginDev
-        provider: onelogin-dev
-        rolearn: arn:aws:iam::123456789:role/OneLoginDev-SSO
-    global:
-      credentialsfilepath: ~/.aws/credentials
-    providers:
-      onelogin-dev:
-        clientid: xxxxxxxx
-        clientsecret: xxxxxxxx
-        subdomain: example
-        type: onelogin
-        # Uncomment the following line to specify a default username.
-        # username: xxxxxxxx
+Clisso stores configuration in a file called `.clisso.yaml` under the user's home directory.
 
 ## Usage
 
