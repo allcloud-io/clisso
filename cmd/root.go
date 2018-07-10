@@ -18,6 +18,7 @@ var RootCmd = &cobra.Command{Use: "clisso"}
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.clisso.yaml)")
 }
 
 func Execute(version string) {
