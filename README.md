@@ -22,9 +22,11 @@ The following identity providers are currently supported:
 The easiest way to use Clisso is to download a pre-compiled binary for your platform. To do so,
 perform the following:
 
-1. Go to the [releases][4] page.
+1. Go to the [latest release][4] on the releases page.
 1. Download the ZIP file corresponding to your platform and architecture.
-1. Unzip the binary and move it to a location under your `$PATH`.
+1. Unzip the binary.
+1. Rename the binary using `mv clisso-<platform>-<arch> clisso`.
+1. Move the binary to a place under your path.
 
 ### Building from Source
 
@@ -80,5 +82,5 @@ to get temporary credentials.
 [1]: https://aws.amazon.com/
 [2]: https://www.onelogin.com/
 [3]: https://www.okta.com/
-[4]: https://github.com/allcloud-io/clisso/releases
+[4]: https://github.com/allcloud-io/clisso/releases/latest
 [5]: https://github.com/golang/dep
