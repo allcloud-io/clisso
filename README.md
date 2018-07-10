@@ -49,8 +49,43 @@ may specify a different config file using the `-c` flag.
 
 ## Usage
 
-Run `clisso get <app-name>` and enter your username, password and OTP
-to get temporary credentials.
+Clisso has the following commands:
+
+    $ ./clisso
+    Usage:
+    clisso [command]
+
+    Available Commands:
+    apps        Manage apps
+    get         Get temporary credentials for an app
+    help        Help about any command
+    providers   Manage providers
+    version     Show version info
+
+    Flags:
+    -c, --config string   config file (default is $HOME/.clisso.yaml)
+    -h, --help            help for clisso
+
+    Use "clisso [command] --help" for more information about a command.
+
+### Obtaining Credentials
+
+To obtain temporary credentials for an app, use the following command:
+
+    $ clisso get <app-name>
+
+By default, Clisso will try to store the credentials in the [shared credentials file][6] of the AWS
+CLI. To save the credentials to a different file, use the `-w` flag.
+
+To print the credentials to the shell instead of storing them in a file, use the `-s` flag.
+
+### Configuring Providers
+
+TODO
+
+### Configuring Apps
+
+TODO
 
 ## Caveats and Limitations
 
@@ -62,3 +97,4 @@ to get temporary credentials.
 [3]: https://www.okta.com/
 [4]: https://github.com/allcloud-io/clisso/releases/latest
 [5]: https://github.com/golang/dep
+[6]: https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
