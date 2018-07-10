@@ -54,7 +54,6 @@ to get temporary credentials.
 
 ## Caveats and Limitations
 
-- No Windows support.
 - No support for Okta applications with MFA enabled **at the application level**.
 - No support for IAM role selection.
 
