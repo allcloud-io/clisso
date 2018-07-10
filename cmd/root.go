@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -18,7 +19,9 @@ var RootCmd = &cobra.Command{Use: "clisso"}
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.clisso.yaml)")
+	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "",
+		"config file (default is $HOME/.clisso.yaml)",
+	)
 }
 
 func Execute(version string) {
@@ -40,8 +43,17 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".clisso")
 
+		// Create config file if it doesn't exist
+		file := filepath.Join(home, ".clisso.yaml")
+		if _, err := os.Stat(file); os.IsNotExist(err) {
+			_, err := os.Create(file)
+			if err != nil {
+				log.Fatalf("Error creating config file: %v", err)
+			}
+		}
+
 		// Set default config values
-		viper.SetDefault("global.credentials-path", fmt.Sprintf("%s/.aws/credentials", home))
+		viper.SetDefault("global.credentials-path", filepath.Join(home, ".aws", "credentials"))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {

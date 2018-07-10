@@ -24,7 +24,7 @@ func init() {
 	)
 	cmdGet.Flags().StringVarP(
 		&writeToFile, "write-to-file", "w", "",
-		"Write credentials to this file instead of the default (~/.aws/credentials)",
+		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
 	)
 	viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
 }

@@ -28,8 +28,16 @@ linux-386:
 linux-amd64:
 	GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-linux-amd64 -v
 
+.PHONY: windows-386
+windows-386:
+	GOOS=windows GOARCH=386 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-windows-386.exe -v
+
+.PHONY: windows-amd64
+windows-amd64:
+	GOOS=windows GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-windows-amd64.exe -v
+
 .PHONY: all
-all: darwin-386 darwin-amd64 linux-386 linux-amd64
+all: darwin-386 darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
 
 .PHONY: zip
 zip:
