@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/user"
-	"path/filepath"
+
+	"github.com/mitchellh/go-homedir"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/okta"
@@ -34,12 +34,15 @@ func processCredentials(creds *aws.Credentials, app string) error {
 	if printToShell {
 		aws.WriteToShell(creds, os.Stdout)
 	} else {
-		f := viper.GetString("global.credentials-path")
-		err := aws.WriteToFile(creds, expandFilename(f), app)
+		path, err := homedir.Expand(viper.GetString("global.credentials-path"))
 		if err != nil {
+			return fmt.Errorf("expanding config file path: %v", err)
+		}
+
+		if err = aws.WriteToFile(creds, path, app); err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
 		}
-		log.Printf("Credentials written successfully to file '%s'", f)
+		log.Printf("Credentials written successfully to '%s'", path)
 	}
 
 	return nil
@@ -67,8 +70,6 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			// App specified - use it.
 			app = args[0]
 		}
-
-		// log.Printf("Getting credentials for app '%v'", app)
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
@@ -104,14 +105,4 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
 	},
-}
-
-// expandFilename handles unix paths starting with '~/'.
-func expandFilename(filename string) string {
-	if filename[:2] == "~/" {
-		usr, _ := user.Current()
-		dir := usr.HomeDir
-		filename = filepath.Join(dir, filename[2:])
-	}
-	return filename
 }
