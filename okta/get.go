@@ -2,13 +2,14 @@ package okta
 
 import (
 	"fmt"
-	"log"
+	"time"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/briandowns/spinner"
 	"github.com/howeyc/gopass"
 )
 
@@ -46,13 +47,18 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, fmt.Errorf("Couldn't read password from terminal")
 	}
 
+	// Initialize spinner
+	s := spinner.New(spinner.CharSets[14], 50*time.Millisecond)
+
 	// Get session token
+	s.Start()
 	resp, err := c.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
 		Password: string(pass),
 	})
+	s.Stop()
 	if err != nil {
-		log.Fatalf("Error getting session token: %v", err)
+		return nil, fmt.Errorf("getting session token: %v", err)
 	}
 
 	var st string
@@ -67,24 +73,28 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		var otp string
 		fmt.Scanln(&otp)
 
+		s.Start()
 		vfResp, err := c.VerifyFactor(&VerifyFactorParams{
 			FactorID:   resp.Embedded.Factors[0].ID,
 			PassCode:   otp,
 			StateToken: resp.StateToken,
 		})
+		s.Stop()
 		if err != nil {
-			log.Fatalf("Performing MFA verification: %v", err)
+			return nil, fmt.Errorf("verifying MFA: %v", err)
 		}
 
 		st = vfResp.SessionToken
 	default:
-		log.Fatalf("Invalid status %s", resp.Status)
+		return nil, fmt.Errorf("Invalid status %s", resp.Status)
 	}
 
 	// Launch Okta app with session token
+	s.Start()
 	samlAssertion, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
+	s.Stop()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("Error launching app: %v", err)
 	}
 
 	// Assume role
@@ -97,9 +107,11 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	sess := session.Must(session.NewSession())
 	svc := sts.New(sess)
 
+	s.Start()
 	aResp, err := svc.AssumeRoleWithSAML(&input)
+	s.Stop()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("assuming role: %v", err)
 	}
 
 	keyID := *aResp.Credentials.AccessKeyId

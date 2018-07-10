@@ -5,6 +5,7 @@ import (
 	"log"
 	"sort"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -59,7 +60,7 @@ var cmdProvidersList = &cobra.Command{
 		providers := viper.GetStringMap("providers")
 
 		if len(providers) == 0 {
-			fmt.Println("No providers configured")
+			log.Println("No providers configured")
 			return
 		}
 
@@ -70,7 +71,7 @@ var cmdProvidersList = &cobra.Command{
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			fmt.Println(k)
+			log.Println(k)
 		}
 	},
 }
@@ -90,17 +91,8 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 		name := args[0]
 
 		// Verify provider doesn't exist
-		providers := viper.GetStringMap("providers")
-		if len(providers) > 0 {
-			for k := range providers {
-				if k == name {
-					log.Fatalf("Provider '%s' already exists", name)
-				}
-			}
-		}
-
-		if existing := viper.GetString(fmt.Sprintf("providers.%s", name)); existing != "" {
-			log.Fatalf("Provider '%s' already exists", name)
+		if exists := viper.Get("providers." + name); exists != nil {
+			log.Fatalf(color.RedString("Provider '%s' already exists"), name)
 		}
 
 		conf := map[string]string{
@@ -115,9 +107,9 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Fatalf(color.RedString("Error writing config: %v"), err)
 		}
-		log.Printf("Provider '%s' saved to config file", name)
+		log.Printf(color.GreenString("Provider '%s' saved to config file"), name)
 	},
 }
 
@@ -130,17 +122,8 @@ var cmdProvidersCreateOkta = &cobra.Command{
 		name := args[0]
 
 		// Verify provider doesn't exist
-		providers := viper.GetStringMap("providers")
-		if len(providers) > 0 {
-			for k := range providers {
-				if k == name {
-					log.Fatalf("Provider '%s' already exists", name)
-				}
-			}
-		}
-
-		if existing := viper.GetString(fmt.Sprintf("providers.%s", name)); existing != "" {
-			log.Fatalf("Provider '%s' already exists", name)
+		if exists := viper.Get("providers." + name); exists != nil {
+			log.Fatalf(color.RedString("Provider '%s' already exists"), name)
 		}
 
 		conf := map[string]string{
@@ -153,8 +136,8 @@ var cmdProvidersCreateOkta = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Fatalf(color.RedString("Error writing config: %v"), err)
 		}
-		log.Printf("Provider '%s' saved to config file", name)
+		log.Printf(color.GreenString("Provider '%s' saved to config file"), name)
 	},
 }

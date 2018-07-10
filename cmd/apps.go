@@ -5,6 +5,7 @@ import (
 	"log"
 	"sort"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -79,9 +80,9 @@ var cmdAppsList = &cobra.Command{
 
 		for _, k := range keys {
 			if k == selected {
-				fmt.Printf("* %s\n", k)
+				log.Printf(color.GreenString("* %s"), k)
 			} else {
-				fmt.Printf("  %s\n", k)
+				log.Printf("  %s", k)
 			}
 		}
 	},
@@ -102,26 +103,21 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 		name := args[0]
 
 		// Verify app doesn't exist
-		apps := viper.GetStringMap("apps")
-		if len(apps) > 0 {
-			for k := range apps {
-				if k == name {
-					log.Fatalf("App '%s' already exists", name)
-				}
-			}
+		if exists := viper.Get("apps." + name); exists != nil {
+			log.Fatalf(color.RedString("App '%s' already exists"), name)
 		}
 
 		// Verify provider exists
-		providers := viper.GetStringMap("providers")
-		if _, ok := providers[provider]; !ok {
-			log.Fatalf("Provider '%s' doesn't exist", provider)
+		if exists := viper.Get("providers." + provider); exists == nil {
+			log.Fatalf(color.RedString("Provider '%s' doesn't exist"), provider)
 		}
 
 		// Verify provider type
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType != "onelogin" {
 			log.Fatalf(
-				"Invalid provider type '%s' for a OneLogin app. Type must be 'onelogin'.", pType,
+				color.RedString("Invalid provider type '%s' for a OneLogin app. Type must be 'onelogin'."),
+				pType,
 			)
 		}
 
@@ -136,9 +132,9 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Fatalf(color.RedString("Error writing config: %v"), err)
 		}
-		log.Printf("App '%s' saved to config file", name)
+		log.Printf(color.GreenString("App '%s' saved to config file"), name)
 	},
 }
 
@@ -151,26 +147,21 @@ var cmdAppsCreateOkta = &cobra.Command{
 		name := args[0]
 
 		// Verify app doesn't exist
-		apps := viper.GetStringMap("apps")
-		if len(apps) > 0 {
-			for k := range apps {
-				if k == name {
-					log.Fatalf("App '%s' already exists", name)
-				}
-			}
+		if exists := viper.Get("apps." + name); exists != nil {
+			log.Fatalf(color.RedString("App '%s' already exists"), name)
 		}
 
 		// Verify provider exists
-		providers := viper.GetStringMap("providers")
-		if _, ok := providers[provider]; !ok {
-			log.Fatalf("Provider '%s' doesn't exist", provider)
+		if exists := viper.Get("providers." + provider); exists == nil {
+			log.Fatalf(color.RedString("Provider '%s' doesn't exist"), provider)
 		}
 
 		// Verify provider type
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType != "okta" {
 			log.Fatalf(
-				"Invalid provider type '%s' for an Okta app. Type must be 'okta'.", pType,
+				color.RedString("Invalid provider type '%s' for an Okta app. Type must be 'okta'."),
+				pType,
 			)
 		}
 
@@ -185,9 +176,9 @@ var cmdAppsCreateOkta = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Fatalf(color.RedString("Error writing config: %v"), err)
 		}
-		log.Printf("App '%s' saved to config file", name)
+		log.Printf(color.GreenString("App '%s' saved to config file"), name)
 	},
 }
 
@@ -201,19 +192,19 @@ var cmdAppsSelect = &cobra.Command{
 
 		if app == "" {
 			viper.Set("global.selected-app", "")
-			log.Println("Unsetting selected app")
+			log.Println(color.GreenString("Unsetting selected app"))
 		} else {
 			if exists := viper.Get("apps." + app); exists == nil {
-				log.Fatalf("App '%s' doesn't exist", app)
+				log.Fatalf(color.RedString("App '%s' doesn't exist"), app)
 			}
-			log.Printf("Setting selected app to '%s'", app)
+			log.Printf(color.GreenString("Setting selected app to '%s'"), app)
 			viper.Set("global.selected-app", app)
 		}
 
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Fatalf(color.RedString("Error writing config: %v"), err)
 		}
 	},
 }
