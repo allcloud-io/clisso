@@ -48,19 +48,21 @@ func processCredentials(creds *aws.Credentials, app string) error {
 var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "Get temporary credentials for an app",
-	Long: `Obtain temporary credentials for the specified app by generating a
-SAML assertion at the identity provider and using this assertion
-to retrieve temporary credentials from the cloud provider.`,
+	Long: `Obtain temporary credentials for the specified app by generating a SAML
+assertion at the identity provider and using this assertion to retrieve
+temporary credentials from the cloud provider.
+
+If no app is specified, the selected app (if configured) will be assumed.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var app string
 		if len(args) == 0 {
 			// No app specified.
-			defaultApp := viper.GetString("global.defaultApp")
-			if defaultApp == "" {
+			selected := viper.GetString("global.selected-app")
+			if selected == "" {
 				// No default app configured.
 				log.Fatal("No app specified and no default app configured")
 			}
-			app = defaultApp
+			app = selected
 		} else {
 			// App specified - use it.
 			app = args[0]
