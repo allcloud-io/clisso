@@ -3,17 +3,19 @@
 **WIP Warning! This project is still under development and isn't expected
 to be stable yet.**
 
-Clisso (pronounced `/ˈklIsoʊ/`) allows you to retrieve temporary credentials for cloud providers
+Clisso (pronounced `/ˈklIsoʊ/`) allows you to retrieve temporary credentials for cloud platforms
 by authenticating with an identity provider (IdP).
-
-The following cloud providers are currently supported:
-
-- [AWS][1]
 
 The following identity providers are currently supported:
 
 - [OneLogin][2]
 - [Okta][3]
+
+The following cloud platforms are currently supported:
+
+- [AWS][1]
+
+Clisso uses the [SAML][7] standard to authenticate users.
 
 ## Installation
 
@@ -68,6 +70,18 @@ Clisso has the following commands:
 
     Use "clisso [command] --help" for more information about a command.
 
+In order to use Clisso you will have to configure at least one *provider* and one *app*. A provider
+represents an identity provider against which Clisso authenticates. An app represents an account
+on a cloud platform such as AWS, for which Clisso retrieves credentials.
+
+### Configuring Providers
+
+TODO
+
+### Configuring Apps
+
+TODO
+
 ### Obtaining Credentials
 
 To obtain temporary credentials for an app, use the following command:
@@ -78,14 +92,6 @@ By default, Clisso will try to store the credentials in the [shared credentials 
 CLI. To save the credentials to a different file, use the `-w` flag.
 
 To print the credentials to the shell instead of storing them in a file, use the `-s` flag.
-
-### Configuring Providers
-
-TODO
-
-### Configuring Apps
-
-TODO
 
 ## Caveats and Limitations
 
@@ -98,3 +104,4 @@ TODO
 [4]: https://github.com/allcloud-io/clisso/releases/latest
 [5]: https://github.com/golang/dep
 [6]: https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
+[7]: https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language
