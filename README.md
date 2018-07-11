@@ -86,7 +86,7 @@ To configure a OneLogin identity provider, use the following command:
     clisso providers create onelogin my-provider \
         --client-id myid \
         --client-secret mysecret \
-        --subdomain mycompany
+        --subdomain mycompany \
         --username user@mycompany.com
 
 The example above creates a OneLogin identity provider configuration for Clisso, with the name
@@ -103,6 +103,27 @@ logging in to OneLogin. For example, if you log in to OneLogin using `mycompany.
 `--subdomain mycompany`.
 
 The `--username` flag is optional, and allows Clisso to always use the given value as the OneLogin
+username when retrieving credentials for apps which use this provider. Omitting this flag will make
+Clisso prompt for a username every time.
+
+#### Okta
+
+To configure an Okta identity provider, use the following command:
+
+    clisso providers create okta my-provider \
+        --base-url https://mycompany.okta.com \
+        --username user@mycompany.com
+
+The example above creates an Okta identity provider configuration for Clisso, with the name
+`my-provider`.
+
+The `--base-url` flag is your Okta base URL. You can see it in the URL when logging in to Okta.
+Please specify a full URL in one of the following formats:
+
+- `https://your-subdomain.okta.com`
+- `https://your-subdomain.oktapreview.com`
+
+The `--username` flag is optional, and allows Clisso to always use the given value as the Okta
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
