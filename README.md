@@ -81,7 +81,7 @@ on a cloud platform such as AWS, for which Clisso retrieves credentials.
 
 #### OneLogin
 
-To configure a OneLogin identity provider, use the following command:
+To create a OneLogin identity provider, use the following command:
 
     clisso providers create onelogin my-provider \
         --client-id myid \
@@ -95,8 +95,8 @@ The example above creates a OneLogin identity provider configuration for Clisso,
 The `--client-id` and `--client-secret` flags are OneLogin API credentials. You may follow the
 instructions [here][8] to obtain them. OneLogin requires using static credentials even for
 **attempting authentication**, and for that reason Clisso needs them. Please be sure to select
-**Authentication Only** when generating the credentials. Higher permissions aren't used by Clisso
-and will only pose a security risk.
+**Authentication Only** when generating the credentials. Higher-level permissions aren't used by
+Clisso and will only pose a security risk when stored at a client machine.
 
 The `--subdomain` flag is the subdomain of your OneLogin account. You can see it in the URL when
 logging in to OneLogin. For example, if you log in to OneLogin using `mycompany.onelogin.com`, use
@@ -108,7 +108,7 @@ Clisso prompt for a username every time.
 
 #### Okta
 
-To configure an Okta identity provider, use the following command:
+To create an Okta identity provider, use the following command:
 
     clisso providers create okta my-provider \
         --base-url https://mycompany.okta.com \
@@ -120,14 +120,44 @@ The example above creates an Okta identity provider configuration for Clisso, wi
 The `--base-url` flag is your Okta base URL. You can see it in the URL when logging in to Okta.
 Please specify a full URL in one of the following formats:
 
-- `https://your-subdomain.okta.com`
-- `https://your-subdomain.oktapreview.com`
+- `https://your-subdomain.okta.com` if you have an enterprise Okta account.
+- `https://your-subdomain.oktapreview.com` if you have a developer Okta account.
 
 The `--username` flag is optional, and allows Clisso to always use the given value as the Okta
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
 ### Configuring Apps
+
+#### OneLogin
+
+To create a OneLogin app, use the following command:
+
+    clisso apps create onelogin my-app \
+        --provider my-provider \
+        --app-id 12345 \
+        --principal-arn arn:aws:iam::123456789012:saml-provider/OneLogin \
+        --role-arn arn:aws:iam::123456789012:role/OneLoginSSO
+
+The example above creates a OneLogin app configuration for Clisso, with the name `my-app`.
+
+The `--provider` flag is the name of a provider which already exists in the config file.
+
+The `--app-id` flag is the OneLogin app ID. This ID can be retrieved using the OneLogin admin
+interface or the OneLogin API. Unfortunately, the OneLogin API doesn't allow obtaining app IDs
+without storing sensitive, high-level permissions on the client machine. For that reason we have to
+manually configure the app ID for every app.
+
+>NOTE: The ID seen in the browser URL when visiting a OneLogin app as a user is **NOT** the app ID.
+>Only a OneLogin administrator can obtain an app ID.
+
+The `--principal-arn` is the ARN of the [identity provider][9] that was created on AWS IAM for the
+OneLogin integration.
+
+The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
+authentication against OneLogin.
+
+#### Okta
 
 TODO
 
@@ -155,3 +185,4 @@ To print the credentials to the shell instead of storing them in a file, use the
 [6]: https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
 [7]: https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language
 [8]: https://developers.onelogin.com/api-docs/1/getting-started/working-with-api-credentials
+[9]: https://onelogin.service-now.com/support?id=kb_article&sys_id=de999903db109700d5505eea4b961966
