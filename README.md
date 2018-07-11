@@ -159,7 +159,30 @@ authentication against OneLogin.
 
 #### Okta
 
-TODO
+To create an Okta app, use the following command:
+
+    clisso apps create okta my-app \
+        --provider my-provider \
+        --url https://mycompany.okta.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137 \
+        --principal-arn arn:aws:iam::123456789012:saml-provider/Okta \
+        --role-arn arn:aws:iam::123456789012:role/OktaSSO
+
+The example above creates an Okta app configuration for Clisso, with the name `my-app`.
+
+The `--provider` flag is the name of a provider which already exists in the config file.
+
+The `--url` flag is the app's **embed link**. This can be retrieved as an Okta user by examining
+the URL of an app on the Okta web UI. The same can also be retrieved as an administrator by
+clicking an app in the **Applications** view. The embed link is on the **General** tab.
+
+>NOTE: An Okta embed link must not contain an HTTP query, only the base URL. For AWS apps, the link
+should end with `/137`.
+
+The `--principal-arn` is the ARN of the [identity provider][9] that was created on AWS IAM for the
+Okta integration.
+
+The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
+authentication against Okta.
 
 ### Obtaining Credentials
 
