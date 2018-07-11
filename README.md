@@ -30,6 +30,8 @@ perform the following:
 1. Rename the binary using `mv clisso-<platform>-<arch> clisso`.
 1. Move the binary to a place under your path.
 
+Clisso supports **macOS**, **Linux** and **Windows**.
+
 ### Building from Source
 
 Clisso uses [dep][5] for dependency management. You will need it to install dependencies. You will
