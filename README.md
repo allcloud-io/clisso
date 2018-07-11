@@ -49,6 +49,9 @@ To build Clisso from source, do the following:
 Clisso stores configuration in a file called `.clisso.yaml` under the user's home directory. You
 may specify a different config file using the `-c` flag.
 
+>NOTE: It is recommended to use the `clisso` command to manage the config file, however you may
+>also edit the file manually. The file is in YAML format.
+
 ## Usage
 
 Clisso has the following commands:
@@ -76,7 +79,32 @@ on a cloud platform such as AWS, for which Clisso retrieves credentials.
 
 ### Configuring Providers
 
-TODO
+#### OneLogin
+
+To configure a OneLogin identity provider, use the following command:
+
+    clisso providers create onelogin my-provider \
+        --client-id myid \
+        --client-secret mysecret \
+        --subdomain mycompany
+        --username user@mycompany.com
+
+The example above creates a OneLogin identity provider configuration for Clisso, with the name
+`my-provider`.
+
+The `--client-id` and `--client-secret` flags are OneLogin API credentials. You may follow the
+instructions [here][8] to obtain them. OneLogin requires using static credentials even for
+**attempting authentication**, and for that reason Clisso needs them. Please be sure to select
+**Authentication Only** when generating the credentials. Higher permissions aren't used by Clisso
+and will only pose a security risk.
+
+The `--subdomain` flag is the subdomain of your OneLogin account. You can see it in the URL when
+logging in to OneLogin. For example, if you log in to OneLogin using `mycompany.onelogin.com`, use
+`--subdomain mycompany`.
+
+The `--username` flag is optional, and allows Clisso to always use the given value as the OneLogin
+username when retrieving credentials for apps which use this provider. Omitting this flag will make
+Clisso prompt for a username every time.
 
 ### Configuring Apps
 
@@ -105,3 +133,4 @@ To print the credentials to the shell instead of storing them in a file, use the
 [5]: https://github.com/golang/dep
 [6]: https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
 [7]: https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language
+[8]: https://developers.onelogin.com/api-docs/1/getting-started/working-with-api-credentials
