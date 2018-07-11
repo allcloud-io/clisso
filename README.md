@@ -77,11 +77,34 @@ In order to use Clisso you will have to configure at least one *provider* and on
 represents an identity provider against which Clisso authenticates. An app represents an account
 on a cloud platform such as AWS, for which Clisso retrieves credentials.
 
-### Configuring Providers
+### Listing Providers
 
-#### Creating a Provider
+To list the existing providers on Clisso, use the following command:
 
-##### OneLogin
+    clisso providers ls
+
+Following is a sample output:
+
+    okta-prod
+    onelogin-dev
+    onelogin-prod
+
+### Listing Apps
+
+To list the existing apps on Clisso, use the following command:
+
+    clisso apps ls
+
+Following is a sample output:
+
+      dev-account
+    * prod-account
+
+The app marked with an asterisk is [selected](#selecting-an-app).
+
+### Creating Providers
+
+#### OneLogin
 
 To create a OneLogin identity provider, use the following command:
 
@@ -108,7 +131,7 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
-##### Okta
+#### Okta
 
 To create an Okta identity provider, use the following command:
 
@@ -129,16 +152,14 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
-#### Deleting a Provider
+### Deleting Providers
 
 Deleting providers using the `clisso` command isn't currently supported. To delete a provider,
 remove its configuration from the config file.
 
-### Configuring Apps
+### Creating Apps
 
-#### Creating an App
-
-##### OneLogin
+#### OneLogin
 
 To create a OneLogin app, use the following command:
 
@@ -166,7 +187,7 @@ OneLogin integration.
 The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
 authentication against OneLogin.
 
-##### Okta
+#### Okta
 
 To create an Okta app, use the following command:
 
@@ -193,7 +214,7 @@ Okta integration.
 The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
 authentication against Okta.
 
-#### Deleting an App
+### Deleting Apps
 
 Deleting apps using the `clisso` command isn't currently supported. To delete an app, remove its
 configuration from the config file.
@@ -202,12 +223,24 @@ configuration from the config file.
 
 To obtain temporary credentials for an app, use the following command:
 
-    $ clisso get <app-name>
+    clisso get my-app
+
+The example above will obtain credentials for an app named `my-app`.
 
 By default, Clisso will try to store the credentials in the [shared credentials file][6] of the AWS
 CLI. To save the credentials to a different file, use the `-w` flag.
 
 To print the credentials to the shell instead of storing them in a file, use the `-s` flag.
+
+### Selecting an App
+
+You can **select** an app by using the following command:
+
+    clisso apps select my-app
+
+You can get credentials for the currently-selected app by simply running `clisso get`, without
+specifying an app name. The currently-selected app will have an asterisk near its name when listing
+apps using `clisso apps ls`.
 
 ## Caveats and Limitations
 
