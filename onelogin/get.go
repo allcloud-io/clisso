@@ -2,14 +2,12 @@ package onelogin
 
 import (
 	"fmt"
-	"time"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/briandowns/spinner"
 	"github.com/howeyc/gopass"
 )
 
@@ -31,13 +29,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	c := NewClient()
 
-	// Initialize spinner
-	s := spinner.New(spinner.CharSets[14], 50*time.Millisecond)
-
 	// Get OneLogin access token
-	s.Start()
 	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
 	}
@@ -65,9 +58,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		Subdomain: p.Subdomain,
 	}
 
-	s.Start()
 	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
@@ -103,9 +94,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		OtpToken:   otp,
 	}
 
-	s.Start()
 	rMfa, err := c.VerifyFactor(token, &pMfa)
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("verifying factor: %v", err)
 	}
@@ -122,9 +111,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	sess := session.Must(session.NewSession())
 	svc := sts.New(sess)
 
-	s.Start()
 	resp, err := svc.AssumeRoleWithSAML(&pAssumeRole)
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("assuming role: %v", err)
 	}
