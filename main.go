@@ -14,6 +14,8 @@ var version = "undefined"
 
 func main() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+
+	// Handle terminal colors on Windows machines.
 	if runtime.GOOS == "windows" {
 		log.SetOutput(colorable.NewColorableStdout())
 	}
