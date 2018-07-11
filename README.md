@@ -1,8 +1,5 @@
 # Clisso: CLI Single Sign-On
 
-**WIP Warning! This project is still under development and isn't expected
-to be stable yet.**
-
 Clisso (pronounced `/ˈklIsoʊ/`) allows you to retrieve temporary credentials for cloud platforms
 by authenticating with an identity provider (IdP).
 
@@ -248,6 +245,10 @@ apps using `clisso apps ls`.
 
 - No support for Okta applications with MFA enabled **at the application level**.
 - No support for IAM role selection.
+
+## Contributing
+
+TODO
 
 [1]: https://aws.amazon.com/
 [2]: https://www.onelogin.com/
