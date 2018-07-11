@@ -44,12 +44,6 @@
   version = "v1.12.15"
 
 [[projects]]
-  name = "github.com/briandowns/spinner"
-  packages = ["."]
-  revision = "5b875a9171af19dbde37e70a8fcbe2ebd7285e05"
-  version = "1.1"
-
-[[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
   revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
