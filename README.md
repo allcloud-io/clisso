@@ -79,7 +79,9 @@ on a cloud platform such as AWS, for which Clisso retrieves credentials.
 
 ### Configuring Providers
 
-#### OneLogin
+#### Creating a Provider
+
+##### OneLogin
 
 To create a OneLogin identity provider, use the following command:
 
@@ -106,7 +108,7 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
-#### Okta
+##### Okta
 
 To create an Okta identity provider, use the following command:
 
@@ -127,9 +129,16 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
+#### Deleting a Provider
+
+Deleting providers using the `clisso` command isn't currently supported. To delete a provider,
+remove its configuration from the config file.
+
 ### Configuring Apps
 
-#### OneLogin
+#### Creating an App
+
+##### OneLogin
 
 To create a OneLogin app, use the following command:
 
@@ -157,7 +166,7 @@ OneLogin integration.
 The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
 authentication against OneLogin.
 
-#### Okta
+##### Okta
 
 To create an Okta app, use the following command:
 
@@ -183,6 +192,11 @@ Okta integration.
 
 The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
 authentication against Okta.
+
+#### Deleting an App
+
+Deleting apps using the `clisso` command isn't currently supported. To delete an app, remove its
+configuration from the config file.
 
 ### Obtaining Credentials
 
