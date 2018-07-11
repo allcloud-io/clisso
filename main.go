@@ -2,6 +2,9 @@ package main
 
 import (
 	"log"
+	"runtime"
+
+	"github.com/mattn/go-colorable"
 
 	"github.com/allcloud-io/clisso/cmd"
 )
@@ -11,5 +14,9 @@ var version = "undefined"
 
 func main() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+	if runtime.GOOS == "windows" {
+		log.SetOutput(colorable.NewColorableStdout())
+	}
+
 	cmd.Execute(version)
 }
