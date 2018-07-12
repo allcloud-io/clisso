@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
@@ -33,7 +34,8 @@ func init() {
 // processCredentials prints the given Credentials to a file and/or to the shell.
 func processCredentials(creds *aws.Credentials, app string) error {
 	if printToShell {
-		aws.WriteToShell(creds, os.Stdout)
+		// Print credentials to shell using the correct syntax for the OS.
+		aws.WriteToShell(creds, runtime.GOOS == "windows", os.Stdout)
 	} else {
 		path, err := homedir.Expand(viper.GetString("global.credentials-path"))
 		if err != nil {
