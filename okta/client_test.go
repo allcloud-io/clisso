@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func getTestServer(data string) *httptest.Server {
@@ -82,5 +83,34 @@ func TestGetSessionTokenMFARequired(t *testing.T) {
 }
 
 func TestVerifyFactor(t *testing.T) {
-	// TODO
+	data := `{
+		"expiresAt": "2015-11-03T10:15:57.000Z",
+		"status": "SUCCESS",
+		"sessionToken": "fake_token"
+	}`
+
+	ts := getTestServer(data)
+	defer ts.Close()
+
+	c.BaseURL = ts.URL
+
+	resp, err := c.VerifyFactor(&VerifyFactorParams{
+		FactorID:   "fake_id",
+		StateToken: "fake_state_token",
+		PassCode:   "123456",
+	})
+	if err != nil {
+		t.Errorf("verifying factor: %v", err)
+	}
+
+	if resp.Status != "SUCCESS" {
+		t.Errorf("Wrong response, got: %v, want: %v", resp.Status, "SUCCESS")
+	}
+	if resp.SessionToken != "fake_token" {
+		t.Errorf("Wrong response, got: %v, want: %v", resp.SessionToken, "fake_token")
+	}
+	exp, _ := time.Parse("2006-01-02T15:04:05.000Z", "2015-11-03T10:15:57.000Z")
+	if resp.ExpiresAt != exp {
+		t.Errorf("Wrong response, got: %v, want: %v", resp.ExpiresAt, exp)
+	}
 }
