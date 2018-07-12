@@ -47,14 +47,25 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	return cfg.SaveTo(filename)
 }
 
-// WriteToShell writes (prints) credentials to stdout.
-func WriteToShell(c *Credentials, w io.Writer) {
+// WriteToShell writes (prints) credentials to stdout. If windows is true, Windows syntax will be
+// used.
+func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 	log.Println(color.GreenString("Please paste the following in your shell:"))
-	fmt.Fprintf(
-		w,
-		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
-		c.AccessKeyID,
-		c.SecretAccessKey,
-		c.SessionToken,
-	)
+	if windows {
+		fmt.Fprintf(
+			w,
+			"set AWS_ACCESS_KEY_ID=%v\nset AWS_SECRET_ACCESS_KEY=%v\nset AWS_SESSION_TOKEN=%v\n",
+			c.AccessKeyID,
+			c.SecretAccessKey,
+			c.SessionToken,
+		)
+	} else {
+		fmt.Fprintf(
+			w,
+			"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
+			c.AccessKeyID,
+			c.SecretAccessKey,
+			c.SessionToken,
+		)
+	}
 }

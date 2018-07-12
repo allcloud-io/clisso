@@ -80,7 +80,7 @@ func TestWriteToFile(t *testing.T) {
 	}
 }
 
-func TestWriteToShell(t *testing.T) {
+func TestWriteToShellUnix(t *testing.T) {
 	id := "testkey"
 	sec := "testsecret"
 	tok := "testtoken"
@@ -94,11 +94,40 @@ func TestWriteToShell(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToShell(&c, &b)
+	WriteToShell(&c, false, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(
 		"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
+		id,
+		sec,
+		tok,
+	)
+
+	if got != want {
+		t.Fatalf("Wrong info written to shell: got %v want %v", got, want)
+	}
+}
+
+func TestWriteToShellWindows(t *testing.T) {
+	id := "testkey"
+	sec := "testsecret"
+	tok := "testtoken"
+	exp := time.Now()
+
+	c := Credentials{
+		AccessKeyID:     id,
+		SecretAccessKey: sec,
+		SessionToken:    tok,
+		Expiration:      exp,
+	}
+	var b bytes.Buffer
+
+	WriteToShell(&c, true, &b)
+
+	got := b.String()
+	want := fmt.Sprintf(
+		"set AWS_ACCESS_KEY_ID=%v\nset AWS_SECRET_ACCESS_KEY=%v\nset AWS_SESSION_TOKEN=%v\n",
 		id,
 		sec,
 		tok,
