@@ -224,12 +224,19 @@ To obtain temporary credentials for an app, use the following command:
 
     clisso get my-app
 
-The example above will obtain credentials for an app named `my-app`.
+The example above will obtain credentials for an app named `my-app`. Type your credentials for the
+relevant identity provider. If multi-factor authentication is enabled on your account, you will be
+asked in addition for a one-time password.
 
-By default, Clisso will try to store the credentials in the [shared credentials file][6] of the AWS
-CLI. To save the credentials to a different file, use the `-w` flag.
+By default, Clisso will store the credentials in the [shared credentials file][6] of the AWS CLI
+with the app's name as the [profile name][10]. You can use the temporary credentials by specifying
+the profile name as an argument to the AWS CLI (`--profile my-profile`), by setting the
+`AWS_PROFILE` environment variable or by configuring any AWS SDK to use the profile.
 
-To print the credentials to the shell instead of storing them in a file, use the `-s` flag.
+To save the credentials to a custom file, use the `-w` flag.
+
+To print the credentials to the shell instead of storing them in a file, use the `-s` flag. This
+will output shell commands which can be pasted in any shell to use the credentials.
 
 ### Selecting an App
 
@@ -259,3 +266,4 @@ TODO
 [7]: https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language
 [8]: https://developers.onelogin.com/api-docs/1/getting-started/working-with-api-credentials
 [9]: https://onelogin.service-now.com/support?id=kb_article&sys_id=de999903db109700d5505eea4b961966
+[10]: https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
