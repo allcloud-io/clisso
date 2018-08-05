@@ -13,7 +13,6 @@ import (
 	"github.com/howeyc/gopass"
 )
 
-// TODO Allow configuration from CLI (CLI > env var > config file)
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
