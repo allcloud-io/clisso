@@ -2,16 +2,30 @@ package onelogin
 
 import (
 	"fmt"
+	"runtime"
+	"time"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/briandowns/spinner"
 	"github.com/howeyc/gopass"
 )
 
-// TODO Allow configuration from CLI (CLI > env var > config file)
+// SpinnerWrapper is used to abstract a spinner so that it can be conveniently disabled on Windows.
+type SpinnerWrapper interface {
+	Start()
+	Stop()
+}
+
+// noopSpinner is a mock spinner which doesn't do anything. It is used to centrally disable the
+// spinner on Windows (because it isn't supported by the Windows terminal).
+type noopSpinner struct{}
+
+func (s *noopSpinner) Start() {}
+func (s *noopSpinner) Stop()  {}
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
@@ -29,8 +43,18 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	c := NewClient()
 
+	// Initialize spinner
+	var s SpinnerWrapper
+	if runtime.GOOS == "windows" {
+		s = &noopSpinner{}
+	} else {
+		s = spinner.New(spinner.CharSets[14], 50*time.Millisecond)
+	}
+
 	// Get OneLogin access token
+	s.Start()
 	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
 	}
@@ -58,7 +82,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		Subdomain: p.Subdomain,
 	}
 
+	s.Start()
 	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
@@ -94,7 +120,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		OtpToken:   otp,
 	}
 
+	s.Start()
 	rMfa, err := c.VerifyFactor(token, &pMfa)
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("verifying factor: %v", err)
 	}
@@ -111,7 +139,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	sess := session.Must(session.NewSession())
 	svc := sts.New(sess)
 
+	s.Start()
 	resp, err := svc.AssumeRoleWithSAML(&pAssumeRole)
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("assuming role: %v", err)
 	}

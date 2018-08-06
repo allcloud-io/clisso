@@ -2,14 +2,30 @@ package okta
 
 import (
 	"fmt"
+	"runtime"
+	"time"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/briandowns/spinner"
 	"github.com/howeyc/gopass"
 )
+
+// SpinnerWrapper is used to abstract a spinner so that it can be conveniently disabled on Windows.
+type SpinnerWrapper interface {
+	Start()
+	Stop()
+}
+
+// noopSpinner is a mock spinner which doesn't do anything. It is used to centrally disable the
+// spinner on Windows (because it isn't supported by the Windows terminal).
+type noopSpinner struct{}
+
+func (s *noopSpinner) Start() {}
+func (s *noopSpinner) Stop()  {}
 
 // Get gets temporary credentials for the given app.
 func Get(app, provider string) (*awsprovider.Credentials, error) {
@@ -45,11 +61,21 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, fmt.Errorf("Couldn't read password from terminal")
 	}
 
+	// Initialize spinner
+	var s SpinnerWrapper
+	if runtime.GOOS == "windows" {
+		s = &noopSpinner{}
+	} else {
+		s = spinner.New(spinner.CharSets[14], 50*time.Millisecond)
+	}
+
 	// Get session token
+	s.Start()
 	resp, err := c.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
 		Password: string(pass),
 	})
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("getting session token: %v", err)
 	}
@@ -66,11 +92,13 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		var otp string
 		fmt.Scanln(&otp)
 
+		s.Start()
 		vfResp, err := c.VerifyFactor(&VerifyFactorParams{
 			FactorID:   resp.Embedded.Factors[0].ID,
 			PassCode:   otp,
 			StateToken: resp.StateToken,
 		})
+		s.Stop()
 		if err != nil {
 			return nil, fmt.Errorf("verifying MFA: %v", err)
 		}
@@ -81,7 +109,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Launch Okta app with session token
+	s.Start()
 	samlAssertion, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("Error launching app: %v", err)
 	}
@@ -96,7 +126,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	sess := session.Must(session.NewSession())
 	svc := sts.New(sess)
 
+	s.Start()
 	aResp, err := svc.AssumeRoleWithSAML(&input)
+	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("assuming role: %v", err)
 	}
