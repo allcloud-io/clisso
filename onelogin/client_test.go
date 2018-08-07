@@ -3,6 +3,7 @@ package onelogin
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -39,7 +40,7 @@ func TestGenerateTokens(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	c.Endpoints.GenerateTokens = ts.URL
+	c.Endpoints.base, _ = url.Parse(ts.URL)
 
 	resp, err := c.GenerateTokens("test", "test")
 	if err != nil {
@@ -81,7 +82,7 @@ func TestGenerateSamlAssertion(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	c.Endpoints.GenerateSamlAssertion = ts.URL
+	c.Endpoints.base, _ = url.Parse(ts.URL)
 
 	p := GenerateSamlAssertionParams{
 		UsernameOrEmail: "test",
@@ -116,7 +117,7 @@ func TestVerifyFactor(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	c.Endpoints.VerifyFactor = ts.URL
+	c.Endpoints.base, _ = url.Parse(ts.URL)
 
 	p := VerifyFactorParams{
 		AppId:      "test",

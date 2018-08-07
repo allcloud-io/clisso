@@ -41,7 +41,10 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}
 
-	c := NewClient()
+	c, err := NewClient(p.Region)
+	if err != nil {
+		return nil, err
+	}
 
 	// Initialize spinner
 	var s SpinnerWrapper
