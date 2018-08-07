@@ -102,7 +102,7 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 		switch region {
 		case "US", "EU":
 		default:
-			log.Fatal(color.RedString("Region must be one of US or EU"))
+			log.Fatal(color.RedString("Region must be either US or EU"))
 		}
 
 		conf := map[string]string{
