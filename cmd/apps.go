@@ -15,8 +15,6 @@ var provider string
 
 // OneLogin
 var appID string
-var principalARN string
-var roleARN string
 
 // Okta
 var URL string
@@ -24,22 +22,14 @@ var URL string
 func init() {
 	// OneLogin
 	cmdAppsCreateOneLogin.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
-	cmdAppsCreateOneLogin.Flags().StringVar(&principalARN, "principal-arn", "", "ARN of the IdP on AWS")
-	cmdAppsCreateOneLogin.Flags().StringVar(&roleARN, "role-arn", "", "ARN of the IAM role on AWS")
 	cmdAppsCreateOneLogin.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 	cmdAppsCreateOneLogin.MarkFlagRequired("app-id")
-	cmdAppsCreateOneLogin.MarkFlagRequired("principal-arn")
 	cmdAppsCreateOneLogin.MarkFlagRequired("provider")
-	cmdAppsCreateOneLogin.MarkFlagRequired("role-arn")
 
 	// Okta
-	cmdAppsCreateOkta.Flags().StringVar(&principalARN, "principal-arn", "", "ARN of the IdP on AWS")
 	cmdAppsCreateOkta.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
-	cmdAppsCreateOkta.Flags().StringVar(&roleARN, "role-arn", "", "ARN of the IAM role on AWS")
 	cmdAppsCreateOkta.Flags().StringVar(&URL, "url", "", "Okta app URL")
-	cmdAppsCreateOkta.MarkFlagRequired("principal-arn")
 	cmdAppsCreateOkta.MarkFlagRequired("provider")
-	cmdAppsCreateOkta.MarkFlagRequired("role-arn")
 	cmdAppsCreateOkta.MarkFlagRequired("url")
 
 	// Build command tree
@@ -122,10 +112,8 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 		}
 
 		conf := map[string]string{
-			"app-id":        appID,
-			"principal-arn": principalARN,
-			"role-arn":      roleARN,
-			"provider":      provider,
+			"app-id":   appID,
+			"provider": provider,
 		}
 		viper.Set(fmt.Sprintf("apps.%s", name), conf)
 
@@ -166,10 +154,8 @@ var cmdAppsCreateOkta = &cobra.Command{
 		}
 
 		conf := map[string]string{
-			"principal-arn": principalARN,
-			"provider":      provider,
-			"role-arn":      roleARN,
-			"url":           URL,
+			"provider": provider,
+			"url":      URL,
 		}
 		viper.Set(fmt.Sprintf("apps.%s", name), conf)
 
