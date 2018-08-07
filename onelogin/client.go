@@ -230,6 +230,8 @@ func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFacto
 
 // NewClient creates a new Client and returns a pointer to it.
 func NewClient(region string) (c *Client, err error) {
+	c = new(Client)
+
 	c.Endpoints = Endpoints{Region: region}
 	err = c.Endpoints.setBase()
 

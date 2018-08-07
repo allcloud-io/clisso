@@ -17,6 +17,27 @@ func getTestServer(data string) *httptest.Server {
 
 var c = Client{}
 
+func TestNewClient(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		region      string
+		expectError bool
+	}{
+		{"Valid region", "US", false},
+		{"Invalid region", "invalid", true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := NewClient(test.region)
+			if test.expectError && err == nil {
+				t.Errorf("expected error")
+			}
+			if !test.expectError && err != nil {
+				t.Errorf("unexpected error %+v", err)
+			}
+		})
+	}
+}
+
 func TestGenerateTokens(t *testing.T) {
 	data := `{
     "status": {
