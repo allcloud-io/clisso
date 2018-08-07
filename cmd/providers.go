@@ -30,7 +30,7 @@ func init() {
 	cmdProvidersCreateOneLogin.Flags().StringVar(&username, "username", "",
 		"Don't ask for a username and use this instead")
 	cmdProvidersCreateOneLogin.Flags().StringVar(&region, "region", "US",
-		"Region in which onelogin API lives")
+		"Region in which the OneLogin API lives")
 
 	cmdProvidersCreateOneLogin.MarkFlagRequired("client-id")
 	cmdProvidersCreateOneLogin.MarkFlagRequired("client-secret")
