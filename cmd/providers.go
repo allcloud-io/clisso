@@ -15,6 +15,7 @@ var clientID string
 var clientSecret string
 var subdomain string
 var username string
+var region string
 
 // Okta
 var baseURL string
@@ -28,6 +29,9 @@ func init() {
 	cmdProvidersCreateOneLogin.Flags().StringVar(&subdomain, "subdomain", "", "OneLogin subdomain")
 	cmdProvidersCreateOneLogin.Flags().StringVar(&username, "username", "",
 		"Don't ask for a username and use this instead")
+	cmdProvidersCreateOneLogin.Flags().StringVar(&region, "region", "US",
+		"Region in which onelogin API lives")
+
 	cmdProvidersCreateOneLogin.MarkFlagRequired("client-id")
 	cmdProvidersCreateOneLogin.MarkFlagRequired("client-secret")
 	cmdProvidersCreateOneLogin.MarkFlagRequired("subdomain")
@@ -101,6 +105,7 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 			"subdomain":     subdomain,
 			"type":          "onelogin",
 			"username":      username,
+			"region":        region,
 		}
 		viper.Set(fmt.Sprintf("providers.%s", name), conf)
 

@@ -14,6 +14,7 @@ type OneLoginProviderConfig struct {
 	Subdomain    string
 	Type         string
 	Username     string
+	Region       string
 }
 
 // GetOneLoginProvider returns a OneLoginProviderConfig struct containing the configuration for
@@ -22,7 +23,8 @@ func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 	clientSecret := viper.GetString(fmt.Sprintf("providers.%s.client-secret", p))
 	clientID := viper.GetString(fmt.Sprintf("providers.%s.client-id", p))
 	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", p))
-	user := viper.GetString(fmt.Sprintf("providers.%s.username", p))
+	username := viper.GetString(fmt.Sprintf("providers.%s.username", p))
+	region := viper.GetString(fmt.Sprintf("providers.%s.region", p))
 
 	if clientSecret == "" {
 		return nil, errors.New("client-secret config value must bet set")
@@ -34,11 +36,16 @@ func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 		return nil, errors.New("subdomain config value must bet set")
 	}
 
+	if region == "" {
+		region = "US"
+	}
+
 	c := OneLoginProviderConfig{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Subdomain:    subdomain,
-		Username:     user,
+		Username:     username,
+		Region:       region,
 	}
 
 	return &c, nil
