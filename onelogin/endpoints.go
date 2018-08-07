@@ -32,7 +32,7 @@ func (e *Endpoints) setBase() (err error) {
 		base = euBase
 
 	default:
-		return fmt.Errorf("Region %q is an invalid onelogin region. Valid values are EU or US", e.Region)
+		return fmt.Errorf("Region %q is an invalid OneLogin region. Valid values are EU or US.", e.Region)
 	}
 
 	e.base, err = url.Parse(base)
