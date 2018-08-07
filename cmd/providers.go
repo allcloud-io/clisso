@@ -99,6 +99,12 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 			log.Fatalf(color.RedString("Provider '%s' already exists"), name)
 		}
 
+		switch region {
+		case "US", "EU":
+		default:
+			log.Fatal(color.RedString("Region must be one of US or EU"))
+		}
+
 		conf := map[string]string{
 			"client-id":     clientID,
 			"client-secret": clientSecret,
