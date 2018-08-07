@@ -10,22 +10,6 @@ import (
 	"time"
 )
 
-// TODO Add support for eu.onelogin.com
-const (
-	GenerateTokensURL        string = "https://api.us.onelogin.com/auth/oauth2/token"
-	GenerateSamlAssertionURL string = "https://api.us.onelogin.com/api/1/saml_assertion"
-	GetUserByEmailURL        string = "https://api.us.onelogin.com/api/1/users?email=%s"
-	VerifyFactorURL          string = "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor"
-)
-
-// Endpoints represent the OneLogin API HTTP endpoints.
-type Endpoints struct {
-	GenerateSamlAssertion string
-	GenerateTokens        string
-	GetUserByEmail        string
-	VerifyFactor          string
-}
-
 // Client represents a OneLogin API client.
 type Client struct {
 	http.Client
@@ -163,7 +147,7 @@ func (c *Client) GenerateTokens(clientID, clientSecret string) (string, error) {
 	}
 	body := GenerateTokensParams{GrantType: "client_credentials"}
 
-	req, err := makeRequest(http.MethodPost, c.Endpoints.GenerateTokens, headers, &body)
+	req, err := makeRequest(http.MethodPost, c.Endpoints.GenerateTokens(), headers, &body)
 	if err != nil {
 		return "", fmt.Errorf("creating request: %v", err)
 	}
@@ -193,7 +177,7 @@ func (c *Client) GenerateSamlAssertion(token string, p *GenerateSamlAssertionPar
 	}
 	body := p
 
-	req, err := makeRequest(http.MethodPost, c.Endpoints.GenerateSamlAssertion, headers, &body)
+	req, err := makeRequest(http.MethodPost, c.Endpoints.GenerateSamlAssertion(), headers, &body)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}
@@ -225,7 +209,7 @@ func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFacto
 	}
 	body := p
 
-	req, err := makeRequest(http.MethodPost, c.Endpoints.VerifyFactor, headers, &body)
+	req, err := makeRequest(http.MethodPost, c.Endpoints.VerifyFactor(), headers, &body)
 	if err != nil {
 		// TODO Let the user know which method generated the error
 		return nil, fmt.Errorf("creating request: %v", err)
@@ -245,13 +229,11 @@ func (c *Client) VerifyFactor(token string, p *VerifyFactorParams) (*VerifyFacto
 }
 
 // NewClient creates a new Client and returns a pointer to it.
-func NewClient() *Client {
-	return &Client{
-		Endpoints: Endpoints{
-			GenerateSamlAssertion: GenerateSamlAssertionURL,
-			GenerateTokens:        GenerateTokensURL,
-			GetUserByEmail:        GetUserByEmailURL,
-			VerifyFactor:          VerifyFactorURL,
-		},
-	}
+func NewClient(region string) (c *Client, err error) {
+	c = new(Client)
+
+	c.Endpoints = Endpoints{Region: region}
+	err = c.Endpoints.setBase()
+
+	return
 }

@@ -3,6 +3,7 @@ package onelogin
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -15,6 +16,27 @@ func getTestServer(data string) *httptest.Server {
 }
 
 var c = Client{}
+
+func TestNewClient(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		region      string
+		expectError bool
+	}{
+		{"Valid region", "US", false},
+		{"Invalid region", "invalid", true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := NewClient(test.region)
+			if test.expectError && err == nil {
+				t.Errorf("expected error")
+			}
+			if !test.expectError && err != nil {
+				t.Errorf("unexpected error %+v", err)
+			}
+		})
+	}
+}
 
 func TestGenerateTokens(t *testing.T) {
 	data := `{
@@ -39,7 +61,7 @@ func TestGenerateTokens(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	c.Endpoints.GenerateTokens = ts.URL
+	c.Endpoints.base, _ = url.Parse(ts.URL)
 
 	resp, err := c.GenerateTokens("test", "test")
 	if err != nil {
@@ -81,7 +103,7 @@ func TestGenerateSamlAssertion(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	c.Endpoints.GenerateSamlAssertion = ts.URL
+	c.Endpoints.base, _ = url.Parse(ts.URL)
 
 	p := GenerateSamlAssertionParams{
 		UsernameOrEmail: "test",
@@ -116,7 +138,7 @@ func TestVerifyFactor(t *testing.T) {
 	ts := getTestServer(data)
 	defer ts.Close()
 
-	c.Endpoints.VerifyFactor = ts.URL
+	c.Endpoints.base, _ = url.Parse(ts.URL)
 
 	p := VerifyFactorParams{
 		AppId:      "test",
