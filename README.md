@@ -166,9 +166,7 @@ To create a OneLogin app, use the following command:
 
     clisso apps create onelogin my-app \
         --provider my-provider \
-        --app-id 12345 \
-        --principal-arn arn:aws:iam::123456789012:saml-provider/OneLogin \
-        --role-arn arn:aws:iam::123456789012:role/OneLoginSSO
+        --app-id 12345
 
 The example above creates a OneLogin app configuration for Clisso, with the name `my-app`.
 
@@ -182,21 +180,13 @@ manually configure the app ID for every app.
 >NOTE: The ID seen in the browser URL when visiting a OneLogin app as a user is **NOT** the app ID.
 >Only a OneLogin administrator can obtain an app ID.
 
-The `--principal-arn` is the ARN of the [identity provider][9] that was created on AWS IAM for the
-OneLogin integration.
-
-The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
-authentication against OneLogin.
-
 #### Okta
 
 To create an Okta app, use the following command:
 
     clisso apps create okta my-app \
         --provider my-provider \
-        --url https://mycompany.okta.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137 \
-        --principal-arn arn:aws:iam::123456789012:saml-provider/Okta \
-        --role-arn arn:aws:iam::123456789012:role/OktaSSO
+        --url https://mycompany.okta.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137
 
 The example above creates an Okta app configuration for Clisso, with the name `my-app`.
 
@@ -208,12 +198,6 @@ clicking an app in the **Applications** view. The embed link is on the **General
 
 >NOTE: An Okta embed link must not contain an HTTP query, only the base URL. For AWS apps, the link
 should end with `/137`.
-
-The `--principal-arn` is the ARN of the [identity provider][9] that was created on AWS IAM for the
-Okta integration.
-
-The `--role-arn` is the ARN of the IAM role that should be assumed following a successful
-authentication against Okta.
 
 ### Deleting Apps
 
@@ -253,7 +237,6 @@ apps using `clisso apps ls`.
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
-- No support for IAM role selection.
 
 ## Contributing
 
