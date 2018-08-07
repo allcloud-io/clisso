@@ -111,7 +111,8 @@ To create a OneLogin identity provider, use the following command:
         --client-id myid \
         --client-secret mysecret \
         --subdomain mycompany \
-        --username user@mycompany.com
+        --username user@mycompany.com \
+        --region US
 
 The example above creates a OneLogin identity provider configuration for Clisso, with the name
 `my-provider`.
