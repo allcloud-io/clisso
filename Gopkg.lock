@@ -94,6 +94,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:30ab9deaf9ab00ba3e5ff2ea6dbedc83720b1563e311a05d2605dd62aa4fdc3f"
+  name = "github.com/guelfey/go.dbus"
+  packages = ["."]
+  pruneopts = ""
+  revision = "f6a3a2366cc39b8479cadc499d3c735fb10fbdda"
+
+[[projects]]
+  branch = "master"
   digest = "1:147d671753effde6d3bcd58fc74c1d67d740196c84c280c762a5417319499972"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -235,6 +243,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:477097b49b467b18aabe6dd53c5ec6d262723d9880ddade6fe5200200b2e6827"
+  name = "github.com/tmc/keyring"
+  packages = ["."]
+  pruneopts = ""
+  revision = "839169085ae146fc7a34bcb34dfd7ab216d23991"
+
+[[projects]]
+  branch = "master"
   digest = "1:9171fe485c166e2d78471fabe2fb3497290552201127058205c3132edd71f7eb"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -313,6 +329,7 @@
     "github.com/mitchellh/go-homedir",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "github.com/tmc/keyring",
     "golang.org/x/net/publicsuffix",
   ]
   solver-name = "gps-cdcl"
