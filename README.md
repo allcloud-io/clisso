@@ -3,6 +3,8 @@
 Clisso (pronounced `/ˈklIsoʊ/`) allows you to retrieve temporary credentials for cloud platforms
 by authenticating with an identity provider (IdP).
 
+![clisso demo](img/demo.gif)
+
 The following identity providers are currently supported:
 
 - [OneLogin][2]
