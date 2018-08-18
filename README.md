@@ -49,7 +49,8 @@ Clisso stores configuration in a file called `.clisso.yaml` under the user's hom
 may specify a different config file using the `-c` flag.
 
 >NOTE: It is recommended to use the `clisso` command to manage the config file, however you may
->also edit the file manually. The file is in YAML format.
+>also edit the file manually. The file is in YAML format. You may find a sample config file
+>[here][11].
 
 ## Usage
 
@@ -268,3 +269,4 @@ TODO
 [8]: https://developers.onelogin.com/api-docs/1/getting-started/working-with-api-credentials
 [9]: https://onelogin.service-now.com/support?id=kb_article&sys_id=de999903db109700d5505eea4b961966
 [10]: https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
+[11]: sample_config.yaml
