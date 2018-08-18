@@ -1,20 +1,25 @@
-clisso:
-  defaultApp: dev
-providers:
-  onelogin:
-    clientSecret: xxxxxxxx
-    clientId: xxxxxxxx
-    subdomain: example.com
-    # Uncomment the following line to specify a default username.
-    #username: xxxxxxxx
 apps:
-  dev:
-    provider: onelogin
-    appId: 1234
-    principalArn: arn:aws:iam::123456789:saml-provider/another-provider-name
-    roleArn: arn:aws:iam::123456789:role/another-role
-  prod:
-    provider: onelogin
-    appId: 5678
-    principalArn: arn:aws:iam::123456789:saml-provider/provider-name
-    roleArn: arn:aws:iam::123456789:role/a-role
+  sample-app-1:
+    app-id: "123456"
+    principal-arn: arn:aws:iam::123456789012:saml-provider/OneLoginDev
+    provider: sample-onelogin-provider
+    role-arn: arn:aws:iam::123456789012:role/OneLoginDev-SSO
+  sample-app-2:
+    principal-arn: arn:aws:iam::123456789012:saml-provider/Okta
+    provider: sample-okta-provider
+    role-arn: arn:aws:iam::123456789012:role/OktaDevSSO
+    url: https://xxxxxxxx.oktapreview.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137
+global:
+  credentials-path: ~/.aws/credentials
+  selected-app: sample-app-1
+providers:
+  sample-onelogin-provider:
+    client-id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    client-secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    subdomain: sample
+    type: onelogin
+    username: example@example.com
+  sample-okta-provider:
+    base-url: https://xxxxxxxx.oktapreview.com
+    type: okta
+    username: example@example.com
