@@ -38,6 +38,7 @@ func TestGet(t *testing.T) {
 		{"Single ARN", "testdata/single-arn-response", "arn:aws:iam::123456789012:role/OneLogin-MyRole", false},
 		//{"Many ARNs", "testdata/valid-response", "", false},         // will ask questions
 		{"No ARNs", "testdata/no-arns-resonse", "", true},
+		{"No ARN value", "testdata/no-arn-value-response", "", true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			b, _ := ioutil.ReadFile(test.path)
