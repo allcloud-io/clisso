@@ -67,6 +67,10 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 	for _, attr := range attrs {
 		if attr.Name == "https://aws.amazon.com/SAML/Attributes/Role" {
 			for _, av := range attr.Values {
+				// Value is empty
+				if len(av.Value) == 0 {
+					return
+				}
 				components := strings.Split(av.Value, ",")
 
 				arns = append(arns, ARN{components[0], components[1]})
