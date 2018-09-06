@@ -137,7 +137,6 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 		// let's assume push will succeed
 		pushOK = true
-		s.Start()
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
 			DeviceId:    deviceID,
@@ -146,33 +145,37 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 			DoNotNotify: false,
 		}
 
+		s.Start()
 		rMfa, err = c.VerifyFactor(token, &pMfa)
+		s.Stop()
 		if err != nil {
 			return nil, err
 		}
 
 		pMfa.DoNotNotify = true
 
-		s.Stop()
 		fmt.Println(rMfa.Status.Message)
-		s.Start()
 
 		timeout := MFAPushTimeout
+		s.Start()
 		for rMfa.Status.Type == "pending" && timeout > 0 {
 			time.Sleep(time.Duration(MFAInterval) * time.Second)
 			rMfa, err = c.VerifyFactor(token, &pMfa)
 			if err != nil {
+				s.Stop()
 				return nil, err
 			}
 
 			timeout -= MFAInterval
 		}
+		s.Stop()
+
 		if rMfa.Status.Type == "pending" {
-			s.Stop()
 			fmt.Println("MFA verification timed out - falling back to manual OTP input")
 			pushOK = false
 		}
 	}
+
 	if !pushOK {
 		fmt.Print("Please enter the OTP from your MFA device: ")
 		var otp string
