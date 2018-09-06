@@ -148,7 +148,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		pMfa.DoNotNotify = true
 		timeout := 30
 		interval := 1
-		fmt.Printf(" %v\r", rMfa.Status.Message)
+		s.Stop()
+		fmt.Println(rMfa.Status.Message)
+		s.Start()
 		for rMfa.Status.Type == "pending" && timeout > 0 {
 			time.Sleep(time.Duration(interval) * time.Second)
 			rMfa, err = c.VerifyFactor(token, &pMfa)
@@ -156,7 +158,6 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 				return nil, err
 			}
 
-			fmt.Printf(" %v\r", rMfa.Status.Message)
 			timeout -= interval
 		}
 		if rMfa.Status.Type == "pending" {
