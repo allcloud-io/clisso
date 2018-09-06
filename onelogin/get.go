@@ -97,6 +97,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	devices := rSaml.Data[0].Devices
 
 	var deviceID string
+	var deviceTyp string
+
 	if len(devices) > 1 {
 		for i, d := range devices {
 			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
@@ -107,30 +109,78 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		fmt.Scanln(&selection)
 
 		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
+		deviceTyp = devices[selection-1].DeviceType
+
 	} else {
 		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
+		deviceTyp = devices[0].DeviceType
 	}
 
-	fmt.Print("Please enter the OTP from your MFA device: ")
-	var otp string
-	fmt.Scanln(&otp)
+	var samlAssertion string
 
-	// Verify MFA
-	pMfa := VerifyFactorParams{
-		AppId:      a.ID,
-		DeviceId:   deviceID,
-		StateToken: st,
-		OtpToken:   otp,
+	var pushSupported = false
+
+	if deviceTyp == "OneLogin Protect" {
+		// push is supported by the selected OTP device
+		// if other are supporting push they should be added here.
+		pushSupported = true
+		s.Start()
+		pMfa := VerifyFactorParams{
+			AppId:      a.ID,
+			DeviceId:   deviceID,
+			StateToken: st,
+			OtpToken:   "",
+		}
+
+		rMfa, err := c.VerifyFactor(token, &pMfa)
+		if err != nil {
+			return nil, err
+		}
+		timeout := 30
+		interval := 4
+		fmt.Printf(" %v\r", rMfa.Status.Message)
+		for rMfa.Status.Type == "pending" && timeout > 0 {
+			time.Sleep(time.Duration(interval) * time.Second)
+			// each call to verify
+			rMfa, err = c.VerifyFactor(token, &pMfa)
+			if err != nil {
+				return nil, err
+			}
+
+			fmt.Printf(" %v\r", rMfa.Status.Message)
+			timeout -= interval
+		}
+		if rMfa.Status.Type == "pending" {
+			s.Stop()
+			fmt.Println("Push timed out, please enter OTP token.")
+			pushSupported = false
+		} else {
+			samlAssertion = rMfa.Data
+		}
+
 	}
+	if !pushSupported {
+		fmt.Print("Please enter the OTP from your MFA device: ")
+		var otp string
+		fmt.Scanln(&otp)
 
-	s.Start()
-	rMfa, err := c.VerifyFactor(token, &pMfa)
-	s.Stop()
-	if err != nil {
-		return nil, fmt.Errorf("verifying factor: %v", err)
+		// Verify MFA
+		pMfa := VerifyFactorParams{
+			AppId:      a.ID,
+			DeviceId:   deviceID,
+			StateToken: st,
+			OtpToken:   otp,
+		}
+
+		s.Start()
+		rMfa, err := c.VerifyFactor(token, &pMfa)
+		s.Stop()
+		if err != nil {
+			return nil, fmt.Errorf("verifying factor: %v", err)
+		}
+
+		samlAssertion = rMfa.Data
 	}
-
-	samlAssertion := rMfa.Data
 
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
