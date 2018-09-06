@@ -14,6 +14,19 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+const (
+	// MFADeviceOneLoginProtect symbolizes the OneLogin Protect mobile app, which supports push
+	// notifications. More info here: https://developers.onelogin.com/api-docs/1/saml-assertions/verify-factor
+	MFADeviceOneLoginProtect = "OneLogin Protect"
+
+	// MFAPushTimeout represents the number of seconds to wait for a successful push attempt before
+	// falling back to OTP input.
+	MFAPushTimeout = 30
+
+	// MFAInterval represents the interval at which we check for an accepted push message.
+	MFAInterval = 1
+)
+
 // SpinnerWrapper is used to abstract a spinner so that it can be conveniently disabled on Windows.
 type SpinnerWrapper interface {
 	Start()
@@ -97,6 +110,8 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	devices := rSaml.Data[0].Devices
 
 	var deviceID string
+	var deviceType string
+
 	if len(devices) > 1 {
 		for i, d := range devices {
 			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
@@ -107,36 +122,87 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		fmt.Scanln(&selection)
 
 		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
+		deviceType = devices[selection-1].DeviceType
+
 	} else {
 		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
+		deviceType = devices[0].DeviceType
 	}
 
-	fmt.Print("Please enter the OTP from your MFA device: ")
-	var otp string
-	fmt.Scanln(&otp)
+	var rMfa *VerifyFactorResponse
 
-	// Verify MFA
-	pMfa := VerifyFactorParams{
-		AppId:      a.ID,
-		DeviceId:   deviceID,
-		StateToken: st,
-		OtpToken:   otp,
+	var pushOK = false
+
+	if deviceType == MFADeviceOneLoginProtect {
+		// Push is supported by the selected MFA device - try pushing and fall back to manual input
+		pushOK = true
+		pMfa := VerifyFactorParams{
+			AppId:       a.ID,
+			DeviceId:    deviceID,
+			StateToken:  st,
+			OtpToken:    "",
+			DoNotNotify: false,
+		}
+
+		s.Start()
+		rMfa, err = c.VerifyFactor(token, &pMfa)
+		s.Stop()
+		if err != nil {
+			return nil, err
+		}
+
+		pMfa.DoNotNotify = true
+
+		fmt.Println(rMfa.Status.Message)
+
+		timeout := MFAPushTimeout
+		s.Start()
+		for rMfa.Status.Type == "pending" && timeout > 0 {
+			time.Sleep(time.Duration(MFAInterval) * time.Second)
+			rMfa, err = c.VerifyFactor(token, &pMfa)
+			if err != nil {
+				s.Stop()
+				return nil, err
+			}
+
+			timeout -= MFAInterval
+		}
+		s.Stop()
+
+		if rMfa.Status.Type == "pending" {
+			fmt.Println("MFA verification timed out - falling back to manual OTP input")
+			pushOK = false
+		}
 	}
 
-	s.Start()
-	rMfa, err := c.VerifyFactor(token, &pMfa)
-	s.Stop()
-	if err != nil {
-		return nil, fmt.Errorf("verifying factor: %v", err)
-	}
+	if !pushOK {
+		// Push failed or not supported by the selected MFA device
+		fmt.Print("Please enter the OTP from your MFA device: ")
+		var otp string
+		fmt.Scanln(&otp)
 
-	samlAssertion := rMfa.Data
+		// Verify MFA
+		pMfa := VerifyFactorParams{
+			AppId:       a.ID,
+			DeviceId:    deviceID,
+			StateToken:  st,
+			OtpToken:    otp,
+			DoNotNotify: false,
+		}
+
+		s.Start()
+		rMfa, err = c.VerifyFactor(token, &pMfa)
+		s.Stop()
+		if err != nil {
+			return nil, fmt.Errorf("verifying factor: %v", err)
+		}
+	}
 
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:  aws.String(a.PrincipalARN),
 		RoleArn:       aws.String(a.RoleARN),
-		SAMLAssertion: aws.String(samlAssertion),
+		SAMLAssertion: aws.String(rMfa.Data),
 	}
 
 	sess := session.Must(session.NewSession())
