@@ -18,6 +18,12 @@ const (
 	// MFADeviceOneLoginProtect symbolizes the OneLogin Protect mobile app, which supports push
 	// notifications. More info here: https://developers.onelogin.com/api-docs/1/saml-assertions/verify-factor
 	MFADeviceOneLoginProtect = "OneLogin Protect"
+
+	// The number of seconds to wait for a successful push attempt before falling back to OTP input
+	MFAPushTimeout = 30
+
+	// The interval at which the code checks for a accepted push message
+	MFAInterval = 1
 )
 
 // SpinnerWrapper is used to abstract a spinner so that it can be conveniently disabled on Windows.
@@ -146,19 +152,20 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		}
 
 		pMfa.DoNotNotify = true
-		timeout := 30
-		interval := 1
+
 		s.Stop()
 		fmt.Println(rMfa.Status.Message)
 		s.Start()
+
+		timeout := MFAPushTimeout
 		for rMfa.Status.Type == "pending" && timeout > 0 {
-			time.Sleep(time.Duration(interval) * time.Second)
+			time.Sleep(time.Duration(MFAInterval) * time.Second)
 			rMfa, err = c.VerifyFactor(token, &pMfa)
 			if err != nil {
 				return nil, err
 			}
 
-			timeout -= interval
+			timeout -= MFAInterval
 		}
 		if rMfa.Status.Type == "pending" {
 			s.Stop()
