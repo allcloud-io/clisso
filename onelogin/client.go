@@ -21,20 +21,12 @@ type GenerateTokensParams struct {
 }
 
 type GenerateTokensResponse struct {
-	Status struct {
-		Error   bool   `json:"error"`
-		Code    int    `json:"code"`
-		Type    string `json:"type"`
-		Message string `json:"message"`
-	} `json:"status"`
-	Data []struct {
-		AccessToken  string    `json:"access_token"`
-		CreatedAt    time.Time `json:"created_at"`
-		ExpiresIn    int       `json:"expires_in"`
-		RefreshToken string    `json:"refresh_token"`
-		TokenType    string    `json:"token_type"`
-		AccountID    int       `json:"account_id"`
-	} `json:"data"`
+	AccessToken  string    `json:"access_token"`
+	CreatedAt    time.Time `json:"created_at"`
+	ExpiresIn    int       `json:"expires_in"`
+	RefreshToken string    `json:"refresh_token"`
+	TokenType    string    `json:"token_type"`
+	AccountID    int       `json:"account_id"`
 }
 
 type GenerateSamlAssertionParams struct {
@@ -42,7 +34,6 @@ type GenerateSamlAssertionParams struct {
 	Password        string `json:"password"`
 	AppId           string `json:"app_id"`
 	Subdomain       string `json:"subdomain"`
-	IpAddress       string `json:"ip_address"`
 }
 
 // TODO This one assumes MFA is enabled. Need to handle all cases.
@@ -164,7 +155,7 @@ func (c *Client) GenerateTokens(clientID, clientSecret string) (string, error) {
 
 	// TODO add handling for valid JSON with wrong response
 
-	return resp.Data[0].AccessToken, nil
+	return resp.AccessToken, nil
 }
 
 // GenerateSamlAssertion gets a OneLogin access token and a GenerateSamlAssertionParams struct

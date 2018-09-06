@@ -40,22 +40,12 @@ func TestNewClient(t *testing.T) {
 
 func TestGenerateTokens(t *testing.T) {
 	data := `{
-    "status": {
-        "error": false,
-        "code": 200,
-        "type": "success",
-        "message": "Success"
-    },
-    "data": [
-        {
-            "access_token": "fake_token",
-            "created_at": "2015-11-11T03:36:18.714Z",
-            "expires_in": 36000,
-            "refresh_token": "fake",
-            "token_type": "bearer",
-            "account_id": 555555
-        }
- ]
+	"access_token": "fake_token",
+	"created_at": "2015-11-11T03:36:18.714Z",
+	"expires_in": 36000,
+	"refresh_token": "fake",
+	"token_type": "bearer",
+	"account_id": 555555
 }`
 
 	ts := getTestServer(data)
