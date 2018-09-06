@@ -97,7 +97,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	devices := rSaml.Data[0].Devices
 
 	var deviceID string
-	var deviceTyp string
+	var deviceType string
 
 	if len(devices) > 1 {
 		for i, d := range devices {
@@ -109,18 +109,18 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		fmt.Scanln(&selection)
 
 		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
-		deviceTyp = devices[selection-1].DeviceType
+		deviceType = devices[selection-1].DeviceType
 
 	} else {
 		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
-		deviceTyp = devices[0].DeviceType
+		deviceType = devices[0].DeviceType
 	}
 
 	var samlAssertion string
 
 	var pushSupported = false
 
-	if deviceTyp == "OneLogin Protect" {
+	if deviceType == "OneLogin Protect" {
 		// push is supported by the selected OTP device
 		// if other are supporting push they should be added here.
 		pushSupported = true
