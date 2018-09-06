@@ -122,7 +122,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		deviceType = devices[0].DeviceType
 	}
 
-	var samlAssertion string
+	var rMfa *VerifyFactorResponse
 
 	var pushOK = false
 
@@ -140,7 +140,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 			DoNotNotify: false,
 		}
 
-		rMfa, err := c.VerifyFactor(token, &pMfa)
+		rMfa, err = c.VerifyFactor(token, &pMfa)
 		if err != nil {
 			return nil, err
 		}
@@ -163,10 +163,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 			s.Stop()
 			fmt.Println("MFA verification timed out - falling back to manual OTP input")
 			pushOK = false
-		} else {
-			samlAssertion = rMfa.Data
 		}
-
 	}
 	if !pushOK {
 		fmt.Print("Please enter the OTP from your MFA device: ")
@@ -183,20 +180,18 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		}
 
 		s.Start()
-		rMfa, err := c.VerifyFactor(token, &pMfa)
+		rMfa, err = c.VerifyFactor(token, &pMfa)
 		s.Stop()
 		if err != nil {
 			return nil, fmt.Errorf("verifying factor: %v", err)
 		}
-
-		samlAssertion = rMfa.Data
 	}
 
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:  aws.String(a.PrincipalARN),
 		RoleArn:       aws.String(a.RoleARN),
-		SAMLAssertion: aws.String(samlAssertion),
+		SAMLAssertion: aws.String(rMfa.Data),
 	}
 
 	sess := session.Must(session.NewSession())
