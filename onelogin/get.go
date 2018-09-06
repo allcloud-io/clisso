@@ -14,6 +14,12 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+const (
+	// MFADeviceOneLoginProtect symbolizes the OneLogin Protect mobile app, which supports push
+	// notifications. More info here: https://developers.onelogin.com/api-docs/1/saml-assertions/verify-factor
+	MFADeviceOneLoginProtect = "OneLogin Protect"
+)
+
 // SpinnerWrapper is used to abstract a spinner so that it can be conveniently disabled on Windows.
 type SpinnerWrapper interface {
 	Start()
@@ -118,12 +124,13 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 	var samlAssertion string
 
-	var pushSupported = false
+	var pushOK = false
 
-	if deviceType == "OneLogin Protect" {
+	if deviceType == MFADeviceOneLoginProtect {
 		// push is supported by the selected OTP device
-		// if other are supporting push they should be added here.
-		pushSupported = true
+
+		// let's assume push will succeed
+		pushOK = true
 		s.Start()
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
@@ -137,9 +144,10 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		pMfa.DoNotNotify = true
 		timeout := 30
-		interval := 4
+		interval := 1
 		fmt.Printf(" %v\r", rMfa.Status.Message)
 		for rMfa.Status.Type == "pending" && timeout > 0 {
 			time.Sleep(time.Duration(interval) * time.Second)
@@ -153,14 +161,14 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		}
 		if rMfa.Status.Type == "pending" {
 			s.Stop()
-			fmt.Println("Push timed out, please enter OTP token.")
-			pushSupported = false
+			fmt.Println("MFA verification timed out - falling back to manual OTP input")
+			pushOK = false
 		} else {
 			samlAssertion = rMfa.Data
 		}
 
 	}
-	if !pushSupported {
+	if !pushOK {
 		fmt.Print("Please enter the OTP from your MFA device: ")
 		var otp string
 		fmt.Scanln(&otp)
