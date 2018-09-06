@@ -10,7 +10,7 @@ const (
 	euBase = "https://api.eu.onelogin.com"
 
 	GenerateSamlAssertionPath string = "/api/1/saml_assertion"
-	GenerateTokensPath        string = "/auth/oauth2/token"
+	GenerateTokensPath        string = "/auth/oauth2/v2/token"
 	GetUserByEmailPath        string = "/api/1/users?email=%s"
 	VerifyFactorPath          string = "/api/1/saml_assertion/verify_factor"
 )
