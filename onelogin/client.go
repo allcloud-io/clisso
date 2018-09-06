@@ -62,10 +62,11 @@ type GenerateSamlAssertionResponse struct {
 }
 
 type VerifyFactorParams struct {
-	AppId      string `json:"app_id"`
-	DeviceId   string `json:"device_id"`
-	StateToken string `json:"state_token"`
-	OtpToken   string `json:"otp_token"`
+	AppId       string `json:"app_id"`
+	DeviceId    string `json:"device_id"`
+	StateToken  string `json:"state_token"`
+	OtpToken    string `json:"otp_token"`
+	DoNotNotify bool   `json:"do_not_notify"`
 }
 
 type VerifyFactorResponse struct {

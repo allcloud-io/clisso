@@ -126,22 +126,23 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		pushSupported = true
 		s.Start()
 		pMfa := VerifyFactorParams{
-			AppId:      a.ID,
-			DeviceId:   deviceID,
-			StateToken: st,
-			OtpToken:   "",
+			AppId:       a.ID,
+			DeviceId:    deviceID,
+			StateToken:  st,
+			OtpToken:    "",
+			DoNotNotify: false,
 		}
 
 		rMfa, err := c.VerifyFactor(token, &pMfa)
 		if err != nil {
 			return nil, err
 		}
+		pMfa.DoNotNotify = true
 		timeout := 30
 		interval := 4
 		fmt.Printf(" %v\r", rMfa.Status.Message)
 		for rMfa.Status.Type == "pending" && timeout > 0 {
 			time.Sleep(time.Duration(interval) * time.Second)
-			// each call to verify
 			rMfa, err = c.VerifyFactor(token, &pMfa)
 			if err != nil {
 				return nil, err
@@ -166,10 +167,11 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 
 		// Verify MFA
 		pMfa := VerifyFactorParams{
-			AppId:      a.ID,
-			DeviceId:   deviceID,
-			StateToken: st,
-			OtpToken:   otp,
+			AppId:       a.ID,
+			DeviceId:    deviceID,
+			StateToken:  st,
+			OtpToken:    otp,
+			DoNotNotify: false,
 		}
 
 		s.Start()
