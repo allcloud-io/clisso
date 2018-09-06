@@ -19,10 +19,11 @@ const (
 	// notifications. More info here: https://developers.onelogin.com/api-docs/1/saml-assertions/verify-factor
 	MFADeviceOneLoginProtect = "OneLogin Protect"
 
-	// The number of seconds to wait for a successful push attempt before falling back to OTP input
+	// MFAPushTimeout represents the number of seconds to wait for a successful push attempt before
+	// falling back to OTP input.
 	MFAPushTimeout = 30
 
-	// The interval at which the code checks for a accepted push message
+	// MFAInterval represents the interval at which we check for an accepted push message.
 	MFAInterval = 1
 )
 
