@@ -134,9 +134,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	var pushOK = false
 
 	if deviceType == MFADeviceOneLoginProtect {
-		// push is supported by the selected OTP device
-
-		// let's assume push will succeed
+		// Push is supported by the selected MFA device - try pushing and fall back to manual input
 		pushOK = true
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
@@ -178,6 +176,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	if !pushOK {
+		// Push failed or not supported by the selected MFA device
 		fmt.Print("Please enter the OTP from your MFA device: ")
 		var otp string
 		fmt.Scanln(&otp)
