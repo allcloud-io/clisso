@@ -99,5 +99,9 @@ func Get(app, provider string) (*aws.Credentials, error) {
 		return nil, err
 	}
 
-	return aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion)
+	s.Start()
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion)
+	s.Stop()
+
+	return creds, err
 }
