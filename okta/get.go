@@ -54,11 +54,6 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Couldn't read password from terminal")
 		}
-
-		err = keyChain.Set(provider, pass)
-		if err != nil {
-			fmt.Printf("Could not save to keychain: %+v", err)
-		}
 	}
 
 	// Initialize spinner
