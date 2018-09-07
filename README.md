@@ -16,7 +16,7 @@ Clisso uses the [SAML][7] standard to authenticate users.
 
 ## Installation
 
-### Using a Pre-Compiled Binary
+### Using A Pre-Compiled Binary
 
 The easiest way to use Clisso is to download a pre-compiled binary for your platform. To do so,
 perform the following:
@@ -29,18 +29,18 @@ perform the following:
 
 Clisso supports **macOS**, **Linux** and **Windows**.
 
-### Install using Homebrew
+### Installing Using Homebrew
 
-To install using Homebrew run the following commands:
+To install Clisso using Homebrew, run the following commands:
 
     brew tap allcloud-io/tools
     brew install allcloud-io/tools/clisso
 
-To update just run:
+To update Clisso to the latest release, run the following command:
 
     brew upgrade allcloud-io/tools/clisso
 
-### Building from Source
+### Building From Source
 
 Clisso uses [dep][5] for dependency management. You will need it to install dependencies. You will
 also need **Go** to compile the code, and **Git** which is used by `go get`.
