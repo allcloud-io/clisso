@@ -44,11 +44,17 @@ zip:
 	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip'`; do zip $$i.zip $$i; done
 
 # see https://gist.github.com/maelvalais/068af21911c7debc4655cdaa41bbf092 for a rough guide on CI/CD for Brew
-# TODO: There is a dependency on the version in the formula. It should be updated first. But can't at the same
-# time because the bottles won't match the version
 .PHONY: brew
 brew:
+	# There is a dependency on the version in the formula. Follow the following steps.
+	# 1. Update the formula to the new source tar.gz.
+	# 2. Change the sha256 to match the tar.gz.
+	# 3. remove all sha256 lines in the bottle section.
+	# 4. commit and push
+	# 5. add the outputed bottles below
 	brew tap allcloud-io/tools
+	# if the next command fails, the formula isn't matching the version we are building
+	grep "archive/$(VERSION).tar.gz" `brew --repo allcloud-io/tools`/$(BINARY_NAME).rb >/dev/null
 	brew test-bot allcloud-io/tools/$(BINARY_NAME)
 	for json in `ls -1 *bottle.json`; do MAC_VERSION=$$(echo $$json | cut -d. -f4);SHA=$$(cat $$json | jq ".\"allcloud-io/tools/$(BINARY_NAME)\".bottle.tags.$$MAC_VERSION.sha256");LOCAL=$$(cat $$json | jq -r ".\"allcloud-io/tools/$(BINARY_NAME)\".bottle.tags.$$MAC_VERSION.local_filename");REMOTE=$$(cat $$json | jq -r ".\"allcloud-io/tools/$(BINARY_NAME)\".bottle.tags.$$MAC_VERSION.filename"); mv $$LOCAL $$REMOTE; echo "sha256 $$SHA => :$$MAC_VERSION"; rm $$json; done
 
