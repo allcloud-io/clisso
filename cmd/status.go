@@ -23,8 +23,8 @@ func init() {
 
 var cmdStatus = &cobra.Command{
 	Use:   "status",
-	Short: "show currently valid profiles",
-	Long:  `show currently valid profiles`,
+	Short: "Show active (non-expired) credentials",
+	Long:  `Show active (non-expired) credentials`,
 	Run: func(cmd *cobra.Command, args []string) {
 		printStatus()
 	},

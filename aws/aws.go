@@ -83,7 +83,7 @@ func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 	}
 }
 
-// GetNonExpiredCredentials Return profiles which have a aws_expiration key but are not yet expired
+// GetNonExpiredCredentials Return profiles which have a aws_expiration key but are not yet expired.
 func GetNonExpiredCredentials(filename string) (*Profiles, error) {
 	profiles := Profiles{}
 	cfg, err := ini.LooseLoad(filename)

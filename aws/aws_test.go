@@ -127,7 +127,7 @@ func TestGetNonExpiredCredentials(t *testing.T) {
 		Expiration:      exp,
 	}
 
-	// aboves credentials are expiring this excact moment..
+	// Above credentials are expiring this exact moment..
 	p := "expired"
 
 	// Write credentials
@@ -153,6 +153,7 @@ func TestGetNonExpiredCredentials(t *testing.T) {
 	}
 
 	s := cfg.Section("not-there")
+
 	// Verify File
 	if s.HasKey("aws_access_key_id") {
 		t.Fatal("Section 'not-there' exists")
