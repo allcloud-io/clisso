@@ -96,7 +96,11 @@ var cmdProvidersPassword = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		provider := args[0]
+		fmt.Printf("Please enter the password for the '%s' provider: ", provider)
 		pass, err := gopass.GetPasswd()
+		if err != nil {
+			log.Fatalf(color.RedString("Could not read password"))
+		}
 
 		keyChain := keychain.DefaultKeychain{}
 
@@ -104,6 +108,7 @@ var cmdProvidersPassword = &cobra.Command{
 		if err != nil {
 			fmt.Printf("Could not save to keychain: %+v", err)
 		}
+		log.Printf(color.GreenString("Saved password for Provider '%s'"), provider)
 	},
 }
 
