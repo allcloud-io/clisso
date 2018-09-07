@@ -19,10 +19,7 @@ func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string) (*Credentials, 
 	sess := session.Must(session.NewSession())
 	svc := sts.New(sess)
 
-	// s := utils.NewSpinner()
-	// s.Start()
 	aResp, err := svc.AssumeRoleWithSAML(&input)
-	// s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("assuming role: %v", err)
 	}
