@@ -6,7 +6,7 @@ import (
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
-	"github.com/allcloud-io/clisso/utils"
+	"github.com/allcloud-io/clisso/spinner"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -46,7 +46,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Initialize spinner
-	var s = utils.NewSpinner()
+	var s = spinner.New()
 
 	// Get OneLogin access token
 	s.Start()

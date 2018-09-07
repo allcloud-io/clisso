@@ -1,6 +1,6 @@
 // +build dragonfly freebsd linux netbsd openbsd solaris darwin
 
-package utils
+package spinner
 
 import (
 	"time"
@@ -8,6 +8,6 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-func newSpinner() SpinnerWrapper {
+func new() SpinnerWrapper {
 	return spinner.New(spinner.CharSets[14], 50*time.Millisecond)
 }

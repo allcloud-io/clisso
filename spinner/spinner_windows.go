@@ -1,8 +1,8 @@
 // +build windows
 
-package utils
+package spinner
 
-func newSpinner() SpinnerWrapper {
+func new() SpinnerWrapper {
 	return &noopSpinner{}
 }
 
