@@ -16,7 +16,7 @@ Clisso uses the [SAML][7] standard to authenticate users.
 
 ## Installation
 
-### Using A Pre-Compiled Binary
+### Using a Pre-Compiled Binary
 
 The easiest way to use Clisso is to download a pre-compiled binary for your platform. To do so,
 perform the following:
@@ -40,7 +40,7 @@ To update Clisso to the latest release, run the following command:
 
     brew upgrade allcloud-io/tools/clisso
 
-### Building From Source
+### Building from Source
 
 Clisso uses [dep][5] for dependency management. You will need it to install dependencies. You will
 also need **Go** to compile the code, and **Git** which is used by `go get`.
