@@ -10,13 +10,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+var readFromFile string
+
 func init() {
 	RootCmd.AddCommand(cmdStatus)
 	cmdStatus.Flags().StringVarP(
-		&writeToFile, "write-to-file", "w", "",
-		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
+		&readFromFile, "read-from-file", "r", "",
+		"Read credentials from this file instead of the default ($HOME/.aws/credentials)",
 	)
-	viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("write-to-file"))
+	viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
 }
 
 var cmdStatus = &cobra.Command{
@@ -24,11 +26,11 @@ var cmdStatus = &cobra.Command{
 	Short: "show currently valid profiles",
 	Long:  `show currently valid profiles`,
 	Run: func(cmd *cobra.Command, args []string) {
-		outputStatus()
+		printStatus()
 	},
 }
 
-func outputStatus() {
+func printStatus() {
 	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
 	profiles, err := aws.GetNonExpiredCredentials(configfile)
 	if err != nil {
@@ -36,6 +38,6 @@ func outputStatus() {
 	}
 	log.Print("The following profiles are currently not expired:")
 	for _, p := range profiles.Profiles {
-		log.Printf("%v: remaining time %v", p.Name, p.LivetimeLeft.Round(time.Second))
+		log.Printf("%v: remaining time %v", p.Name, p.LifetimeLeft.Round(time.Second))
 	}
 }

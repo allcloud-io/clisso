@@ -76,7 +76,7 @@ Clisso has the following commands:
     get         Get temporary credentials for an app
     help        Help about any command
     providers   Manage providers
-    status      show currently valid profiles
+    status      Show active (non-expired) credentials
     version     Show version info
 
     Flags:

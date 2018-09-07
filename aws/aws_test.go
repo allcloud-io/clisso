@@ -32,7 +32,7 @@ func TestWriteToFile(t *testing.T) {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
 
-	// sleep so above credentials expire
+	// Sleep so above credentials expire
 	time.Sleep(time.Duration(2) * time.Second)
 
 	id = "testkey"
@@ -66,7 +66,7 @@ func TestWriteToFile(t *testing.T) {
 
 	// Verify File
 	if s.HasKey("aws_access_key_id") || s.HasKey("aws_secret_access_key") || s.HasKey("aws_session_token") || s.HasKey("aws_expiration") {
-		t.Fatal("expired profile was not cleaned up")
+		t.Fatal("Expired profile was not cleaned up")
 	}
 
 	p = "testprofile"
@@ -136,9 +136,10 @@ func TestGetNonExpiredCredentials(t *testing.T) {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
 
-	// expire in 1 hour
+	// Expire in 1 hour
 	c.Expiration = time.Now().Add(time.Duration(1) * time.Hour)
 	p = "valid"
+
 	// Write credentials
 	err = WriteToFile(&c, fn, p)
 	if err != nil {
@@ -175,16 +176,16 @@ func TestGetNonExpiredCredentials(t *testing.T) {
 	}
 
 	if len(data.Profiles) != 1 {
-		t.Fatal("got more than 1 expected credential set")
+		t.Fatal("Got more than 1 expected credential set")
 	}
 
 	if data.Profiles[0].Name != "valid" {
-		t.Fatal("returned wrong profile name")
+		t.Fatal("Returned wrong profile name")
 	}
 
-	if data.Profiles[0].LivetimeLeft.Seconds() < 3597 || data.Profiles[0].LivetimeLeft.Seconds() > 3599 {
-		// lets factor in some slow time
-		t.Fatal("expiration is outside of expected scope")
+	if data.Profiles[0].LifetimeLeft.Seconds() < 3597 || data.Profiles[0].LifetimeLeft.Seconds() > 3599 {
+		// Lets factor in some slow time
+		t.Fatal("Expiration is outside of expected scope")
 	}
 
 	err = os.Remove(fn)
