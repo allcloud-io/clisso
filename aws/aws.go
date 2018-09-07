@@ -19,6 +19,15 @@ type Credentials struct {
 	Expiration      time.Time
 }
 
+type ProfileStatus struct {
+	Name         string
+	LivetimeLeft time.Duration
+}
+
+type Profiles struct {
+	Profiles []ProfileStatus
+}
+
 // WriteToFile writes credentials to an AWS CLI credentials file
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
@@ -72,4 +81,25 @@ func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 			c.SessionToken,
 		)
 	}
+}
+
+// GetNonExpiredCredentials Return profiles which have a aws_expiration key but are not yet expired
+func GetNonExpiredCredentials(filename string) (Profiles, error) {
+	profiles := Profiles{}
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		return profiles, err
+	}
+	for _, s := range cfg.Sections() {
+		if s.HasKey("aws_expiration") {
+			v, err := s.Key("aws_expiration").TimeFormat(time.RFC3339)
+			if err == nil {
+				if time.Now().UTC().Unix() < v.Unix() {
+					profile := ProfileStatus{Name: s.Name(), LivetimeLeft: v.Sub(time.Now().UTC())}
+					profiles.Profiles = append(profiles.Profiles, profile)
+				}
+			}
+		}
+	}
+	return profiles, nil
 }
