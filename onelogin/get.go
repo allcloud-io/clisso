@@ -70,8 +70,6 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 
 	pass, err := keyChain.Get(provider)
 	if err != nil {
-		fmt.Printf("Could not get password from keychain,\n\t%s\n", err.Error())
-
 		fmt.Print("Please enter OneLogin password: ")
 		pass, err = gopass.GetPasswd()
 		if err != nil {
