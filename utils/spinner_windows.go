@@ -1,0 +1,14 @@
+// +build windows
+
+package utils
+
+func newSpinner() SpinnerWrapper {
+	return &noopSpinner{}
+}
+
+// noopSpinner is a mock spinner which doesn't do anything. It is used to centrally disable the
+// spinner on Windows (because it isn't supported by the Windows terminal).
+type noopSpinner struct{}
+
+func (s *noopSpinner) Start() {}
+func (s *noopSpinner) Stop()  {}

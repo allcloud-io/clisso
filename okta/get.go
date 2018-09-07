@@ -2,30 +2,15 @@ package okta
 
 import (
 	"fmt"
-	"runtime"
-	"time"
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
+	"github.com/allcloud-io/clisso/utils"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/briandowns/spinner"
 	"github.com/howeyc/gopass"
 )
-
-// SpinnerWrapper is used to abstract a spinner so that it can be conveniently disabled on Windows.
-type SpinnerWrapper interface {
-	Start()
-	Stop()
-}
-
-// noopSpinner is a mock spinner which doesn't do anything. It is used to centrally disable the
-// spinner on Windows (because it isn't supported by the Windows terminal).
-type noopSpinner struct{}
-
-func (s *noopSpinner) Start() {}
-func (s *noopSpinner) Stop()  {}
 
 // Get gets temporary credentials for the given app.
 func Get(app, provider string) (*awsprovider.Credentials, error) {
@@ -62,12 +47,7 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	}
 
 	// Initialize spinner
-	var s SpinnerWrapper
-	if runtime.GOOS == "windows" {
-		s = &noopSpinner{}
-	} else {
-		s = spinner.New(spinner.CharSets[14], 50*time.Millisecond)
-	}
+	var s = utils.NewSpinner()
 
 	// Get session token
 	s.Start()
