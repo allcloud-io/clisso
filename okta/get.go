@@ -50,7 +50,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		fmt.Printf("Could not get password from keychain,\n\t%s\n", err.Error())
 
 		fmt.Print("Please enter Okta password: ")
-		pass, err := gopass.GetPasswd()
+		pass, err = gopass.GetPasswd()
 		if err != nil {
 			return nil, fmt.Errorf("Couldn't read password from terminal")
 		}
