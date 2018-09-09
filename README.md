@@ -34,11 +34,11 @@ Clisso supports **macOS**, **Linux** and **Windows**.
 To install Clisso using Homebrew, run the following commands:
 
     brew tap allcloud-io/tools
-    brew install allcloud-io/tools/clisso
+    brew install clisso
 
 To update Clisso to the latest release, run the following command:
 
-    brew upgrade allcloud-io/tools/clisso
+    brew upgrade clisso
 
 ### Building from Source
 
