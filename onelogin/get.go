@@ -6,6 +6,7 @@ import (
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
+	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -179,10 +180,15 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		}
 	}
 
+	arn, err := saml.Get(rMfa.Data)
+	if err != nil {
+		return nil, err
+	}
+
 	// Assume role
 	pAssumeRole := sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  aws.String(a.PrincipalARN),
-		RoleArn:       aws.String(a.RoleARN),
+		PrincipalArn:  aws.String(arn.Provider),
+		RoleArn:       aws.String(arn.Role),
 		SAMLAssertion: aws.String(rMfa.Data),
 	}
 

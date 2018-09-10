@@ -53,35 +53,23 @@ func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 
 // OneLoginAppConfig represents a OneLogin app configuration.
 type OneLoginAppConfig struct {
-	ID           string
-	PrincipalARN string
-	Provider     string
-	RoleARN      string
+	ID       string
+	Provider string
 }
 
 // GetOneLoginApp returns a OneLoginAppConfig struct containing the configuration for app.
 func GetOneLoginApp(app string) (*OneLoginAppConfig, error) {
 	config := viper.GetStringMapString("apps." + app)
 	appID := config["app-id"]
-	principalARN := config["principal-arn"]
 	provider := config["provider"]
-	roleARN := config["role-arn"]
 
 	if appID == "" {
 		return nil, errors.New("app-id config value must be set")
 	}
-	if principalARN == "" {
-		return nil, errors.New("principa-arn config value must be set")
-	}
-	if roleARN == "" {
-		return nil, errors.New("role-arn config value must be set")
-	}
 
 	c := OneLoginAppConfig{
-		ID:           appID,
-		PrincipalARN: principalARN,
-		Provider:     provider,
-		RoleARN:      roleARN,
+		ID:       appID,
+		Provider: provider,
 	}
 
 	return &c, nil
@@ -107,31 +95,19 @@ func GetOktaProvider(p string) (*OktaProviderConfig, error) {
 
 // OktaAppConfig represents an Okta app configuration.
 type OktaAppConfig struct {
-	PrincipalARN string
-	Provider     string
-	RoleARN      string
-	URL          string
+	Provider string
+	URL      string
 }
 
 // GetOktaApp returns an OktaAppConfig struct containing the configuration for app.
 func GetOktaApp(app string) (*OktaAppConfig, error) {
 	config := viper.GetStringMapString("apps." + app)
 
-	principalARN := config["principal-arn"]
 	provider := config["provider"]
-	roleARN := config["role-arn"]
 	url := config["url"]
-
-	if principalARN == "" {
-		return nil, errors.New("principal-arn config value must be set")
-	}
 
 	if provider == "" {
 		return nil, errors.New("provider config value must be set")
-	}
-
-	if roleARN == "" {
-		return nil, errors.New("role-arn config value must be set")
 	}
 
 	if url == "" {
@@ -139,9 +115,7 @@ func GetOktaApp(app string) (*OktaAppConfig, error) {
 	}
 
 	return &OktaAppConfig{
-		PrincipalARN: principalARN,
-		Provider:     provider,
-		RoleARN:      roleARN,
-		URL:          url,
+		Provider: provider,
+		URL:      url,
 	}, nil
 }
