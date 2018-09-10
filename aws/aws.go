@@ -44,6 +44,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 			}
 		}
 	}
+
 	return cfg.SaveTo(filename)
 }
 
