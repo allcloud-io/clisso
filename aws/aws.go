@@ -20,10 +20,8 @@ type Credentials struct {
 }
 
 // WriteToFile writes credentials to an AWS CLI credentials file
-// (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html).
-//
-// In addition, this function will remove expired temporary credentials
-// from the credentials file.
+// (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
+// function removes expired temporary credentials from the credentials file.
 func WriteToFile(c *Credentials, filename string, section string) error {
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
