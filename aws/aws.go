@@ -44,7 +44,8 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 					cfg.DeleteSection(s.Name())
 				}
 			} else {
-				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s", s.Key("aws_expiration")), s.Name(), err)
+				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s",
+					s.Key("aws_expiration")), s.Name(), err)
 			}
 		}
 	}
