@@ -3,7 +3,9 @@ package saml
 import (
 	"encoding/base64"
 	"encoding/xml"
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/edaniels/go-saml"
@@ -30,7 +32,7 @@ func Get(data string) (a ARN, err error) {
 
 	switch len(arns) {
 	case 0:
-		err = fmt.Errorf("No valid AWS roles were returned")
+		err = errors.New("no valid AWS roles were returned")
 
 		return
 
@@ -40,19 +42,8 @@ func Get(data string) (a ARN, err error) {
 		return
 	}
 
-	// Many ARNs returned, ask
-	for {
-		idx, err := ask(arns)
-		if err != nil {
-			fmt.Println(err.Error())
-		} else if idx < 0 || idx > len(arns) {
-			fmt.Printf("%d is an invalid value. Valid values are 0 to %d inclusive", idx, len(arns)-1)
-		} else {
-			a = arns[idx]
-
-			break
-		}
-	}
+	// Multiple ARNs returned - ask user which one to use.
+	a = arns[ask(arns)]
 
 	return
 }
@@ -84,13 +75,38 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 	return
 }
 
-func ask(arns []ARN) (idx int, err error) {
-	for idx, a := range arns {
-		fmt.Printf("%d. %s\n", idx, a.Role)
+func ask(arns []ARN) (idx int) {
+	for {
+		for i, a := range arns {
+			// Use one-based indexing for human-friendliness.
+			fmt.Printf("%d. %s\n", i+1, a.Role)
+		}
+
+		var input string
+		fmt.Print("Please select an IAM role to assume: ")
+		_, err := fmt.Scanln(&input)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+			continue
+		}
+
+		// Verify we got an integer.
+		selected, err := strconv.Atoi(input)
+		if err != nil {
+			fmt.Printf("Invalid input '%s'\n", input)
+			continue
+		}
+
+		// Verify selection is within range.
+		if selected < 1 || selected > len(arns) {
+			fmt.Printf("Invalid value %d. Valid values: 1-%d\n", selected, len(arns))
+			continue
+		}
+
+		// Translate user-selected index back to zero-based index.
+		idx = selected - 1
+		break
 	}
 
-	fmt.Print("Please select an ARN to assume: ")
-
-	_, err = fmt.Scanln(&idx)
 	return
 }
