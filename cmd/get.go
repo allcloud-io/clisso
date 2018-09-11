@@ -26,6 +26,8 @@ const (
 	ProviderOkta = "okta"
 )
 
+var keyChain = keychain.DefaultKeychain{}
+
 var printToShell bool
 var writeToFile string
 var savePassword bool
@@ -86,8 +88,6 @@ func getOneLogin(app string) {
 		fmt.Scanln(&user)
 	}
 
-	keyChain := keychain.DefaultKeychain{}
-
 	var pass []byte
 	if savePassword {
 		// User asked to save a new password - don't check keychain
@@ -146,8 +146,6 @@ func getOkta(app string) {
 		fmt.Print("Okta username: ")
 		fmt.Scanln(&user)
 	}
-
-	keyChain := keychain.DefaultKeychain{}
 
 	var pass []byte
 	if savePassword {
