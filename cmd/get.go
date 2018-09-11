@@ -65,6 +65,128 @@ func processCredentials(creds *aws.Credentials, app string) error {
 	return nil
 }
 
+// getOneLogin get temporary credentials for an app of type OneLogin.
+func getOneLogin(app string) {
+	// Read app config
+	aConfig, err := config.GetOneLoginApp(app)
+	if err != nil {
+		log.Fatalf(color.RedString("Error reading config for app %s: %v"), app, err)
+	}
+
+	// Read provider config
+	pConfig, err := config.GetOneLoginProvider(aConfig.Provider)
+	if err != nil {
+		log.Fatalf(color.RedString("Error reading provider config: %v"), err)
+	}
+
+	// Get credentials from user
+	user := pConfig.Username
+	if user == "" {
+		fmt.Print("OneLogin username: ")
+		fmt.Scanln(&user)
+	}
+
+	keyChain := keychain.DefaultKeychain{}
+
+	var pass []byte
+	if savePassword {
+		// User asked to save a new password - don't check keychain
+		fmt.Print("OneLogin password: ")
+		pass, err := gopass.GetPasswd()
+		if err != nil {
+			log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
+		}
+
+		// Save password in keychain
+		err = keyChain.Set(provider, pass)
+		if err != nil {
+			fmt.Printf("Could not save password to keychain: %v", err)
+		}
+	} else {
+		// Check if we have a saved password
+		pass, err = keyChain.Get(provider)
+		if err != nil {
+			// Fallback silently to password from terminal
+			fmt.Print("OneLogin password: ")
+			pass, err = gopass.GetPasswd()
+			if err != nil {
+				log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
+			}
+		}
+	}
+
+	creds, err := onelogin.Get(aConfig, pConfig, user, string(pass))
+	if err != nil {
+		log.Fatal(color.RedString("Could not get temporary credentials: "), err)
+	}
+	// Process credentials
+	err = processCredentials(creds, app)
+	if err != nil {
+		log.Fatalf(color.RedString("Error processing credentials: %v"), err)
+	}
+}
+
+// getOkta get temporary credentials for an app of type Okta.
+func getOkta(app string) {
+	// Read app config
+	aConfig, err := config.GetOktaApp(app)
+	if err != nil {
+		log.Fatalf(color.RedString("Error reading config for app %s: %v"), app, err)
+	}
+
+	// Read provider config
+	pConfig, err := config.GetOktaProvider(aConfig.Provider)
+	if err != nil {
+		log.Fatalf(color.RedString("Error reading provider config: %v"), err)
+	}
+
+	// Get credentials from user
+	user := pConfig.Username
+	if user == "" {
+		fmt.Print("Okta username: ")
+		fmt.Scanln(&user)
+	}
+
+	keyChain := keychain.DefaultKeychain{}
+
+	var pass []byte
+	if savePassword {
+		// User asked to save a new password - don't check keychain
+		fmt.Print("Okta password: ")
+		pass, err := gopass.GetPasswd()
+		if err != nil {
+			log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
+		}
+
+		// Save password in keychain
+		err = keyChain.Set(provider, pass)
+		if err != nil {
+			fmt.Printf("Could not save password to keychain: %v", err)
+		}
+	} else {
+		// Check if we have a saved password
+		pass, err = keyChain.Get(provider)
+		if err != nil {
+			// Fallback silently to password from terminal
+			fmt.Print("Okta password: ")
+			pass, err = gopass.GetPasswd()
+			if err != nil {
+				log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
+			}
+		}
+	}
+
+	creds, err := okta.Get(aConfig, pConfig, user, string(pass))
+	if err != nil {
+		log.Fatal(color.RedString("Could not get temporary credentials: "), err)
+	}
+	// Process credentials
+	err = processCredentials(creds, app)
+	if err != nil {
+		log.Fatalf(color.RedString("Error processing credentials: %v"), err)
+	}
+}
+
 var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "Get temporary credentials for an app",
@@ -100,121 +222,9 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		switch pType {
 		case ProviderOneLogin:
-			// Read app config
-			aConfig, err := config.GetOneLoginApp(app)
-			if err != nil {
-				log.Fatalf(color.RedString("Error reading config for app %s: %v"), app, err)
-			}
-
-			// Read provider config
-			pConfig, err := config.GetOneLoginProvider(provider)
-			if err != nil {
-				log.Fatalf(color.RedString("Error reading provider config: %v"), err)
-			}
-
-			// Get credentials from user
-			user := pConfig.Username
-			if user == "" {
-				fmt.Print("OneLogin username: ")
-				fmt.Scanln(&user)
-			}
-
-			keyChain := keychain.DefaultKeychain{}
-
-			var pass []byte
-			if savePassword {
-				// User asked to save a new password - don't check keychain
-				fmt.Print("OneLogin password: ")
-				pass, err := gopass.GetPasswd()
-				if err != nil {
-					log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
-				}
-
-				// Save password in keychain
-				err = keyChain.Set(provider, pass)
-				if err != nil {
-					fmt.Printf("Could not save password to keychain: %v", err)
-				}
-			} else {
-				// Check if we have a saved password
-				pass, err = keyChain.Get(provider)
-				if err != nil {
-					// Fallback silently to password from terminal
-					fmt.Print("OneLogin password: ")
-					pass, err = gopass.GetPasswd()
-					if err != nil {
-						log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
-					}
-				}
-			}
-
-			creds, err := onelogin.Get(aConfig, pConfig, user, string(pass))
-			if err != nil {
-				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
-			}
-			// Process credentials
-			err = processCredentials(creds, app)
-			if err != nil {
-				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
-			}
+			getOneLogin(app)
 		case ProviderOkta:
-			// Read app config
-			aConfig, err := config.GetOktaApp(app)
-			if err != nil {
-				log.Fatalf(color.RedString("Error reading config for app %s: %v"), app, err)
-			}
-
-			// Read provider config
-			pConfig, err := config.GetOktaProvider(provider)
-			if err != nil {
-				log.Fatalf(color.RedString("Error reading provider config: %v"), err)
-			}
-
-			// Get credentials from user
-			user := pConfig.Username
-			if user == "" {
-				fmt.Print("Okta username: ")
-				fmt.Scanln(&user)
-			}
-
-			keyChain := keychain.DefaultKeychain{}
-
-			var pass []byte
-			if savePassword {
-				// User asked to save a new password - don't check keychain
-				fmt.Print("Okta password: ")
-				pass, err := gopass.GetPasswd()
-				if err != nil {
-					log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
-				}
-
-				// Save password in keychain
-				err = keyChain.Set(provider, pass)
-				if err != nil {
-					fmt.Printf("Could not save password to keychain: %v", err)
-				}
-			} else {
-				// Check if we have a saved password
-				pass, err = keyChain.Get(provider)
-				if err != nil {
-					// Fallback silently to password from terminal
-					fmt.Print("Okta password: ")
-					pass, err = gopass.GetPasswd()
-					if err != nil {
-						log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
-					}
-				}
-			}
-
-			creds, err := okta.Get(aConfig, pConfig, user, string(pass))
-			if err != nil {
-				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
-			}
-			// Process credentials
-			err = processCredentials(creds, app)
-			if err != nil {
-				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
-			}
+			getOkta(app)
 		default:
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
