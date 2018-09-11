@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// OneLoginProviderConfig represents a OneLogin provider configuration.
-type OneLoginProviderConfig struct {
+// OneLoginProvider represents a OneLogin provider configuration.
+type OneLoginProvider struct {
 	ClientID     string
 	ClientSecret string
 	Subdomain    string
@@ -19,7 +19,7 @@ type OneLoginProviderConfig struct {
 
 // GetOneLoginProvider returns a OneLoginProviderConfig struct containing the configuration for
 // provider p.
-func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
+func GetOneLoginProvider(p string) (*OneLoginProvider, error) {
 	clientSecret := viper.GetString(fmt.Sprintf("providers.%s.client-secret", p))
 	clientID := viper.GetString(fmt.Sprintf("providers.%s.client-id", p))
 	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", p))
@@ -40,7 +40,7 @@ func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 		region = "US"
 	}
 
-	c := OneLoginProviderConfig{
+	c := OneLoginProvider{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Subdomain:    subdomain,
@@ -51,14 +51,14 @@ func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
 	return &c, nil
 }
 
-// OneLoginAppConfig represents a OneLogin app configuration.
-type OneLoginAppConfig struct {
+// OneLoginApp represents a OneLogin app configuration.
+type OneLoginApp struct {
 	ID       string
 	Provider string
 }
 
-// GetOneLoginApp returns a OneLoginAppConfig struct containing the configuration for app.
-func GetOneLoginApp(app string) (*OneLoginAppConfig, error) {
+// GetOneLoginApp returns a OneLoginApp struct containing the configuration for app.
+func GetOneLoginApp(app string) (*OneLoginApp, error) {
 	config := viper.GetStringMapString("apps." + app)
 	appID := config["app-id"]
 	provider := config["provider"]
@@ -67,7 +67,7 @@ func GetOneLoginApp(app string) (*OneLoginAppConfig, error) {
 		return nil, errors.New("app-id config value must be set")
 	}
 
-	c := OneLoginAppConfig{
+	c := OneLoginApp{
 		ID:       appID,
 		Provider: provider,
 	}
@@ -75,14 +75,14 @@ func GetOneLoginApp(app string) (*OneLoginAppConfig, error) {
 	return &c, nil
 }
 
-// OktaProviderConfig represents an Okta provider configuration.
-type OktaProviderConfig struct {
+// OktaProvider represents an Okta provider configuration.
+type OktaProvider struct {
 	BaseURL  string
 	Username string
 }
 
-// GetOktaProvider returns a OktaProviderConfig struct containing the configuration for provider p.
-func GetOktaProvider(p string) (*OktaProviderConfig, error) {
+// GetOktaProvider returns a OktaProvider struct containing the configuration for provider p.
+func GetOktaProvider(p string) (*OktaProvider, error) {
 	baseURL := viper.GetString(fmt.Sprintf("providers.%s.base-url", p))
 	username := viper.GetString(fmt.Sprintf("providers.%s.username", p))
 
@@ -90,17 +90,17 @@ func GetOktaProvider(p string) (*OktaProviderConfig, error) {
 		return nil, errors.New("base-url config value must bet set")
 	}
 
-	return &OktaProviderConfig{BaseURL: baseURL, Username: username}, nil
+	return &OktaProvider{BaseURL: baseURL, Username: username}, nil
 }
 
-// OktaAppConfig represents an Okta app configuration.
-type OktaAppConfig struct {
+// OktaApp represents an Okta app configuration.
+type OktaApp struct {
 	Provider string
 	URL      string
 }
 
-// GetOktaApp returns an OktaAppConfig struct containing the configuration for app.
-func GetOktaApp(app string) (*OktaAppConfig, error) {
+// GetOktaApp returns an OktaApp struct containing the configuration for app.
+func GetOktaApp(app string) (*OktaApp, error) {
 	config := viper.GetStringMapString("apps." + app)
 
 	provider := config["provider"]
@@ -114,7 +114,7 @@ func GetOktaApp(app string) (*OktaAppConfig, error) {
 		return nil, errors.New("url config value must be set")
 	}
 
-	return &OktaAppConfig{
+	return &OktaApp{
 		Provider: provider,
 		URL:      url,
 	}, nil

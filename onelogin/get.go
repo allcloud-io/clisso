@@ -6,13 +6,11 @@ import (
 
 	awsprovider "github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
-	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/howeyc/gopass"
 )
 
 const (
@@ -28,24 +26,9 @@ const (
 	MFAInterval = 1
 )
 
-var (
-	keyChain = keychain.DefaultKeychain{}
-)
-
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider string) (*awsprovider.Credentials, error) {
-	// Read config
-	p, err := config.GetOneLoginProvider(provider)
-	if err != nil {
-		return nil, fmt.Errorf("reading provider config: %v", err)
-	}
-
-	a, err := config.GetOneLoginApp(app)
-	if err != nil {
-		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
-	}
-
+func Get(a *config.OneLoginApp, p *config.OneLoginProvider, user string, pass string) (*awsprovider.Credentials, error) {
 	c, err := NewClient(p.Region)
 	if err != nil {
 		return nil, err
@@ -60,29 +43,6 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
-	}
-
-	user := p.Username
-	if user == "" {
-		// Get credentials from the user
-		fmt.Print("OneLogin username: ")
-		fmt.Scanln(&user)
-	}
-
-	pass, err := keyChain.Get(provider)
-	if err != nil {
-		fmt.Printf("Could not get password from keychain,\n\t%s\n", err.Error())
-
-		fmt.Print("Please enter OneLogin password: ")
-		pass, err := gopass.GetPasswd()
-		if err != nil {
-			return nil, fmt.Errorf("Couldn't read password from terminal")
-		}
-
-		err = keyChain.Set(provider, pass)
-		if err != nil {
-			fmt.Printf("Could not save to keychain: %+v", err)
-		}
 	}
 
 	// Generate SAML assertion

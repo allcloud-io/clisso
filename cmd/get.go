@@ -7,9 +7,12 @@ import (
 	"runtime"
 
 	"github.com/fatih/color"
+	"github.com/howeyc/gopass"
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/config"
+	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/okta"
 	"github.com/allcloud-io/clisso/onelogin"
 	"github.com/spf13/cobra"
@@ -18,6 +21,7 @@ import (
 
 var printToShell bool
 var writeToFile string
+var savePassword bool
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
@@ -27,6 +31,9 @@ func init() {
 	cmdGet.Flags().StringVarP(
 		&writeToFile, "write-to-file", "w", "",
 		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
+	)
+	cmdGet.Flags().BoolVarP(
+		&savePassword, "save-password", "K", false, "Save password in keychain",
 	)
 	viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
 }
@@ -84,8 +91,56 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
+		// Read app config
+		aConfig, err := config.GetOneLoginApp(app)
+		if err != nil {
+			log.Fatalf(color.RedString("Error reading config for app %s: %v"), app, err)
+		}
+
+		// Read provider config
+		pConfig, err := config.GetOneLoginProvider(provider)
+		if err != nil {
+			log.Fatalf(color.RedString("Error reading provider config: %v"), err)
+		}
+
+		// Get credentials from user
+		user := pConfig.Username
+		if user == "" {
+			fmt.Print("OneLogin username: ")
+			fmt.Scanln(&user)
+		}
+
+		keyChain := keychain.DefaultKeychain{}
+
+		var pass []byte
+		if savePassword {
+			// User asked to save a new password - don't check keychain
+			fmt.Print("OneLogin password: ")
+			pass, err := gopass.GetPasswd()
+			if err != nil {
+				log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
+			}
+
+			// Save password in keychain
+			err = keyChain.Set(provider, pass)
+			if err != nil {
+				fmt.Printf("Could not save password to keychain: %v", err)
+			}
+		} else {
+			// Check if we have a saved password
+			pass, err = keyChain.Get(provider)
+			if err != nil {
+				// Fallback silently to password from terminal
+				fmt.Print("OneLogin password: ")
+				pass, err = gopass.GetPasswd()
+				if err != nil {
+					log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
+				}
+			}
+		}
+
 		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider)
+			creds, err := onelogin.Get(aConfig, pConfig, user, string(pass))
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
