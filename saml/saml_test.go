@@ -36,7 +36,13 @@ func TestGet(t *testing.T) {
 		expectRole     string
 		expectError    bool
 	}{
-		{"Single ARN", "testdata/single-arn-response", "arn:aws:iam::123456789012:saml-provider/OneLogin-MyProvider", "arn:aws:iam::123456789012:role/OneLogin-MyRole", false},
+		{
+			"Single ARN",
+			"testdata/single-arn-response",
+			"arn:aws:iam::123456789012:saml-provider/OneLogin-MyProvider",
+			"arn:aws:iam::123456789012:role/OneLogin-MyRole",
+			false,
+		},
 		//{"Many ARNs", "testdata/valid-response", "", "", false},         // will ask questions
 		{"No ARNs", "testdata/no-arns-resonse", "", "", true},
 		{"No ARN value", "testdata/no-arn-value-response", "", "", true},
