@@ -53,6 +53,8 @@ func TestGet(t *testing.T) {
 			"arn:aws:iam::123456789012:role/OneLogin-MyRole",
 			false,
 		},
+		{"Too many ARN components", "testdata/too-many-components", "", "", true},
+		{"Malformed ARN components", "testdata/malformed-components", "", "", true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			b, _ := ioutil.ReadFile(test.path)
