@@ -5,30 +5,26 @@ import (
 )
 
 const (
-	// KeyChainName is the name of the keychain used to store
-	// passwords
+	// KeyChainName is the name of the keychain used by Clisso to store passwords.
 	KeyChainName = "clisso"
 )
 
-// keychain provides an interface to allow for the easy testing
-// of this package
+// Keychain provides an interface to allow for easy testing.
 type Keychain interface {
 	Get(string) ([]byte, error)
 	Set(string, []byte) error
 }
 
-// DefaultKeyChain provides a wrapper around github.com/tmc/keyring
-// and provides defaults and abstractions for clisso to get passwords
+// DefaultKeychain provides a wrapper around github.com/tmc/keyring as well as defaults and
+// abstractions for Clisso.
 type DefaultKeychain struct{}
 
-// Set takes a provider in an argument, and a password from STDIN, and
-// sets it in a keychain, should one exist.
+// Set stores the given password for the given provider in a keychain.
 func (DefaultKeychain) Set(provider string, password []byte) (err error) {
 	return keyring.Set(KeyChainName, provider, string(password))
 }
 
-// Get will, once given a valid provider, return the password associated
-// in order for logins to happen
+// Get returns the stored password for the given provider, or an error.
 func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
 	pwString, err := keyring.Get(KeyChainName, provider)
 	pw = []byte(pwString)
