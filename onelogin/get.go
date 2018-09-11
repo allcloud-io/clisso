@@ -29,9 +29,10 @@ const (
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
 func Get(a *config.OneLoginApp, p *config.OneLoginProvider, user string, pass string) (*awsprovider.Credentials, error) {
+	// Initialize OneLogin client
 	c, err := NewClient(p.Region)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("initializing OneLogin client: %v", err)
 	}
 
 	// Initialize spinner
