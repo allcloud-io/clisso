@@ -68,7 +68,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 }
 
 // getOneLogin get temporary credentials for an app of type OneLogin.
-func getOneLogin(app string) {
+func getOneLogin(app, provider string) {
 	// Read app config
 	aConfig, err := config.GetOneLoginApp(app)
 	if err != nil {
@@ -76,7 +76,7 @@ func getOneLogin(app string) {
 	}
 
 	// Read provider config
-	pConfig, err := config.GetOneLoginProvider(aConfig.Provider)
+	pConfig, err := config.GetOneLoginProvider(provider)
 	if err != nil {
 		log.Fatalf(color.RedString("Error reading provider config: %v"), err)
 	}
@@ -132,7 +132,7 @@ func getOneLogin(app string) {
 }
 
 // getOkta get temporary credentials for an app of type Okta.
-func getOkta(app string) {
+func getOkta(app, provider string) {
 	// Read app config
 	aConfig, err := config.GetOktaApp(app)
 	if err != nil {
@@ -140,7 +140,7 @@ func getOkta(app string) {
 	}
 
 	// Read provider config
-	pConfig, err := config.GetOktaProvider(aConfig.Provider)
+	pConfig, err := config.GetOktaProvider(provider)
 	if err != nil {
 		log.Fatalf(color.RedString("Error reading provider config: %v"), err)
 	}
@@ -230,9 +230,9 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		switch pType {
 		case ProviderOneLogin:
-			getOneLogin(app)
+			getOneLogin(app, provider)
 		case ProviderOkta:
-			getOkta(app)
+			getOkta(app, provider)
 		default:
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
