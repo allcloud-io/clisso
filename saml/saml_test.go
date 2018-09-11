@@ -46,6 +46,13 @@ func TestGet(t *testing.T) {
 		//{"Many ARNs", "testdata/valid-response", "", "", false},         // will ask questions
 		{"No ARNs", "testdata/no-arns-resonse", "", "", true},
 		{"No ARN value", "testdata/no-arn-value-response", "", "", true},
+		{
+			"IdP ARN before role ARN",
+			"testdata/idp-before-role",
+			"arn:aws:iam::123456789012:saml-provider/OneLogin-MyProvider",
+			"arn:aws:iam::123456789012:role/OneLogin-MyRole",
+			false,
+		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			b, _ := ioutil.ReadFile(test.path)
