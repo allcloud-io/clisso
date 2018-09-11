@@ -92,15 +92,9 @@ func getOneLogin(app string) {
 	if savePassword {
 		// User asked to save a new password - don't check keychain
 		fmt.Print("OneLogin password: ")
-		pass, err := gopass.GetPasswd()
+		pass, err = gopass.GetPasswd()
 		if err != nil {
 			log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
-		}
-
-		// Save password in keychain
-		err = keyChain.Set(provider, pass)
-		if err != nil {
-			fmt.Printf("Could not save password to keychain: %v", err)
 		}
 	} else {
 		// Check if we have a saved password
@@ -119,10 +113,21 @@ func getOneLogin(app string) {
 	if err != nil {
 		log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 	}
+
 	// Process credentials
 	err = processCredentials(creds, app)
 	if err != nil {
 		log.Fatalf(color.RedString("Error processing credentials: %v"), err)
+	}
+
+	// Save password in keychain (following a successful authentication)
+	if savePassword {
+		err = keyChain.Set(provider, pass)
+		if err != nil {
+			log.Printf(color.RedString("Could not save password to keychain: %v"), err)
+			return
+		}
+		log.Println(color.GreenString("Password saved successfully in keychain"))
 	}
 }
 
@@ -151,15 +156,9 @@ func getOkta(app string) {
 	if savePassword {
 		// User asked to save a new password - don't check keychain
 		fmt.Print("Okta password: ")
-		pass, err := gopass.GetPasswd()
+		pass, err = gopass.GetPasswd()
 		if err != nil {
 			log.Fatalf(color.RedString("Error reading password from terminal: %v"), err)
-		}
-
-		// Save password in keychain
-		err = keyChain.Set(provider, pass)
-		if err != nil {
-			fmt.Printf("Could not save password to keychain: %v", err)
 		}
 	} else {
 		// Check if we have a saved password
@@ -178,10 +177,21 @@ func getOkta(app string) {
 	if err != nil {
 		log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 	}
+
 	// Process credentials
 	err = processCredentials(creds, app)
 	if err != nil {
 		log.Fatalf(color.RedString("Error processing credentials: %v"), err)
+	}
+
+	// Save password in keychain (following a successful authentication)
+	if savePassword {
+		err = keyChain.Set(provider, pass)
+		if err != nil {
+			log.Printf(color.RedString("Could not save password to keychain: %v"), err)
+			return
+		}
+		log.Println(color.GreenString("Password saved successfully in keychain"))
 	}
 }
 
