@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -62,9 +63,30 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				if len(av.Value) == 0 {
 					return
 				}
-				components := strings.Split(av.Value, ",")
 
-				arns = append(arns, ARN{components[0], components[1]})
+				// Verify we have one of the following formats:
+				// 1. arn:aws:iam::xxxxxxxxxxxx:role/MyRole,arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider
+				// 2. arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider,arn:aws:iam::xxxxxxxxxxxx:role/MyRole
+				// Error otherwise.
+				components := strings.Split(av.Value, ",")
+				if len(components) != 2 {
+					// Wrong number of components - move on
+					continue
+				}
+
+				// Prepare patterns
+				role := regexp.MustCompile(`^arn:aws:iam::\d+:role/\S+$`)
+				idp := regexp.MustCompile(`^arn:aws:iam::\d+:saml-provider/\S+$`)
+
+				if role.MatchString(components[0]) && idp.MatchString(components[1]) {
+					// First component is role
+					arns = append(arns, ARN{components[0], components[1]})
+				} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
+					// First component is IdP
+					arns = append(arns, ARN{components[1], components[0]})
+				} else {
+					// Malformed ARNs - move on
+				}
 			}
 
 			return
