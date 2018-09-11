@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/howeyc/gopass"
 )
 
 var (
@@ -19,47 +18,11 @@ var (
 )
 
 // Get gets temporary credentials for the given app.
-func Get(app, provider string) (*awsprovider.Credentials, error) {
-	// Get provider config
-	p, err := config.GetOktaProvider(provider)
-	if err != nil {
-		return nil, fmt.Errorf("reading provider config: %v", err)
-	}
-
-	// Get app config
-	a, err := config.GetOktaApp(app)
-	if err != nil {
-		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
-	}
-
+func Get(a *config.OktaApp, p *config.OktaProvider, user string, pass string) (*awsprovider.Credentials, error) {
 	// Initialize Okta client
 	c, err := NewClient(p.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("initializing Okta client: %v", err)
-	}
-
-	// Get user credentials
-	user := p.Username
-	if user == "" {
-		// Get credentials from the user
-		fmt.Print("Okta username: ")
-		fmt.Scanln(&user)
-	}
-
-	pass, err := keyChain.Get(provider)
-	if err != nil {
-		fmt.Printf("Could not get password from keychain,\n\t%s\n", err.Error())
-
-		fmt.Print("Please enter Okta password: ")
-		pass, err := gopass.GetPasswd()
-		if err != nil {
-			return nil, fmt.Errorf("Couldn't read password from terminal")
-		}
-
-		err = keyChain.Set(provider, pass)
-		if err != nil {
-			fmt.Printf("Could not save to keychain: %+v", err)
-		}
 	}
 
 	// Initialize spinner
