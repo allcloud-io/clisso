@@ -288,7 +288,6 @@ apps using `clisso apps ls`.
 
 - No support for Okta applications with MFA enabled **at the application level**.
 - No support for storing passwords on Windows.
->>>>>>> add info to readme
 
 ## Contributing
 
