@@ -10,7 +10,6 @@ import (
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
-	"github.com/howeyc/gopass"
 )
 
 var (
@@ -46,13 +45,6 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	pass, err := keyChain.Get(provider)
-	if err != nil {
-		fmt.Print("Please enter Okta password: ")
-		pass, err = gopass.GetPasswd()
-		if err != nil {
-			return nil, fmt.Errorf("Couldn't read password from terminal")
-		}
-	}
 
 	// Initialize spinner
 	var s = spinner.New()
