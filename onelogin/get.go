@@ -101,6 +101,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
 		var selection int
 		fmt.Scanln(&selection)
+		if selection < 1 || selection >= len(devices) {
+			return nil, fmt.Errorf("Invalid MFA device selected. Exiting.")
+		}
 
 		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
 		deviceType = devices[selection-1].DeviceType
