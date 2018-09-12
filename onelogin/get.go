@@ -3,6 +3,7 @@ package onelogin
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
@@ -89,29 +90,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	st := rSaml.Data[0].StateToken
 
 	devices := rSaml.Data[0].Devices
-
-	var deviceID string
-	var deviceType string
-
-	if len(devices) > 1 {
-		for i, d := range devices {
-			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
-		}
-
-		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
-		var selection int
-		fmt.Scanln(&selection)
-		if selection < 1 || selection >= len(devices) {
-			return nil, fmt.Errorf("Invalid MFA device selected. Exiting.")
-		}
-
-		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
-		deviceType = devices[selection-1].DeviceType
-
-	} else {
-		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
-		deviceType = devices[0].DeviceType
-	}
+	deviceID, deviceType, err := getDevice(devices)
 
 	var rMfa *VerifyFactorResponse
 
@@ -201,4 +180,46 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	return creds, err
+}
+
+func getDevice(devices GenerateSamlAssertionResponseDevices) (deviceID, deviceType string, err error) {
+	// we might have more than one device
+	if len(devices) > 1 {
+		var selection int
+		for {
+			for i, d := range devices {
+				fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
+			}
+
+			fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
+			var input string
+			_, err := fmt.Scanln(&input)
+			if err != nil {
+				fmt.Printf("Error reading input: %v\n", err)
+				continue
+			}
+
+			// Verify we got an integer.
+			selection, err = strconv.Atoi(input)
+			if err != nil {
+				fmt.Printf("Invalid input '%s'\n", input)
+				continue
+			}
+
+			// Verify selection is within range.
+			if selection < 1 || selection > len(devices) {
+				fmt.Printf("Invalid MFA device selected\n")
+				continue
+			}
+			break
+		}
+
+		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
+		deviceType = devices[selection-1].DeviceType
+
+	} else {
+		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
+		deviceType = devices[0].DeviceType
+	}
+	return
 }

@@ -91,6 +91,11 @@ type GetUserByEmailResponse struct {
 	}
 }
 
+type GenerateSamlAssertionResponseDevices []struct {
+	DeviceId   int    `json:"device_id"`
+	DeviceType string `json:"device_type"`
+}
+
 // makeRequest constructs an HTTP request and returns a pointer to it.
 // TODO Wrap arguments in a type
 func makeRequest(method string, url string, headers map[string]string, body interface{}) (*http.Request, error) {
