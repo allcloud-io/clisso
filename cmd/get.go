@@ -26,7 +26,7 @@ const (
 	ProviderOkta = "okta"
 )
 
-var keyChain = keychain.DefaultKeychain{}
+var kc keychain.Keychain
 
 var printToShell bool
 var writeToFile string
@@ -41,10 +41,21 @@ func init() {
 		&writeToFile, "write-to-file", "w", "",
 		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
 	)
-	cmdGet.Flags().BoolVarP(
-		&savePassword, "save-password", "K", false, "Save password in keychain",
-	)
+	// Add flag only on non-Windows machines
+	if runtime.GOOS != "windows" {
+		cmdGet.Flags().BoolVarP(
+			&savePassword, "save-password", "K", false, "Save password in keychain",
+		)
+	}
 	viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
+
+	// TODO Hide this inside the keychain package.
+	// Initialize keychain
+	if runtime.GOOS == "windows" {
+		kc = keychain.NewNoopKeychain()
+	} else {
+		kc = keychain.NewKeychain()
+	}
 }
 
 // processCredentials prints the given Credentials to a file and/or to the shell.
@@ -98,7 +109,7 @@ func getOneLogin(app, provider string) {
 		}
 	} else {
 		// Check if we have a saved password
-		pass, err = keyChain.Get(provider)
+		pass, err = kc.Get(provider)
 		if err != nil {
 			// Fallback silently to password from terminal
 			fmt.Print("OneLogin password: ")
@@ -122,7 +133,7 @@ func getOneLogin(app, provider string) {
 
 	// Save password in keychain (following a successful authentication)
 	if savePassword {
-		err = keyChain.Set(provider, pass)
+		err = kc.Set(provider, pass)
 		if err != nil {
 			log.Printf(color.RedString("Could not save password to keychain: %v"), err)
 			return
@@ -162,7 +173,7 @@ func getOkta(app, provider string) {
 		}
 	} else {
 		// Check if we have a saved password
-		pass, err = keyChain.Get(provider)
+		pass, err = kc.Get(provider)
 		if err != nil {
 			// Fallback silently to password from terminal
 			fmt.Print("Okta password: ")
@@ -186,7 +197,7 @@ func getOkta(app, provider string) {
 
 	// Save password in keychain (following a successful authentication)
 	if savePassword {
-		err = keyChain.Set(provider, pass)
+		err = kc.Set(provider, pass)
 		if err != nil {
 			log.Printf(color.RedString("Could not save password to keychain: %v"), err)
 			return
