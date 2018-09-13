@@ -1,6 +1,7 @@
 package onelogin
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -182,44 +183,51 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	return creds, err
 }
 
-func getDevice(devices GenerateSamlAssertionResponseDevices) (deviceID, deviceType string, err error) {
-	// we might have more than one device
-	if len(devices) > 1 {
-		var selection int
-		for {
-			for i, d := range devices {
-				fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
-			}
-
-			fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
-			var input string
-			_, err := fmt.Scanln(&input)
-			if err != nil {
-				fmt.Printf("Error reading input: %v\n", err)
-				continue
-			}
-
-			// Verify we got an integer.
-			selection, err = strconv.Atoi(input)
-			if err != nil {
-				fmt.Printf("Invalid input '%s'\n", input)
-				continue
-			}
-
-			// Verify selection is within range.
-			if selection < 1 || selection > len(devices) {
-				fmt.Printf("Invalid MFA device selected\n")
-				continue
-			}
-			break
-		}
-
-		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
-		deviceType = devices[selection-1].DeviceType
-
-	} else {
+// getDevice returns the MFA device used by the user. If there is
+// more than one available the user is prompted which one should
+// be used.
+func getDevice(devices []Device) (deviceID, deviceType string, err error) {
+	if len(devices) == 0 {
+		// this should never happen
+		err = errors.New("No MFA device returned by Onelogin")
+		return
+	}
+	if len(devices) == 1 {
 		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
 		deviceType = devices[0].DeviceType
+		return
 	}
+
+	var selection int
+	for {
+		for i, d := range devices {
+			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
+		}
+
+		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
+		var input string
+		_, err := fmt.Scanln(&input)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+			continue
+		}
+
+		// Verify we got an integer.
+		selection, err = strconv.Atoi(input)
+		if err != nil {
+			fmt.Printf("Invalid input '%s'\n", input)
+			continue
+		}
+
+		// Verify selection is within range.
+		if selection < 1 || selection > len(devices) {
+			fmt.Printf("Invalid MFA device selected\n")
+			continue
+		}
+		break
+	}
+
+	deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
+	deviceType = devices[selection-1].DeviceType
 	return
 }

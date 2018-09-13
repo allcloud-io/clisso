@@ -45,11 +45,8 @@ type GenerateSamlAssertionResponse struct {
 		Message string `json:"message"`
 	} `json:"status"`
 	Data []struct {
-		StateToken string `json:"state_token"`
-		Devices    []struct {
-			DeviceId   int    `json:"device_id"`
-			DeviceType string `json:"device_type"`
-		}
+		StateToken  string `json:"state_token"`
+		Devices     []Device
 		CallbackUrl string `json:"callback_url"`
 		User        struct {
 			Lastname  string `json:"lastname"`
@@ -91,7 +88,7 @@ type GetUserByEmailResponse struct {
 	}
 }
 
-type GenerateSamlAssertionResponseDevices []struct {
+type Device struct {
 	DeviceId   int    `json:"device_id"`
 	DeviceType string `json:"device_type"`
 }
