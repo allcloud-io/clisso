@@ -20,7 +20,8 @@ type Credentials struct {
 }
 
 // WriteToFile writes credentials to an AWS CLI credentials file
-// (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html).
+// (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
+// function removes expired temporary credentials from the credentials file.
 func WriteToFile(c *Credentials, filename string, section string) error {
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
@@ -32,6 +33,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	cfg.Section(section).NewKey("aws_session_token", c.SessionToken)
 	cfg.Section(section).NewKey("aws_expiration", c.Expiration.UTC().Format(time.RFC3339))
 
+	// Remove expired credentials.
 	for _, s := range cfg.Sections() {
 		if s.HasKey("aws_expiration") {
 			v, err := s.Key("aws_expiration").TimeFormat(time.RFC3339)
@@ -40,10 +42,12 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 					cfg.DeleteSection(s.Name())
 				}
 			} else {
-				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s", s.Key("aws_expiration")), s.Name(), err)
+				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s",
+					s.Key("aws_expiration")), s.Name(), err)
 			}
 		}
 	}
+
 	return cfg.SaveTo(filename)
 }
 
