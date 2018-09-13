@@ -3,18 +3,15 @@ package okta
 import (
 	"fmt"
 
-	awsprovider "github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
 )
 
 // Get gets temporary credentials for the given app.
-func Get(app, provider string) (*awsprovider.Credentials, error) {
+func Get(app, provider string) (*aws.Credentials, error) {
 	// Get provider config
 	p, err := config.GetOktaProvider(provider)
 	if err != nil {
@@ -102,34 +99,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, err
 	}
 
-	// Assume role
-	input := sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  aws.String(arn.Provider),
-		RoleArn:       aws.String(arn.Role),
-		SAMLAssertion: aws.String(*samlAssertion),
-	}
-
-	sess := session.Must(session.NewSession())
-	svc := sts.New(sess)
-
 	s.Start()
-	aResp, err := svc.AssumeRoleWithSAML(&input)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion)
 	s.Stop()
-	if err != nil {
-		return nil, fmt.Errorf("assuming role: %v", err)
-	}
 
-	keyID := *aResp.Credentials.AccessKeyId
-	secretKey := *aResp.Credentials.SecretAccessKey
-	sessionToken := *aResp.Credentials.SessionToken
-	expiration := *aResp.Credentials.Expiration
-
-	creds := awsprovider.Credentials{
-		AccessKeyID:     keyID,
-		SecretAccessKey: secretKey,
-		SessionToken:    sessionToken,
-		Expiration:      expiration,
-	}
-
-	return &creds, nil
+	return creds, err
 }

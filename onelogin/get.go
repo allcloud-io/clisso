@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	awsprovider "github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/howeyc/gopass"
 )
 
@@ -29,7 +26,7 @@ const (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider string) (*awsprovider.Credentials, error) {
+func Get(app, provider string) (*aws.Credentials, error) {
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
@@ -185,34 +182,9 @@ func Get(app, provider string) (*awsprovider.Credentials, error) {
 		return nil, err
 	}
 
-	// Assume role
-	pAssumeRole := sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  aws.String(arn.Provider),
-		RoleArn:       aws.String(arn.Role),
-		SAMLAssertion: aws.String(rMfa.Data),
-	}
-
-	sess := session.Must(session.NewSession())
-	svc := sts.New(sess)
-
 	s.Start()
-	resp, err := svc.AssumeRoleWithSAML(&pAssumeRole)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data)
 	s.Stop()
-	if err != nil {
-		return nil, fmt.Errorf("assuming role: %v", err)
-	}
 
-	keyID := *resp.Credentials.AccessKeyId
-	secretKey := *resp.Credentials.SecretAccessKey
-	sessionToken := *resp.Credentials.SessionToken
-	expiration := *resp.Credentials.Expiration
-
-	creds := awsprovider.Credentials{
-		AccessKeyID:     keyID,
-		SecretAccessKey: secretKey,
-		SessionToken:    sessionToken,
-		Expiration:      expiration,
-	}
-
-	return &creds, nil
+	return creds, err
 }
