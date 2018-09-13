@@ -9,7 +9,6 @@ import (
 )
 
 func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string) (*Credentials, error) {
-	// Assume role
 	input := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:  aws.String(PrincipalArn),
 		RoleArn:       aws.String(RoleArn),
