@@ -26,7 +26,7 @@ const (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider string) (*aws.Credentials, error) {
+func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
@@ -183,7 +183,7 @@ func Get(app, provider string) (*aws.Credentials, error) {
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, app, duration)
 	s.Stop()
 
 	return creds, err
