@@ -43,7 +43,6 @@ all: darwin-386 darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
 zip:
 	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip'`; do zip $$i.zip $$i; done
 
-# See https://gist.github.com/maelvalais/068af21911c7debc4655cdaa41bbf092 for a rough guide on CI/CD for Brew.
 .PHONY: brew
 brew:
 	bash make_brew_release.sh $(BINARY_NAME) $(VERSION)
