@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -12,6 +13,7 @@ import (
 
 // Common
 var provider string
+var duration int
 
 // OneLogin
 var appID string
@@ -23,12 +25,14 @@ func init() {
 	// OneLogin
 	cmdAppsCreateOneLogin.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
 	cmdAppsCreateOneLogin.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
+	cmdAppsCreateOneLogin.Flags().IntVar(&duration, "duration", 0, "(Optional) Validity duration session of in seconds to request")
 	cmdAppsCreateOneLogin.MarkFlagRequired("app-id")
 	cmdAppsCreateOneLogin.MarkFlagRequired("provider")
 
 	// Okta
 	cmdAppsCreateOkta.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 	cmdAppsCreateOkta.Flags().StringVar(&URL, "url", "", "Okta app URL")
+	cmdAppsCreateOkta.Flags().IntVar(&duration, "duration", 0, "(Optional) Validity duration session of in seconds to request")
 	cmdAppsCreateOkta.MarkFlagRequired("provider")
 	cmdAppsCreateOkta.MarkFlagRequired("url")
 
@@ -115,6 +119,14 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 			"app-id":   appID,
 			"provider": provider,
 		}
+
+		if duration != 0 {
+			if duration < 3600 || duration > 43200 {
+				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
+			}
+			conf["duration"] = strconv.Itoa(duration)
+		}
+
 		viper.Set(fmt.Sprintf("apps.%s", name), conf)
 
 		// Write config to file
@@ -157,6 +169,14 @@ var cmdAppsCreateOkta = &cobra.Command{
 			"provider": provider,
 			"url":      URL,
 		}
+
+		if duration != 0 {
+			if duration < 3600 || duration > 43200 {
+				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
+			}
+			conf["duration"] = strconv.Itoa(duration)
+		}
+
 		viper.Set(fmt.Sprintf("apps.%s", name), conf)
 
 		// Write config to file

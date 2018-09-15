@@ -11,7 +11,7 @@ import (
 )
 
 // Get gets temporary credentials for the given app.
-func Get(app, provider string) (*aws.Credentials, error) {
+func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	// Get provider config
 	p, err := config.GetOktaProvider(provider)
 	if err != nil {
@@ -100,7 +100,7 @@ func Get(app, provider string) (*aws.Credentials, error) {
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, app, duration)
 	s.Stop()
 
 	return creds, err

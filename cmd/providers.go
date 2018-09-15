@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -16,6 +17,7 @@ var clientSecret string
 var subdomain string
 var username string
 var region string
+var providerDuration int
 
 // Okta
 var baseURL string
@@ -31,6 +33,7 @@ func init() {
 		"Don't ask for a username and use this instead")
 	cmdProvidersCreateOneLogin.Flags().StringVar(&region, "region", "US",
 		"Region in which the OneLogin API lives")
+	cmdProvidersCreateOneLogin.Flags().IntVar(&providerDuration, "duration", 14400, "(Optional) Default session duration validity assumed with this provider")
 
 	cmdProvidersCreateOneLogin.MarkFlagRequired("client-id")
 	cmdProvidersCreateOneLogin.MarkFlagRequired("client-secret")
@@ -40,6 +43,8 @@ func init() {
 	cmdProvidersCreateOkta.Flags().StringVar(&baseURL, "base-url", "", "Okta base URL")
 	cmdProvidersCreateOkta.Flags().StringVar(&username, "username", "",
 		"Don't ask for a username and use this instead")
+	cmdProvidersCreateOkta.Flags().IntVar(&providerDuration, "duration", 14400, "(Optional) Default session duration validity assumed with this provider")
+
 	cmdProvidersCreateOkta.MarkFlagRequired("base-url")
 
 	// Build command tree
@@ -113,6 +118,12 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 			"username":      username,
 			"region":        region,
 		}
+		if providerDuration != 0 {
+			if providerDuration < 3600 || providerDuration > 43200 {
+				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
+			}
+			conf["duration"] = strconv.Itoa(providerDuration)
+		}
 		viper.Set(fmt.Sprintf("providers.%s", name), conf)
 
 		// Write config to file
@@ -141,6 +152,12 @@ var cmdProvidersCreateOkta = &cobra.Command{
 			"base-url": baseURL,
 			"type":     "okta",
 			"username": username,
+		}
+		if providerDuration != 0 {
+			if providerDuration < 3600 || providerDuration > 43200 {
+				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
+			}
+			conf["duration"] = strconv.Itoa(providerDuration)
 		}
 		viper.Set(fmt.Sprintf("providers.%s", name), conf)
 

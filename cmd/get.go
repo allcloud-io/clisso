@@ -84,8 +84,14 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
+		// Set some sane default values for provider and app level durations
+		viper.SetDefault(fmt.Sprintf("providers.%s.duration", provider), 14400)
+		viper.SetDefault(fmt.Sprintf("apps.%s.duration", app), viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider)))
+		// Get the duration to be used.
+		duration := viper.GetInt64(fmt.Sprintf("apps.%s.duration", app))
+
 		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider)
+			creds, err := onelogin.Get(app, provider, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
@@ -95,7 +101,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider)
+			creds, err := okta.Get(app, provider, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
