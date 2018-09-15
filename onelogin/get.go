@@ -91,18 +91,18 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	st := rSaml.Data[0].StateToken
 
 	devices := rSaml.Data[0].Devices
-	deviceID, deviceType, err := getDevice(devices)
+	device, err := getDevice(devices)
 
 	var rMfa *VerifyFactorResponse
 
 	var pushOK = false
 
-	if deviceType == MFADeviceOneLoginProtect {
+	if device.DeviceType == MFADeviceOneLoginProtect {
 		// Push is supported by the selected MFA device - try pushing and fall back to manual input
 		pushOK = true
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
-			DeviceId:    deviceID,
+			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
 			StateToken:  st,
 			OtpToken:    "",
 			DoNotNotify: false,
@@ -148,7 +148,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		// Verify MFA
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
-			DeviceId:    deviceID,
+			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
 			StateToken:  st,
 			OtpToken:    otp,
 			DoNotNotify: false,
@@ -183,25 +183,24 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	return creds, err
 }
 
-// getDevice returns the MFA device used by the user. If there is
-// more than one available the user is prompted which one should
-// be used.
-func getDevice(devices []Device) (deviceID, deviceType string, err error) {
+// getDevice gets a slice of MFA devices, prompts the user to select one and returns the selected device.
+// If the slice contains only a single device, that device is returned. If the slice is empty, an error is returned.
+func getDevice(devices []Device) (device *Device, err error) {
 	if len(devices) == 0 {
-		// this should never happen
+		// This should never happen
 		err = errors.New("No MFA device returned by Onelogin")
 		return
 	}
+
 	if len(devices) == 1 {
-		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
-		deviceType = devices[0].DeviceType
+		device = &Device{DeviceID: devices[0].DeviceID, DeviceType: devices[0].DeviceType}
 		return
 	}
 
 	var selection int
 	for {
 		for i, d := range devices {
-			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
+			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceID, d.DeviceType)
 		}
 
 		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
@@ -221,13 +220,11 @@ func getDevice(devices []Device) (deviceID, deviceType string, err error) {
 
 		// Verify selection is within range.
 		if selection < 1 || selection > len(devices) {
-			fmt.Printf("Invalid MFA device selected\n")
+			fmt.Printf("Invalid value %d. Valid values: 1-%d\n", selection, len(devices))
 			continue
 		}
 		break
 	}
-
-	deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
-	deviceType = devices[selection-1].DeviceType
+	device = &Device{DeviceID: devices[selection-1].DeviceID, DeviceType: devices[selection-1].DeviceType}
 	return
 }

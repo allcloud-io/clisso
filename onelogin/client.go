@@ -89,7 +89,7 @@ type GetUserByEmailResponse struct {
 }
 
 type Device struct {
-	DeviceId   int    `json:"device_id"`
+	DeviceID   int    `json:"device_id"`
 	DeviceType string `json:"device_type"`
 }
 
