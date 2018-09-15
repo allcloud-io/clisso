@@ -35,7 +35,7 @@ TAP_DIR=$(brew --repo allcloud-io/tools)
 # change to tap directory
 cd $TAP_DIR
 # stash all changes so we have a clean working directory
-git clean -d -x -f && git checkout master
+git clean -d -x -f && git reset --hard && git checkout master
 
 # set the correct version
 sed "s:%VERSION%:${VERSION}:" ${BINARY_NAME}.rb.template > ${BINARY_NAME}.rb
