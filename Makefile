@@ -46,12 +46,6 @@ zip:
 # See https://gist.github.com/maelvalais/068af21911c7debc4655cdaa41bbf092 for a rough guide on CI/CD for Brew.
 .PHONY: brew
 brew:
-	# There is a dependency on the version in the formula. Follow the following steps.
-	# 1. Update the formula to the new source tar.gz.
-	# 2. Change the sha256 to match the tar.gz.
-	# 3. Remove all sha256 lines in the bottle section.
-	# 4. Commit and push.
-	# 5. Add the outputed bottles below.
 	bash make_brew_release.sh $(BINARY_NAME) $(VERSION)
 
 .PHONY: release
