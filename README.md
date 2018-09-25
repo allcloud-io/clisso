@@ -144,10 +144,9 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
-The `--duration` flag is optional. If specified sessions will be assumed with this duration instead
-of the default 14400 seconds (4h). Valid values are between 3600 and 43200 seconds. Has to be
-configured on the role in AWS, too. If a mismatch is detected clisso will provide the `awscli`
-command-line to change it. Can be overwritten on a app level (see below).
+The `--duration` flag is optional. If specified, sessions will be assumed with the provided duration, in seconds, instead of the default of 14400 (4 hours). Valid values are between 3600 and 43200 seconds. The max session duration has to be
+configured on the role in AWS. If a longer session time is requested than what is configured on the AWS role, Clisso will provide the `awscli`
+command to change it. The default duration specified on provider level can be overridden on a per app level (see below).
 
 #### Okta
 
@@ -171,10 +170,9 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
-The `--duration` flag is optional. If specified sessions will be assumed with this duration instead
-of the default 14400 seconds (4h). Valid values are between 3600 and 43200 seconds. Has to be
-configured on the role in AWS, too. If a mismatch is detected clisso will provide the `awscli`
-command-line to change it. Can be overwritten on a app level (see below).
+The `--duration` flag is optional. If specified, sessions will be assumed with the provided duration, in seconds, instead of the default of 14400 (4 hours). Valid values are between 3600 and 43200 seconds. The max session duration has to be
+configured on the role in AWS. If a longer session time is requested than what is configured on the AWS role, Clisso will provide the `awscli`
+command to change it. The default duration specified on provider level can be overridden on a per app level (see below).
 
 ### Deleting Providers
 
@@ -204,11 +202,10 @@ manually configure the app ID for every app.
 >NOTE: The ID seen in the browser URL when visiting a OneLogin app as a user is **NOT** the app ID.
 >Only a OneLogin administrator can obtain an app ID.
 
-The `--duration` flag is optional, defaults to the value set at the provider level. Valid values are
-between 3600 and 43200 seconds. Can be used to raise or lower the session duration on a per app basis,
-depending on the security needs for the specific app. Has to be configured on the role in AWS as the
-default maximum is 3600 seconds. If a mismatch is detected clisso will provide the `awscli`
-command-line to change it.
+The `--duration` flag is optional and defaults to the value set at the provider level. Valid values are
+between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an individual app,
+depending on the security needs for the specific app. The value used here has to match the max session duration configured on the AWS role; the default maximum is 3600 seconds. If a mismatch is detected Clisso will provide the `awscli`
+command to change it.
 
 #### Okta
 
@@ -230,11 +227,10 @@ clicking an app in the **Applications** view. The embed link is on the **General
 >NOTE: An Okta embed link must not contain an HTTP query, only the base URL. For AWS apps, the link
 should end with `/137`.
 
-The `--duration` flag is optional, defaults to the value set at the provider level. Valid values are
-between 3600 and 43200 seconds. Can be used to raise or lower the session duration on a per app basis,
-depending on the security needs for the specific app. Has to be configured on the role in AWS as the
-default maximum is 3600 seconds. If a mismatch is detected clisso will provide the `awscli`
-command-line to change it.
+The `--duration` flag is optional and defaults to the value set at the provider level. Valid values are
+between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an individual app,
+depending on the security needs for the specific app. The value used here has to match the max session duration configured on the AWS role; the default maximum is 3600 seconds. If a mismatch is detected Clisso will provide the `awscli`
+command to change it.
 
 ### Deleting Apps
 
