@@ -119,6 +119,7 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 			"region":        region,
 		}
 		if providerDuration != 0 {
+			// if duration is non zero, the parameter was provided, let's check if the duration is in a valid range.
 			if providerDuration < 3600 || providerDuration > 43200 {
 				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
 			}
