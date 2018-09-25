@@ -12,7 +12,7 @@ import (
 
 // AssumeSAMLRole asumes a Role using the SAMLAssertion specified. If the duration cannot be meet it transperently lowers the duration and sets the returned bool to true to signal that a message should be displayed
 func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, profile string, duration int64) (*Credentials, error) {
-	creds, err, roleNeedsChange := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
+	creds, roleNeedsChange, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
 	if err == nil && roleNeedsChange {
 		// TODO: This might conflict with spinner... Trying to avoid by starting with \r.
 		fmt.Printf(color.YellowString("\rThe role does not support the requested max-session-duration of %v. To have a max session duration for up to 12h run:\n"), duration)
@@ -21,7 +21,7 @@ func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, profile string, durati
 	return creds, err
 }
 
-func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64, roleDoesNotSupportDuration bool) (*Credentials, error, bool) {
+func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64, roleDoesNotSupportDuration bool) (*Credentials, bool, error) {
 	// Assume role
 	input := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:    aws.String(PrincipalArn),
@@ -39,9 +39,8 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 		if strings.HasPrefix(err.Error(), "ValidationError: The requested DurationSeconds exceeds the MaxSessionDuration set for this role") && duration > 3600 && duration <= 43200 {
 			duration -= 3600
 			return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, true)
-		} else {
-			return nil, fmt.Errorf("assuming role: %v", err), false
 		}
+		return nil, false, fmt.Errorf("assuming role: %v", err)
 	}
 
 	keyID := *aResp.Credentials.AccessKeyId
@@ -56,5 +55,5 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 		Expiration:      expiration,
 	}
 
-	return &creds, nil, roleDoesNotSupportDuration
+	return &creds, roleDoesNotSupportDuration, nil
 }
