@@ -25,14 +25,14 @@ func init() {
 	// OneLogin
 	cmdAppsCreateOneLogin.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
 	cmdAppsCreateOneLogin.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
-	cmdAppsCreateOneLogin.Flags().IntVar(&duration, "duration", 0, "(Optional) Validity duration session of in seconds to request")
+	cmdAppsCreateOneLogin.Flags().IntVar(&duration, "duration", 0, "(Optional) Session duration in seconds")
 	cmdAppsCreateOneLogin.MarkFlagRequired("app-id")
 	cmdAppsCreateOneLogin.MarkFlagRequired("provider")
 
 	// Okta
 	cmdAppsCreateOkta.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 	cmdAppsCreateOkta.Flags().StringVar(&URL, "url", "", "Okta app URL")
-	cmdAppsCreateOkta.Flags().IntVar(&duration, "duration", 0, "(Optional) Validity duration session of in seconds to request")
+	cmdAppsCreateOkta.Flags().IntVar(&duration, "duration", 0, "(Optional) Session duration in seconds")
 	cmdAppsCreateOkta.MarkFlagRequired("provider")
 	cmdAppsCreateOkta.MarkFlagRequired("url")
 
