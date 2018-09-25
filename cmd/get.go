@@ -84,7 +84,10 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
-		// Set some sane default values for provider and app level durations
+		// Set some sane default values for provider and app level durations.
+		// We can't do this earlier because we don't know what the provider or app name will be.
+		// The value is checked in order (app.duration -> provider.duration -> coded default of 4h)
+		// and the first match is taken.
 		viper.SetDefault(fmt.Sprintf("providers.%s.duration", provider), 14400)
 		viper.SetDefault(fmt.Sprintf("apps.%s.duration", app), viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider)))
 		// Get the duration to be used.
