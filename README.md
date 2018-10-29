@@ -146,10 +146,10 @@ Clisso prompt for a username every time.
 
 The `--duration` flag is optional. If specified, sessions will be assumed with the provided
 duration, in seconds, instead of the default of 14400 (4 hours). Valid values are between 3600 and
-43200 seconds. The max session duration has to be configured on the role in AWS. If a longer
-session time is requested than what is configured on the AWS role, Clisso will provide the `awscli`
-command to change it. The default duration specified on provider level can be overridden on a per
-app level (see below).
+43200 seconds. The [max session duration](12) has be equal to or lower than what is configured on
+the role in AWS. If a longer session time is requested than what is configured on the AWS role,
+Clisso will lower the duration and retry. The default duration specified on provider level can be
+overridden on a per app level (see below).
 
 #### Okta
 
@@ -175,10 +175,11 @@ Clisso prompt for a username every time.
 
 The `--duration` flag is optional. If specified, sessions will be assumed with the provided
 duration, in seconds, instead of the default of 14400 (4 hours). Valid values are between 3600 and
-43200 seconds. The max session duration has to be configured on the role in AWS. If a longer
-session time is requested than what is configured on the AWS role, Clisso will provide the `awscli`
-command to change it. The default duration specified on provider level can be overridden on a per
-app level (see below).
+43200 seconds. The [max session duration](12) has be equal to or lower than what is configured on
+the role in AWS. If a longer session time is requested than what is configured on the AWS role,
+Clisso will lower the duration and retry. The default duration specified on provider level can be
+overridden on a per app level (see below).
+
 ### Deleting Providers
 
 Deleting providers using the `clisso` command isn't currently supported. To delete a provider,
@@ -209,9 +210,10 @@ manually configure the app ID for every app.
 
 The `--duration` flag is optional and defaults to the value set at the provider level. Valid values
 are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
-individual app, depending on the security needs for the specific app. The value used here has to
-match the max session duration configured on the AWS role; the default maximum is 3600 seconds. If
-a mismatch is detected Clisso will provide the `awscli` command to change it.
+individual app, depending on the security needs for the specific app. The [max session duration](12)
+has be equal to or lower than what is configured on the role in AWS. The default maximum is 3600
+seconds. If a mismatch is detected Clisso will try to assume the role with a lower duration than
+requested.
 
 #### Okta
 
@@ -235,9 +237,10 @@ should end with `/137`.
 
 The `--duration` flag is optional and defaults to the value set at the provider level. Valid values
 are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
-individual app, depending on the security needs for the specific app. The value used here has to
-match the max session duration configured on the AWS role; the default maximum is 3600 seconds. If
-a mismatch is detected Clisso will provide the `awscli` command to change it.
+individual app, depending on the security needs for the specific app. The [max session duration](12)
+has be equal to or lower than what is configured on the role in AWS. The default maximum is 3600
+seconds. If a mismatch is detected Clisso will try to assume the role with a lower duration than
+requested.
 
 ### Deleting Apps
 
@@ -293,3 +296,4 @@ TODO
 [9]: https://onelogin.service-now.com/support?id=kb_article&sys_id=de999903db109700d5505eea4b961966
 [10]: https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
 [11]: sample_config.yaml
+[12]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
