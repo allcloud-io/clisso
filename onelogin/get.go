@@ -184,7 +184,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, app, duration)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, duration)
 	s.Stop()
 
 	// the default duration might be shorter than what is configured on AWS side. The code above
