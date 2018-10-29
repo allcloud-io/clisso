@@ -1,27 +1,23 @@
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/fatih/color"
 )
+
+var ErrInvalidSessionDuration = errors.New("InvalidSessionDuration")
 
 // AssumeSAMLRole asumes a Role using the SAMLAssertion specified. If the duration cannot be meet it transperently lowers the duration and sets the returned bool to true to signal that a message should be displayed
 func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, profile string, duration int64) (*Credentials, error) {
-	creds, roleNeedsChange, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
-	if err == nil && roleNeedsChange {
-		// TODO: This might conflict with spinner... Trying to avoid by starting with \r.
-		fmt.Printf(color.YellowString("\rThe role does not support the requested max-session-duration of %v. To have a max session duration for up to 12h run:\n"), duration)
-		fmt.Printf("\raws iam update-role --role-name %v --max-session-duration 43200 --profile %v\n", RoleArn[strings.LastIndex(RoleArn, "/")+1:], profile)
-	}
-	return creds, err
+	return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
 }
 
-func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64, roleDoesNotSupportDuration bool) (*Credentials, bool, error) {
+func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64, roleDoesNotSupportDuration bool) (*Credentials, error) {
 	// Assume role
 	input := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:    aws.String(PrincipalArn),
@@ -35,12 +31,12 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 
 	aResp, err := svc.AssumeRoleWithSAML(&input)
 	if err != nil {
-		// The role might not yet support the requested duration, let's catch and try to lower in 1h steps
+		// The role might not yet support the requested duration, let's catch and try to lower in 1h steps. There is as of now no other way than to do a string comparison.
 		if strings.HasPrefix(err.Error(), "ValidationError: The requested DurationSeconds exceeds the MaxSessionDuration set for this role") && duration > 3600 && duration <= 43200 {
 			duration -= 3600
 			return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, true)
 		}
-		return nil, false, fmt.Errorf("assuming role: %v", err)
+		return nil, fmt.Errorf("assuming role: %v", err)
 	}
 
 	keyID := *aResp.Credentials.AccessKeyId
@@ -55,5 +51,9 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 		Expiration:      expiration,
 	}
 
-	return &creds, roleDoesNotSupportDuration, nil
+	if roleDoesNotSupportDuration {
+		err = ErrInvalidSessionDuration
+	}
+
+	return &creds, err
 }
