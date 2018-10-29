@@ -13,7 +13,7 @@ import (
 var ErrInvalidSessionDuration = errors.New("InvalidSessionDuration")
 
 // AssumeSAMLRole asumes a Role using the SAMLAssertion specified. If the duration cannot be meet it transperently lowers the duration and sets the returned bool to true to signal that a message should be displayed
-func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, profile string, duration int64) (*Credentials, error) {
+func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64) (*Credentials, error) {
 	return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
 }
 
