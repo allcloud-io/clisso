@@ -191,7 +191,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	// selected the minimum duration. If more was requested print an info.
 	if err == aws.ErrInvalidSessionDuration {
 		fmt.Printf("The role does not support the requested duration of %v. To have a max session duration for up to 12h run:\n", duration)
-		fmt.Printf("\raws iam update-role --role-name %v --max-session-duration 43200 --profile %v\n", arn.Role[strings.LastIndex(arn.Role, "/")+1:], app)
+		fmt.Printf("aws iam update-role --role-name %v --max-session-duration 43200 --profile %v\n", arn.Role[strings.LastIndex(arn.Role, "/")+1:], app)
 		err = nil
 	}
 
