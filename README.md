@@ -145,7 +145,7 @@ username when retrieving credentials for apps which use this provider. Omitting 
 Clisso prompt for a username every time.
 
 The `--duration` flag is optional. If specified, sessions will be assumed with the provided
-duration, in seconds, instead of the default of 14400 (4 hours). Valid values are between 3600 and
+duration, in seconds, instead of the default of 3600 (1 hour). Valid values are between 3600 and
 43200 seconds. The [max session duration](12) has be equal to or lower than what is configured on
 the role in AWS. If a longer session time is requested than what is configured on the AWS role,
 Clisso will lower the duration and retry. The default duration specified on provider level can be
@@ -174,7 +174,7 @@ username when retrieving credentials for apps which use this provider. Omitting 
 Clisso prompt for a username every time.
 
 The `--duration` flag is optional. If specified, sessions will be assumed with the provided
-duration, in seconds, instead of the default of 14400 (4 hours). Valid values are between 3600 and
+duration, in seconds, instead of the default of 3600 (1 hour). Valid values are between 3600 and
 43200 seconds. The [max session duration](12) has be equal to or lower than what is configured on
 the role in AWS. If a longer session time is requested than what is configured on the AWS role,
 Clisso will lower the duration and retry. The default duration specified on provider level can be
