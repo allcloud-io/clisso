@@ -15,7 +15,14 @@ var ErrInvalidSessionDuration = errors.New("InvalidSessionDuration")
 // AssumeSAMLRole asumes a Role using the SAMLAssertion specified. If the duration cannot be meet
 // it transperently lowers the duration and returns an error in parallel to the valid credentials.
 func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64) (*Credentials, error) {
-	return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
+	creds, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
+	if err == ErrInvalidSessionDuration {
+		// the requested duration was invalid. So try again with a minimum of 3600s and return an
+		// EErrInvalidSessionDuration error, too.
+		return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, 3600, true)
+	}
+
+	return creds, nil
 }
 
 func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64, roleDoesNotSupportDuration bool) (*Credentials, error) {
@@ -35,8 +42,7 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 		// The role might not yet support the requested duration, let's catch and try to lower in 1h
 		// steps. There is - as of now - no other way than to do a string comparison.
 		if strings.HasPrefix(err.Error(), "ValidationError: The requested DurationSeconds exceeds the MaxSessionDuration set for this role") && duration > 3600 && duration <= 43200 {
-			duration -= 3600
-			return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, true)
+			return nil, ErrInvalidSessionDuration
 		}
 		return nil, fmt.Errorf("assuming role: %v", err)
 	}
