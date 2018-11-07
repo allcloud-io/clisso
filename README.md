@@ -212,8 +212,8 @@ The `--duration` flag is optional and defaults to the value set at the provider 
 are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
 individual app, depending on the security needs for the specific app. The [max session duration](12)
 has be equal to or lower than what is configured on the role in AWS. The default maximum is 3600
-seconds. If a mismatch is detected Clisso will try to assume the role with a lower duration than
-requested.
+seconds. If a mismatch is detected Clisso will try to assume the role with a duration of 3600
+seconds.
 
 #### Okta
 
@@ -239,8 +239,8 @@ The `--duration` flag is optional and defaults to the value set at the provider 
 are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
 individual app, depending on the security needs for the specific app. The [max session duration](12)
 has be equal to or lower than what is configured on the role in AWS. The default maximum is 3600
-seconds. If a mismatch is detected Clisso will try to assume the role with a lower duration than
-requested.
+seconds. If a mismatch is detected Clisso will try to assume the role with a duration of 3600
+seconds.
 
 ### Deleting Apps
 
