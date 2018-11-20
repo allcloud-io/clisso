@@ -2,32 +2,46 @@ package aws
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 )
 
-var ErrInvalidSessionDuration = errors.New("InvalidSessionDuration")
+const (
+	// The error message STS returns when attempting to assume a role with a duration longer than
+	// the configured maximum for that role.
+	ErrInvalidSessionDuration = "The requested DurationSeconds exceeds the MaxSessionDuration set for this role."
+	// A custom error which indicates that the requested duration exceeded the configured maximum.
+	// TODO Replace this with a custom error type.
+	ErrDurationExceeded = "DurationExceeded"
+)
 
-// AssumeSAMLRole asumes a Role using the SAMLAssertion specified. If the duration cannot be meet
-// it transperently lowers the duration to the minimal valid value of 3600 seconds and returns an
-// error in parallel to the valid credentials.
+// AssumeSAMLRole assumes an AWS IAM role using a SAML assertion.
+// In cases where the requested session duration is higher than the maximum allowed on AWS, STS
+// returns a specific error message to indicate that. In this case we return a custom error to the
+// caller to allow special handling such as retrying with a lower duration.
 func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64) (*Credentials, error) {
-	creds, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration, false)
-	if err == ErrInvalidSessionDuration {
-		// the requested duration was invalid. So try again with a minimum of 3600s and return an
-		// EErrInvalidSessionDuration error, too.
-		return assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, 3600, true)
+	creds, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration)
+	if err != nil {
+		// Verify error is an AWS error.
+		if awsErr, ok := err.(awserr.Error); ok {
+			// Check if error indicates exceeded duration.
+			if awsErr.Message() == ErrInvalidSessionDuration {
+				// Return a custom error to allow the caller to retry etc.
+				// TODO Return a custom error type instead of a special value:
+				// https://dave.cheney.net/2014/12/24/inspecting-errors
+				return nil, errors.New(ErrDurationExceeded)
+			}
+		}
+		return nil, err
 	}
 
 	return creds, nil
 }
 
-func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64, roleDoesNotSupportDuration bool) (*Credentials, error) {
-	// Assume role
+func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64) (*Credentials, error) {
 	input := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:    aws.String(PrincipalArn),
 		RoleArn:         aws.String(RoleArn),
@@ -40,12 +54,7 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 
 	aResp, err := svc.AssumeRoleWithSAML(&input)
 	if err != nil {
-		// The role might not yet support the requested duration, let's catch and return a specific
-		// error. There is - as of now - no other way than to do a string comparison.
-		if strings.HasPrefix(err.Error(), "ValidationError: The requested DurationSeconds exceeds the MaxSessionDuration set for this role") && duration > 3600 && duration <= 43200 {
-			return nil, ErrInvalidSessionDuration
-		}
-		return nil, fmt.Errorf("assuming role: %v", err)
+		return nil, err
 	}
 
 	keyID := *aResp.Credentials.AccessKeyId
@@ -60,9 +69,5 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64,
 		Expiration:      expiration,
 	}
 
-	if roleDoesNotSupportDuration {
-		err = ErrInvalidSessionDuration
-	}
-
-	return &creds, err
+	return &creds, nil
 }

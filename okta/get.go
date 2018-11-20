@@ -2,12 +2,13 @@ package okta
 
 import (
 	"fmt"
-	"strings"
+	"log"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
+	"github.com/fatih/color"
 	"github.com/howeyc/gopass"
 )
 
@@ -104,14 +105,13 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, duration)
 	s.Stop()
 
-	// the default duration might be shorter than what is configured on AWS side. The code above
-	// selected the minimum duration. If more was requested print an info.
-	if err == aws.ErrInvalidSessionDuration {
-		fmt.Printf("The role does not support the requested duration of %v. To have a max session "+
-			"duration for up to 12h run:\n", duration)
-		fmt.Printf("aws iam update-role --role-name %v --max-session-duration 43200 --profile %v\n",
-			arn.Role[strings.LastIndex(arn.Role, "/")+1:], app)
-		err = nil
+	if err != nil {
+		if err.Error() == aws.ErrDurationExceeded {
+			log.Println(color.YellowString("Requested duration exceeded allowed maximum. Falling back to 1 hour."))
+			s.Start()
+			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, 3600)
+			s.Stop()
+		}
 	}
 
 	return creds, err
