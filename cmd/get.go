@@ -51,6 +51,23 @@ func processCredentials(creds *aws.Credentials, app string) error {
 	return nil
 }
 
+// sessionDuration returns a session duration using the following order of preference:
+// app.duration -> provider.duration -> hardcoded default of 3600
+func sessionDuration(app, provider string) int64 {
+	a := viper.GetInt64(fmt.Sprintf("apps.%s.duration", app))
+	p := viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider))
+
+	if a != 0 {
+		return a
+	}
+
+	if p != 0 {
+		return p
+	}
+
+	return 3600
+}
+
 var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "Get temporary credentials for an app",
@@ -84,14 +101,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
-		// Set some sane default values for provider and app level durations.
-		// We can't do this earlier because we don't know what the provider or app name will be.
-		// The value is checked in order (app.duration -> provider.duration -> coded default of 1h)
-		// and the first match is taken.
-		viper.SetDefault(fmt.Sprintf("providers.%s.duration", provider), 3600)
-		viper.SetDefault(fmt.Sprintf("apps.%s.duration", app), viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider)))
-		// Get the duration to be used.
-		duration := viper.GetInt64(fmt.Sprintf("apps.%s.duration", app))
+		duration := sessionDuration(app, provider)
 
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider, duration)
