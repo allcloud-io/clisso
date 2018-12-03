@@ -119,9 +119,9 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 			"region":        region,
 		}
 		if providerDuration != 0 {
-			// if duration is non zero, the parameter was provided, let's check if the duration is in a valid range.
+			// Duration specified - validate value
 			if providerDuration < 3600 || providerDuration > 43200 {
-				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
+				log.Fatal(color.RedString("Invalid duration Specified. Valid values: 3600 - 43200"))
 			}
 			conf["duration"] = strconv.Itoa(providerDuration)
 		}
@@ -155,8 +155,9 @@ var cmdProvidersCreateOkta = &cobra.Command{
 			"username": username,
 		}
 		if providerDuration != 0 {
+			// Duration specified - validate value
 			if providerDuration < 3600 || providerDuration > 43200 {
-				log.Fatal(color.RedString("The specified duration is invalid. The range STS accepts is 3600 - 43200 seconds."))
+				log.Fatal(color.RedString("Invalid duration Specified. Valid values: 3600 - 43200"))
 			}
 			conf["duration"] = strconv.Itoa(providerDuration)
 		}
