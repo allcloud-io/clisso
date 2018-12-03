@@ -146,7 +146,7 @@ Clisso prompt for a username every time.
 
 The `--duration` flag is optional. If specified, sessions will be assumed with the provided
 duration, in seconds, instead of the default of 3600 (1 hour). Valid values are between 3600 and
-43200 seconds. The [max session duration](12) has be equal to or lower than what is configured on
+43200 seconds. The [max session duration][12] has be equal to or lower than what is configured on
 the role in AWS. If a longer session time is requested than what is configured on the AWS role,
 Clisso will lower the duration and retry. The default duration specified on provider level can be
 overridden on a per app level (see below).
@@ -175,7 +175,7 @@ Clisso prompt for a username every time.
 
 The `--duration` flag is optional. If specified, sessions will be assumed with the provided
 duration, in seconds, instead of the default of 3600 (1 hour). Valid values are between 3600 and
-43200 seconds. The [max session duration](12) has be equal to or lower than what is configured on
+43200 seconds. The [max session duration][12] has be equal to or lower than what is configured on
 the role in AWS. If a longer session time is requested than what is configured on the AWS role,
 Clisso will lower the duration and retry. The default duration specified on provider level can be
 overridden on a per app level (see below).
@@ -210,7 +210,7 @@ manually configure the app ID for every app.
 
 The `--duration` flag is optional and defaults to the value set at the provider level. Valid values
 are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
-individual app, depending on the security needs for the specific app. The [max session duration](12)
+individual app, depending on the security needs for the specific app. The [max session duration][12]
 has be equal to or lower than what is configured on the role in AWS. The default maximum is 3600
 seconds. If a mismatch is detected Clisso will try to assume the role with a duration of 3600
 seconds.
@@ -237,7 +237,7 @@ should end with `/137`.
 
 The `--duration` flag is optional and defaults to the value set at the provider level. Valid values
 are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
-individual app, depending on the security needs for the specific app. The [max session duration](12)
+individual app, depending on the security needs for the specific app. The [max session duration][12]
 has be equal to or lower than what is configured on the role in AWS. The default maximum is 3600
 seconds. If a mismatch is detected Clisso will try to assume the role with a duration of 3600
 seconds.
