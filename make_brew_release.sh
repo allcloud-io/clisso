@@ -38,9 +38,9 @@ cd $TAP_DIR
 git clean -d -x -f && git reset --hard && git checkout master
 
 # set the correct version
-sed "s:%VERSION%:${VERSION}:" ${BINARY_NAME}.rb.template > ${BINARY_NAME}.rb
+sed "s:%VERSION%:${VERSION}:" ${BINARY_NAME}.rb.template | sed "s:%BOTTLE%::" > ${BINARY_NAME}.rb
 # and calc sha256
-SHA256=$(brew fetch ${BINARY_NAME} --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2)
+SHA256=$(brew fetch ${BINARY_NAME} --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
 
 # replace version and sha256 placeholder in template
 sed "s:%VERSION%:${VERSION}:" ${BINARY_NAME}.rb.template | \
