@@ -10,9 +10,17 @@ import (
 )
 
 const (
+	// A friendly message to show to the user when a requested duration exceeds the configured
+	// maximum.
+	DurationExceededMessage = "The requested duration exceeded the allowed maximum. Falling " +
+		"back to 1 hour.\nTo update the maximum session duration you can use the following " +
+		"command:\n\naws iam update-role --role-name <role_name> --max-session-duration " +
+		"<duration>\n\nFor more information please refer to the AWS documentation:\n" +
+		"https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_manage_modify.html"
 	// The error message STS returns when attempting to assume a role with a duration longer than
 	// the configured maximum for that role.
-	ErrInvalidSessionDuration = "The requested DurationSeconds exceeds the MaxSessionDuration set for this role."
+	ErrInvalidSessionDuration = "The requested DurationSeconds exceeds the MaxSessionDuration " +
+		"set for this role."
 	// A custom error which indicates that the requested duration exceeded the configured maximum.
 	// TODO Replace this with a custom error type.
 	ErrDurationExceeded = "DurationExceeded"
