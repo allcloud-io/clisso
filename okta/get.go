@@ -107,7 +107,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
-			log.Println(color.YellowString("Requested duration exceeded allowed maximum. Falling back to 1 hour."))
+			log.Println(color.YellowString(aws.DurationExceededMessage))
 			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, 3600)
 			s.Stop()
