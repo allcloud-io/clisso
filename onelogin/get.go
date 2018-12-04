@@ -1,8 +1,10 @@
 package onelogin
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
@@ -89,37 +91,18 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	st := rSaml.Data[0].StateToken
 
 	devices := rSaml.Data[0].Devices
-
-	var deviceID string
-	var deviceType string
-
-	if len(devices) > 1 {
-		for i, d := range devices {
-			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceId, d.DeviceType)
-		}
-
-		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
-		var selection int
-		fmt.Scanln(&selection)
-
-		deviceID = fmt.Sprintf("%v", devices[selection-1].DeviceId)
-		deviceType = devices[selection-1].DeviceType
-
-	} else {
-		deviceID = fmt.Sprintf("%v", devices[0].DeviceId)
-		deviceType = devices[0].DeviceType
-	}
+	device, err := getDevice(devices)
 
 	var rMfa *VerifyFactorResponse
 
 	var pushOK = false
 
-	if deviceType == MFADeviceOneLoginProtect {
+	if device.DeviceType == MFADeviceOneLoginProtect {
 		// Push is supported by the selected MFA device - try pushing and fall back to manual input
 		pushOK = true
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
-			DeviceId:    deviceID,
+			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
 			StateToken:  st,
 			OtpToken:    "",
 			DoNotNotify: false,
@@ -165,7 +148,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		// Verify MFA
 		pMfa := VerifyFactorParams{
 			AppId:       a.ID,
-			DeviceId:    deviceID,
+			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
 			StateToken:  st,
 			OtpToken:    otp,
 			DoNotNotify: false,
@@ -198,4 +181,50 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	return creds, err
+}
+
+// getDevice gets a slice of MFA devices, prompts the user to select one and returns the selected device.
+// If the slice contains only a single device, that device is returned. If the slice is empty, an error is returned.
+func getDevice(devices []Device) (device *Device, err error) {
+	if len(devices) == 0 {
+		// This should never happen
+		err = errors.New("No MFA device returned by Onelogin")
+		return
+	}
+
+	if len(devices) == 1 {
+		device = &Device{DeviceID: devices[0].DeviceID, DeviceType: devices[0].DeviceType}
+		return
+	}
+
+	var selection int
+	for {
+		for i, d := range devices {
+			fmt.Printf("%d. %d - %s\n", i+1, d.DeviceID, d.DeviceType)
+		}
+
+		fmt.Printf("Please choose an MFA device to authenticate with (1-%d): ", len(devices))
+		var input string
+		_, err := fmt.Scanln(&input)
+		if err != nil {
+			fmt.Printf("Error reading input: %v\n", err)
+			continue
+		}
+
+		// Verify we got an integer.
+		selection, err = strconv.Atoi(input)
+		if err != nil {
+			fmt.Printf("Invalid input '%s'\n", input)
+			continue
+		}
+
+		// Verify selection is within range.
+		if selection < 1 || selection > len(devices) {
+			fmt.Printf("Invalid value %d. Valid values: 1-%d\n", selection, len(devices))
+			continue
+		}
+		break
+	}
+	device = &Device{DeviceID: devices[selection-1].DeviceID, DeviceType: devices[selection-1].DeviceType}
+	return
 }
