@@ -2,16 +2,18 @@ package okta
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
+	"github.com/fatih/color"
 	"github.com/howeyc/gopass"
 )
 
 // Get gets temporary credentials for the given app.
-func Get(app, provider string) (*aws.Credentials, error) {
+func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	// Get provider config
 	p, err := config.GetOktaProvider(provider)
 	if err != nil {
@@ -100,8 +102,17 @@ func Get(app, provider string) (*aws.Credentials, error) {
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, duration)
 	s.Stop()
+
+	if err != nil {
+		if err.Error() == aws.ErrDurationExceeded {
+			log.Println(color.YellowString(aws.DurationExceededMessage))
+			s.Start()
+			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, 3600)
+			s.Stop()
+		}
+	}
 
 	return creds, err
 }

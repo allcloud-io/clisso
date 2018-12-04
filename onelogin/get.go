@@ -2,12 +2,14 @@ package onelogin
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
+	"github.com/fatih/color"
 	"github.com/howeyc/gopass"
 )
 
@@ -26,7 +28,7 @@ const (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider string) (*aws.Credentials, error) {
+func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
@@ -183,8 +185,17 @@ func Get(app, provider string) (*aws.Credentials, error) {
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, duration)
 	s.Stop()
+
+	if err != nil {
+		if err.Error() == aws.ErrDurationExceeded {
+			log.Println(color.YellowString(aws.DurationExceededMessage))
+			s.Start()
+			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, 3600)
+			s.Stop()
+		}
+	}
 
 	return creds, err
 }

@@ -51,6 +51,23 @@ func processCredentials(creds *aws.Credentials, app string) error {
 	return nil
 }
 
+// sessionDuration returns a session duration using the following order of preference:
+// app.duration -> provider.duration -> hardcoded default of 3600
+func sessionDuration(app, provider string) int64 {
+	a := viper.GetInt64(fmt.Sprintf("apps.%s.duration", app))
+	p := viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider))
+
+	if a != 0 {
+		return a
+	}
+
+	if p != 0 {
+		return p
+	}
+
+	return 3600
+}
+
 var cmdGet = &cobra.Command{
 	Use:   "get",
 	Short: "Get temporary credentials for an app",
@@ -84,8 +101,10 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
+		duration := sessionDuration(app, provider)
+
 		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider)
+			creds, err := onelogin.Get(app, provider, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
@@ -95,7 +114,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider)
+			creds, err := okta.Get(app, provider, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}

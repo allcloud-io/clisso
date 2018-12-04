@@ -124,7 +124,8 @@ To create a OneLogin identity provider, use the following command:
         --client-secret mysecret \
         --subdomain mycompany \
         --username user@mycompany.com \
-        --region US
+        --region US \
+        --duration 14400
 
 The example above creates a OneLogin identity provider configuration for Clisso, with the name
 `my-provider`.
@@ -143,13 +144,21 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
+The `--duration` flag is optional. If specified, sessions will be assumed with the provided
+duration, in seconds, instead of the default of 3600 (1 hour). Valid values are between 3600 and
+43200 seconds. The [max session duration][12] has be equal to or lower than what is configured on
+the role in AWS. If a longer session time is requested than what is configured on the AWS role,
+Clisso will fallback to a duration of 3600. The default duration specified for the provider can be
+overridden on a per-app basis (see below).
+
 #### Okta
 
 To create an Okta identity provider, use the following command:
 
     clisso providers create okta my-provider \
         --base-url https://mycompany.okta.com \
-        --username user@mycompany.com
+        --username user@mycompany.com \
+        --duration 14400
 
 The example above creates an Okta identity provider configuration for Clisso, with the name
 `my-provider`.
@@ -164,6 +173,13 @@ The `--username` flag is optional, and allows Clisso to always use the given val
 username when retrieving credentials for apps which use this provider. Omitting this flag will make
 Clisso prompt for a username every time.
 
+The `--duration` flag is optional. If specified, sessions will be assumed with the provided
+duration, in seconds, instead of the default of 3600 (1 hour). Valid values are between 3600 and
+43200 seconds. The [max session duration][12] has be equal to or lower than what is configured on
+the role in AWS. If a longer session time is requested than what is configured on the AWS role,
+Clisso will fallback to a duration of 3600. The default duration specified for the provider can be
+overridden on a per-app basis (see below).
+
 ### Deleting Providers
 
 Deleting providers using the `clisso` command isn't currently supported. To delete a provider,
@@ -177,7 +193,8 @@ To create a OneLogin app, use the following command:
 
     clisso apps create onelogin my-app \
         --provider my-provider \
-        --app-id 12345
+        --app-id 12345 \
+        --duration 3600
 
 The example above creates a OneLogin app configuration for Clisso, with the name `my-app`.
 
@@ -191,13 +208,20 @@ manually configure the app ID for every app.
 >NOTE: The ID seen in the browser URL when visiting a OneLogin app as a user is **NOT** the app ID.
 >Only a OneLogin administrator can obtain an app ID.
 
+The `--duration` flag is optional and defaults to the value set at the provider level. Valid values
+are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
+individual app. The [max session duration][12] has be equal to or lower than what is configured on
+the role in AWS. The default maximum is 3600 seconds. If the requested duration exceeds the
+configured maximum Clisso will fallback to 3600 seconds.
+
 #### Okta
 
 To create an Okta app, use the following command:
 
     clisso apps create okta my-app \
         --provider my-provider \
-        --url https://mycompany.okta.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137
+        --url https://mycompany.okta.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137 \
+        --duration 3600
 
 The example above creates an Okta app configuration for Clisso, with the name `my-app`.
 
@@ -209,6 +233,12 @@ clicking an app in the **Applications** view. The embed link is on the **General
 
 >NOTE: An Okta embed link must not contain an HTTP query, only the base URL. For AWS apps, the link
 should end with `/137`.
+
+The `--duration` flag is optional and defaults to the value set at the provider level. Valid values
+are between 3600 and 43200 seconds. Can be used to raise or lower the session duration for an
+individual app. The [max session duration][12] has be equal to or lower than what is configured on
+the role in AWS. The default maximum is 3600 seconds. If the requested duration exceeds the
+configured maximum Clisso will fallback to 3600 seconds.
 
 ### Deleting Apps
 
@@ -264,3 +294,4 @@ TODO
 [9]: https://onelogin.service-now.com/support?id=kb_article&sys_id=de999903db109700d5505eea4b961966
 [10]: https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
 [11]: sample_config.yaml
+[12]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
