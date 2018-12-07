@@ -6,7 +6,9 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/allcloud-io/clisso/keychain"
 	"github.com/fatih/color"
+	"github.com/howeyc/gopass"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -50,6 +52,7 @@ func init() {
 	// Build command tree
 	RootCmd.AddCommand(cmdProviders)
 	cmdProviders.AddCommand(cmdProvidersList)
+	cmdProviders.AddCommand(cmdProvidersPassword)
 	cmdProviders.AddCommand(cmdProvidersCreate)
 	cmdProvidersCreate.AddCommand(cmdProvidersCreateOneLogin)
 	cmdProvidersCreate.AddCommand(cmdProvidersCreateOkta)
@@ -82,6 +85,30 @@ var cmdProvidersList = &cobra.Command{
 		for _, k := range keys {
 			log.Println(k)
 		}
+	},
+}
+
+var cmdProvidersPassword = &cobra.Command{
+	Use:   "passwd",
+	Short: "Save password in KeyChain for provider",
+	Long:  "Save password in KeyChain for provider, see github.com/tmc/keyring for supported stores.",
+	Args:  cobra.ExactArgs(1),
+
+	Run: func(cmd *cobra.Command, args []string) {
+		provider := args[0]
+		fmt.Printf("Please enter the password for the '%s' provider: ", provider)
+		pass, err := gopass.GetPasswd()
+		if err != nil {
+			log.Fatalf(color.RedString("Could not read password"))
+		}
+
+		keyChain := keychain.DefaultKeychain{}
+
+		err = keyChain.Set(provider, pass)
+		if err != nil {
+			fmt.Fatalf("Could not save to keychain: %+v", err)
+		}
+		log.Printf(color.GreenString("Saved password for Provider '%s'"), provider)
 	},
 }
 

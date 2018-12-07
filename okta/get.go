@@ -6,10 +6,14 @@ import (
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
+	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
-	"github.com/howeyc/gopass"
+)
+
+var (
+	keyChain = keychain.DefaultKeychain{}
 )
 
 // Get gets temporary credentials for the given app.
@@ -40,11 +44,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		fmt.Scanln(&user)
 	}
 
-	fmt.Print("Okta password: ")
-	pass, err := gopass.GetPasswd()
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't read password from terminal")
-	}
+	pass, err := keyChain.Get(provider)
 
 	// Initialize spinner
 	var s = spinner.New()

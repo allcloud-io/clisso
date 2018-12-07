@@ -265,6 +265,15 @@ To save the credentials to a custom file, use the `-w` flag.
 To print the credentials to the shell instead of storing them in a file, use the `-s` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
 
+### Storing the password in the keychain
+
+> WARNING: Storing the password without having MFA enabled is a security risk. It allows anyone
+> to assume your roles who has access to your computer.
+
+Storing a password for a provider is as simple as running:
+
+    clisso providers passwd my-provider
+
 ### Selecting an App
 
 You can **select** an app by using the following command:
@@ -278,6 +287,7 @@ apps using `clisso apps ls`.
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
+- No support for storing passwords on Windows.
 
 ## Contributing
 

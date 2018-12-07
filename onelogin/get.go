@@ -9,10 +9,10 @@ import (
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
+	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
-	"github.com/howeyc/gopass"
 )
 
 const (
@@ -26,6 +26,10 @@ const (
 
 	// MFAInterval represents the interval at which we check for an accepted push message.
 	MFAInterval = 1
+)
+
+var (
+	keyChain = keychain.DefaultKeychain{}
 )
 
 // Get gets temporary credentials for the given app.
@@ -65,11 +69,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		fmt.Scanln(&user)
 	}
 
-	fmt.Print("OneLogin password: ")
-	pass, err := gopass.GetPasswd()
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't read password from terminal")
-	}
+	pass, err := keyChain.Get(provider)
 
 	// Generate SAML assertion
 	pSAML := GenerateSamlAssertionParams{
