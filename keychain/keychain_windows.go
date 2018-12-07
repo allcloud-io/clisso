@@ -15,5 +15,5 @@ func set(provider string, password []byte) (err error) {
 }
 
 func get(provider string) (pw []byte, err error) {
-	return nil, errors.New("Platform is not supported yet")
+	return nil, errors.New("windows platform is not supported yet")
 }

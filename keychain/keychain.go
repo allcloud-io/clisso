@@ -30,15 +30,18 @@ func (DefaultKeychain) Set(provider string, password []byte) (err error) {
 }
 
 // Get will, once given a valid provider, return the password associated
-// in order for logins to happen. If no password is found, it will prompt
-// the user.
+// in order for logins to happen.
+// If any error occours while talking to the keychain provider, we silently swallow it
+// and just ask the user for the password instead. Error could be anything from access denied to
+// password not found.
 func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
 	pass, err := get(provider)
 	if err != nil {
+		// If we ever implement a logfile we might want to log what error occurred.
 		fmt.Printf("Please enter %s password: ", provider)
 		pass, err = gopass.GetPasswd()
 		if err != nil {
-			return nil, fmt.Errorf("Couldn't read password from terminal")
+			return nil, fmt.Errorf("couldn't read password from terminal")
 		}
 	}
 	return pass, nil
