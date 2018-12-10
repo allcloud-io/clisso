@@ -7,6 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
-        - dep ensure
-        - make test
-        - make all
+        command: |
+          dep ensure
+          make test
+          make all
