@@ -3,11 +3,11 @@ version: 2
 jobs:
   build:
     docker:
-      - image: golang-1.11.2-alpine3.8
+      - image: circleci/golang-1.11
     steps:
       - checkout
       - run:
-          - command: |
+          command: |
             dep ensure
             make test
             make all
