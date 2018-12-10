@@ -2,6 +2,7 @@ version: 2
 
 jobs:
   build:
+    working_directory: /go/src/github.com/allcloud-io/clisso
     docker:
       - image: circleci/golang:1.11
     steps:
