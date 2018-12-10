@@ -1,0 +1,12 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      -image golang-1.11.2-alpine3.8
+    steps:
+      - checkout
+      - run:
+        - dep ensure
+        - make test
+        - make all
