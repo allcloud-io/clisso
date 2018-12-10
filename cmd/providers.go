@@ -106,7 +106,7 @@ var cmdProvidersPassword = &cobra.Command{
 
 		err = keyChain.Set(provider, pass)
 		if err != nil {
-			fmt.Fatalf("Could not save to keychain: %+v", err)
+			log.Fatalf("Could not save to keychain: %+v", err)
 		}
 		log.Printf(color.GreenString("Saved password for Provider '%s'"), provider)
 	},
