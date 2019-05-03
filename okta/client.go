@@ -97,6 +97,7 @@ type VerifyFactorResponse struct {
 	ExpiresAt    time.Time `json:"expiresAt"`
 	SessionToken string    `json:"sessionToken"`
 	Status       string    `json:"status"`
+	FactorResult string    `json:"factorResult,omitempty"`
 }
 
 // VerifyFactor performs MFA verification.

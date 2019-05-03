@@ -78,6 +78,17 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 			PassCode:   otp,
 			StateToken: resp.StateToken,
 		})
+
+		// for Okta Verify push notification: https://developer.okta.com/docs/api/resources/authn/#verify-push-factor
+		// "Keep polling authentication transactions with WAITING result until the challenge completes or expires."
+		for vfResp.FactorResult == "WAITING" {
+			vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+				FactorID:   resp.Embedded.Factors[0].ID,
+				PassCode:   otp,
+				StateToken: resp.StateToken,
+			})
+		}
+
 		s.Stop()
 		if err != nil {
 			return nil, fmt.Errorf("verifying MFA: %v", err)
