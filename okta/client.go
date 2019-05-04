@@ -45,6 +45,7 @@ type GetSessionTokenResponse struct {
 					Href string `json:"href"`
 				} `json:"verify"`
 			} `json:"_links"`
+			FactorType string `json:"factorType"`
 		} `json:"factors"`
 	} `json:"_embedded"`
 }
