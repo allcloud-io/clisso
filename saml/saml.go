@@ -33,7 +33,7 @@ func Get(data string) (a ARN, err error) {
 
 	switch len(arns) {
 	case 0:
-		err = errors.New("no valid AWS roles were returned, check for extra characters on the IDP config")
+		err = errors.New("no valid AWS roles were returned")
 
 		return
 
