@@ -91,17 +91,17 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			app = args[0]
 		}
 
-		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
-		if provider == "" {
+		pName := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
+		if pName == "" {
 			log.Fatalf(color.RedString("Could not get provider for app '%s'"), app)
 		}
 
-		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
+		pType := viper.GetString(fmt.Sprintf("providers.%s.type", pName))
 		if pType == "" {
-			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
+			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), pName)
 		}
 
-		duration := sessionDuration(app, provider)
+		duration := sessionDuration(app, pName)
 
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider, duration)
