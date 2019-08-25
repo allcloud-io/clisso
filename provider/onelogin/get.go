@@ -34,9 +34,9 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider string, duration int64) (*aws.Credentials, error) {
+func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	// Read config
-	p, err := config.GetOneLoginProvider(provider)
+	pc, err := config.GetOneLoginProvider(provider)
 	if err != nil {
 		return nil, fmt.Errorf("reading provider config: %v", err)
 	}
@@ -46,7 +46,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}
 
-	c, err := NewClient(p.Region)
+	c, err := NewClient(pc.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -56,13 +56,13 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 
 	// Get OneLogin access token
 	s.Start()
-	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
+	token, err := c.GenerateTokens(pc.ClientID, pc.ClientSecret)
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
 	}
 
-	user := p.Username
+	user := pc.Username
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
@@ -78,7 +78,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		AppId:           a.ID,
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
-		Subdomain: p.Subdomain,
+		Subdomain: pc.Subdomain,
 	}
 
 	s.Start()

@@ -10,8 +10,9 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/allcloud-io/clisso/aws"
-	"github.com/allcloud-io/clisso/okta"
-	"github.com/allcloud-io/clisso/onelogin"
+	"github.com/allcloud-io/clisso/provider"
+	"github.com/allcloud-io/clisso/provider/okta"
+	"github.com/allcloud-io/clisso/provider/onelogin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -103,28 +104,25 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		duration := sessionDuration(app, pName)
 
-		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider, duration)
-			if err != nil {
-				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
-			}
-			// Process credentials
-			err = processCredentials(creds, app)
-			if err != nil {
-				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
-			}
-		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider, duration)
-			if err != nil {
-				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
-			}
-			// Process credentials
-			err = processCredentials(creds, app)
-			if err != nil {
-				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
-			}
-		} else {
+		var p provider.Provider
+
+		switch pType {
+		case "onelogin":
+			p = onelogin.New()
+		case "okta":
+			p = okta.New()
+		default:
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
+		}
+
+		creds, err := p.Get(app, pName, duration)
+		if err != nil {
+			log.Fatal(color.RedString("Could not get temporary credentials: "), err)
+		}
+		// Process credentials
+		err = processCredentials(creds, app)
+		if err != nil {
+			log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 		}
 	},
 }
