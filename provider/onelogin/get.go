@@ -34,13 +34,7 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Credentials, error) {
-	// Read config
-	pc, err := config.GetOneLoginProvider(provider)
-	if err != nil {
-		return nil, fmt.Errorf("reading provider config: %v", err)
-	}
-
+func (p *OneLoginProvider) Get(app string, duration int64) (*aws.Credentials, error) {
 	a, err := config.GetOneLoginApp(app)
 	if err != nil {
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
@@ -51,20 +45,20 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 
 	// Get OneLogin access token
 	s.Start()
-	token, err := p.Client.GenerateTokens(pc.ClientID, pc.ClientSecret)
+	token, err := p.Client.GenerateTokens(p.Config.ClientID, p.Config.ClientSecret)
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
 	}
 
-	user := pc.Username
+	user := p.Config.Username
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
 		fmt.Scanln(&user)
 	}
 
-	pass, err := keyChain.Get(provider)
+	pass, err := keyChain.Get(p.Name)
 
 	// Generate SAML assertion
 	pSAML := GenerateSamlAssertionParams{
@@ -73,7 +67,7 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 		AppId:           a.ID,
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
-		Subdomain: pc.Subdomain,
+		Subdomain: p.Config.Subdomain,
 	}
 
 	s.Start()

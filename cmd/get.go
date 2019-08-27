@@ -11,7 +11,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/allcloud-io/clisso/aws"
-	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/provider/okta"
 	"github.com/allcloud-io/clisso/provider/onelogin"
@@ -121,22 +120,22 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		switch pType {
 		case "onelogin":
-			pc, err := config.GetOneLoginProvider(pName)
+			pc, err := onelogin.NewProviderConfig(pName)
 			if err != nil {
-				log.Fatalf(color.RedString("Error reading provider config: %s"), err.Error())
+				log.Fatalf(color.RedString("Error creating provider config: %s"), err.Error())
 			}
 
-			p, err = onelogin.New(pc.Region)
+			p, err = onelogin.New(pName, pc)
 			if err != nil {
 				log.Fatalf(color.RedString("Error creating provider: %s"), err.Error())
 			}
 		case "okta":
-			pc, err := config.GetOktaProvider(pName)
+			pc, err := okta.NewProviderConfig(pName)
 			if err != nil {
 				log.Fatalf(color.RedString("Error reading provider config: %s"), err.Error())
 			}
 
-			p, err = okta.New(pc.BaseURL)
+			p, err = okta.New(pName, pc)
 			if err != nil {
 				log.Fatalf(color.RedString("Error creating provider: %s"), err.Error())
 			}
@@ -144,7 +143,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
 
-		creds, err := p.Get(app, pName, duration)
+		creds, err := p.Get(app, duration)
 		if err != nil {
 			log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 		}

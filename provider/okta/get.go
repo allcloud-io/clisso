@@ -26,13 +26,7 @@ var (
 )
 
 // Get gets temporary credentials for the given app.
-func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentials, error) {
-	// Get provider config
-	pc, err := config.GetOktaProvider(provider)
-	if err != nil {
-		return nil, fmt.Errorf("reading provider config: %v", err)
-	}
-
+func (p *OktaProvider) Get(app string, duration int64) (*aws.Credentials, error) {
 	// Get app config
 	a, err := config.GetOktaApp(app)
 	if err != nil {
@@ -40,14 +34,14 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 	}
 
 	// Get user credentials
-	user := pc.Username
+	user := p.Config.Username
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("Okta username: ")
 		fmt.Scanln(&user)
 	}
 
-	pass, err := keyChain.Get(provider)
+	pass, err := keyChain.Get(p.Name)
 
 	// Initialize spinner
 	var s = spinner.New()
