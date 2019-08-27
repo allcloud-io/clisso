@@ -3,7 +3,7 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 BUILDPATH=build
 BINARY_NAME=clisso
-VERSION=`git describe --tags --always`
+VERSION=`git describe --tags --always --dirty`
 
 .PHONY: build
 build:
