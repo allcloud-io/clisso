@@ -7,7 +7,7 @@ type Provider interface {
 	GenerateSAMLAssertion() (SAMLAssertion, error)
 	// TODO Temporary! Should be broken down into separate functions for generating a SAML
 	// assertion, obtaining credentials etc.
-	Get(app, provider string, duration int64) (*aws.Credentials, error)
+	Get(app string, duration int64) (*aws.Credentials, error)
 }
 
 // SAMLAssertion represents a SAML assertion.
