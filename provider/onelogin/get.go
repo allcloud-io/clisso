@@ -46,17 +46,12 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}
 
-	c, err := NewClient(pc.Region)
-	if err != nil {
-		return nil, err
-	}
-
 	// Initialize spinner
 	var s = spinner.New()
 
 	// Get OneLogin access token
 	s.Start()
-	token, err := c.GenerateTokens(pc.ClientID, pc.ClientSecret)
+	token, err := p.Client.GenerateTokens(pc.ClientID, pc.ClientSecret)
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
@@ -82,7 +77,7 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 	}
 
 	s.Start()
-	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
+	rSaml, err := p.Client.GenerateSamlAssertion(token, &pSAML)
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
@@ -109,7 +104,7 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 		}
 
 		s.Start()
-		rMfa, err = c.VerifyFactor(token, &pMfa)
+		rMfa, err = p.Client.VerifyFactor(token, &pMfa)
 		s.Stop()
 		if err != nil {
 			return nil, err
@@ -123,7 +118,7 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 		s.Start()
 		for rMfa.Status.Type == "pending" && timeout > 0 {
 			time.Sleep(time.Duration(MFAInterval) * time.Second)
-			rMfa, err = c.VerifyFactor(token, &pMfa)
+			rMfa, err = p.Client.VerifyFactor(token, &pMfa)
 			if err != nil {
 				s.Stop()
 				return nil, err
@@ -155,7 +150,7 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 		}
 
 		s.Start()
-		rMfa, err = c.VerifyFactor(token, &pMfa)
+		rMfa, err = p.Client.VerifyFactor(token, &pMfa)
 		s.Stop()
 		if err != nil {
 			return nil, fmt.Errorf("verifying factor: %v", err)
@@ -185,6 +180,7 @@ func (p *OneLoginProvider) Get(app, provider string, duration int64) (*aws.Crede
 
 // getDevice gets a slice of MFA devices, prompts the user to select one and returns the selected device.
 // If the slice contains only a single device, that device is returned. If the slice is empty, an error is returned.
+// TODO: Move interactive prompts out of this function.
 func getDevice(devices []Device) (device *Device, err error) {
 	if len(devices) == 0 {
 		// This should never happen
