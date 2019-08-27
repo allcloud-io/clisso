@@ -39,12 +39,6 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
 	}
 
-	// Initialize Okta client
-	c, err := NewClient(pc.BaseURL)
-	if err != nil {
-		return nil, fmt.Errorf("initializing Okta client: %v", err)
-	}
-
 	// Get user credentials
 	user := pc.Username
 	if user == "" {
@@ -60,7 +54,7 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 
 	// Get session token
 	s.Start()
-	resp, err := c.GetSessionToken(&GetSessionTokenParams{
+	resp, err := p.Client.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
 		Password: string(pass),
 	})
@@ -89,7 +83,7 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 			// completes or expires.
 			fmt.Println("Please approve request on Okta Verify app")
 			s.Start()
-			vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+			vfResp, err = p.Client.VerifyFactor(&VerifyFactorParams{
 				FactorID:   factor.ID,
 				StateToken: stateToken,
 			})
@@ -98,7 +92,7 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 			}
 
 			for vfResp.FactorResult == VerifyFactorStatusWaiting {
-				vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+				vfResp, err = p.Client.VerifyFactor(&VerifyFactorParams{
 					FactorID:   factor.ID,
 					StateToken: stateToken,
 				})
@@ -111,7 +105,7 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 			fmt.Scanln(&otp)
 
 			s.Start()
-			vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+			vfResp, err = p.Client.VerifyFactor(&VerifyFactorParams{
 				FactorID:   factor.ID,
 				PassCode:   otp,
 				StateToken: stateToken,
@@ -137,7 +131,7 @@ func (p *OktaProvider) Get(app, provider string, duration int64) (*aws.Credentia
 
 	// Launch Okta app with session token
 	s.Start()
-	samlAssertion, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
+	samlAssertion, err := p.Client.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("Error launching app: %v", err)

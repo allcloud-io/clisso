@@ -10,6 +10,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/provider/okta"
 	"github.com/allcloud-io/clisso/provider/onelogin"
@@ -108,9 +109,25 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		switch pType {
 		case "onelogin":
-			p = onelogin.New()
+			pc, err := config.GetOneLoginProvider(pName)
+			if err != nil {
+				log.Fatalf(color.RedString("Error reading provider config: %s"), err.Error())
+			}
+
+			p, err = onelogin.New(pc.Region)
+			if err != nil {
+				log.Fatalf(color.RedString("Error creating provider: %s"), err.Error())
+			}
 		case "okta":
-			p = okta.New()
+			pc, err := config.GetOktaProvider(pName)
+			if err != nil {
+				log.Fatalf(color.RedString("Error reading provider config: %s"), err.Error())
+			}
+
+			p, err = okta.New(pc.BaseURL)
+			if err != nil {
+				log.Fatalf(color.RedString("Error creating provider: %s"), err.Error())
+			}
 		default:
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
