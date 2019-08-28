@@ -90,7 +90,7 @@ temporary credentials from the cloud provider.
 
 If no app is specified, the selected app (if configured) will be assumed.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var app string
+		var appName string
 		if len(args) == 0 {
 			// No app specified.
 			selected := viper.GetString("global.selected-app")
@@ -98,15 +98,15 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				// No default app configured.
 				log.Fatal(color.RedString("No app specified and no default app configured"))
 			}
-			app = selected
+			appName = selected
 		} else {
 			// App specified - use it.
-			app = args[0]
+			appName = args[0]
 		}
 
-		pName := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
+		pName := viper.GetString(fmt.Sprintf("apps.%s.provider", appName))
 		if pName == "" {
-			log.Fatalf(color.RedString("Could not get provider for app '%s'"), app)
+			log.Fatalf(color.RedString("Could not get provider for app '%s'"), appName)
 		}
 
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", pName))
@@ -114,9 +114,10 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), pName)
 		}
 
-		duration := sessionDuration(app, pName)
+		duration := sessionDuration(appName, pName)
 
 		var p provider.Provider
+		var app provider.App
 
 		switch pType {
 		case "onelogin":
@@ -129,6 +130,11 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			if err != nil {
 				log.Fatalf(color.RedString("Error creating provider: %s"), err.Error())
 			}
+
+			app, err = onelogin.NewApp(appName)
+			if err != nil {
+				log.Fatalf(color.RedString("Error creating app: %s"), err.Error())
+			}
 		case "okta":
 			pc, err := okta.NewProviderConfig(pName)
 			if err != nil {
@@ -139,6 +145,11 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			if err != nil {
 				log.Fatalf(color.RedString("Error creating provider: %s"), err.Error())
 			}
+
+			app, err = okta.NewApp(appName)
+			if err != nil {
+				log.Fatalf(color.RedString("Error creating app: %s"), err.Error())
+			}
 		default:
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
@@ -148,7 +159,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 		}
 		// Process credentials
-		err = processCredentials(creds, app)
+		err = processCredentials(creds, appName)
 		if err != nil {
 			log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 		}

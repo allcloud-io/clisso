@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
-	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/keychain"
+	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
@@ -34,12 +34,7 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func (p *OneLoginProvider) Get(app string, duration int64) (*aws.Credentials, error) {
-	a, err := config.GetOneLoginApp(app)
-	if err != nil {
-		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
-	}
-
+func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, error) {
 	// Initialize spinner
 	var s = spinner.New()
 
@@ -64,7 +59,7 @@ func (p *OneLoginProvider) Get(app string, duration int64) (*aws.Credentials, er
 	pSAML := GenerateSamlAssertionParams{
 		UsernameOrEmail: user,
 		Password:        string(pass),
-		AppId:           a.ID,
+		AppId:           app.ID(),
 		// TODO At the moment when there is a mismatch between Subdomain and
 		// the domain in the username, the user is getting HTTP 400.
 		Subdomain: p.Config.Subdomain,
@@ -90,7 +85,7 @@ func (p *OneLoginProvider) Get(app string, duration int64) (*aws.Credentials, er
 		// Push is supported by the selected MFA device - try pushing and fall back to manual input
 		pushOK = true
 		pMfa := VerifyFactorParams{
-			AppId:       a.ID,
+			AppId:       app.ID(),
 			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
 			StateToken:  st,
 			OtpToken:    "",
@@ -136,7 +131,7 @@ func (p *OneLoginProvider) Get(app string, duration int64) (*aws.Credentials, er
 
 		// Verify MFA
 		pMfa := VerifyFactorParams{
-			AppId:       a.ID,
+			AppId:       app.ID(),
 			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
 			StateToken:  st,
 			OtpToken:    otp,

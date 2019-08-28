@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
-	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/keychain"
+	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
@@ -26,13 +26,7 @@ var (
 )
 
 // Get gets temporary credentials for the given app.
-func (p *OktaProvider) Get(app string, duration int64) (*aws.Credentials, error) {
-	// Get app config
-	a, err := config.GetOktaApp(app)
-	if err != nil {
-		return nil, fmt.Errorf("reading config for app %s: %v", app, err)
-	}
-
+func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, error) {
 	// Get user credentials
 	user := p.Config.Username
 	if user == "" {
@@ -125,7 +119,7 @@ func (p *OktaProvider) Get(app string, duration int64) (*aws.Credentials, error)
 
 	// Launch Okta app with session token
 	s.Start()
-	samlAssertion, err := p.Client.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
+	samlAssertion, err := p.Client.LaunchApp(&LaunchAppParams{SessionToken: st, URL: app.ID()})
 	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("Error launching app: %v", err)
