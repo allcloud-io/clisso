@@ -52,28 +52,49 @@ func NewProviderConfig(p string) (*ProviderConfig, error) {
 	return &c, nil
 }
 
-// OneLoginProvider is a Provider implementation for OneLogin.
-type OneLoginProvider struct {
+// Provider is a Provider implementation for OneLogin.
+type Provider struct {
 	Client *Client
 	Config *ProviderConfig
 	Name   string
 }
 
-func (p *OneLoginProvider) GenerateSAMLAssertion() (provider.SAMLAssertion, error) {
+func (p *Provider) GenerateSAMLAssertion() (provider.SAMLAssertion, error) {
 	// TODO
 	return provider.NewSAMLAssertion("fake"), nil
 }
 
 // New constructs a new OneLoginProvider and returns a pointer to it.
-func New(name string, pc *ProviderConfig) (*OneLoginProvider, error) {
+func New(name string, pc *ProviderConfig) (*Provider, error) {
 	c, err := NewClient(pc.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating OneLogin client")
 	}
 
-	return &OneLoginProvider{
+	return &Provider{
 		Client: c,
 		Config: pc,
 		Name:   name,
 	}, nil
+}
+
+// App represents an app configured on OneLogin.
+type App struct {
+	// OneLogin app ID.
+	id string
+}
+
+// ID returns the OneLogin app ID of the app.
+func (a *App) ID() string {
+	return a.id
+}
+
+// NewApp constructs a new App and returns a pointer to it.
+func NewApp(name string) (*App, error) {
+	id := viper.GetString(fmt.Sprintf("apps.%s.app-id", name))
+	if id == "" {
+		return nil, fmt.Errorf("'app-id' config parameter not set for app '%s'", name)
+	}
+
+	return &App{id: id}, nil
 }
