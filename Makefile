@@ -5,6 +5,9 @@ BUILDPATH=build
 BINARY_NAME=clisso
 VERSION=`git describe --tags --always --dirty`
 
+# Use the Go module mirror - https://blog.golang.org/module-mirror-launch.
+export GOPROXY=https://proxy.golang.org
+
 .PHONY: build
 build:
 	$(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME) -v
