@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/fatih/color"
@@ -40,6 +41,17 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		path, err := homedir.Expand(viper.GetString("global.credentials-path"))
 		if err != nil {
 			return fmt.Errorf("expanding config file path: %v", err)
+		}
+
+		// Check if global.credentials-path home folder exist, if not,create it
+		CredsFileParentDir := filepath.Dir(path)
+		if _, err := os.Stat(CredsFileParentDir); os.IsNotExist(err) {
+			log.Printf(color.YellowString("%s does not exist, creating it now... "), CredsFileParentDir)
+
+			err = os.MkdirAll(CredsFileParentDir, 0751)
+			if err != nil {
+				return fmt.Errorf("unable to create aws credentials folder: %v", err)
+			}
 		}
 
 		if err = aws.WriteToFile(creds, path, app); err != nil {
