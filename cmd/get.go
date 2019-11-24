@@ -50,7 +50,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 
 			err = os.MkdirAll(CredsFileParentDir, 0751)
 			if err != nil {
-				return fmt.Errorf("unable to create aws credentials folder: %v", err)
+				return fmt.Errorf("creating credentials directory: %v", err)
 			}
 		}
 
