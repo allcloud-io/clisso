@@ -48,7 +48,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		if _, err := os.Stat(credsFileParentDir); os.IsNotExist(err) {
 			log.Printf(color.YellowString("Credentials directory '%s' does not exist - creating it"), credsFileParentDir)
 
-			err = os.MkdirAll(credsFileParentDir, 0751)
+			err = os.MkdirAll(credsFileParentDir, 0755)
 			if err != nil {
 				return fmt.Errorf("creating credentials directory: %v", err)
 			}
