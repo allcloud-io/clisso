@@ -43,7 +43,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 			return fmt.Errorf("expanding config file path: %v", err)
 		}
 
-		// Check if global.credentials-path home folder exist, if not,create it
+		// Create the `global.credentials-path` directory if it doesn't exist.
 		CredsFileParentDir := filepath.Dir(path)
 		if _, err := os.Stat(CredsFileParentDir); os.IsNotExist(err) {
 			log.Printf(color.YellowString("%s does not exist, creating it now... "), CredsFileParentDir)
