@@ -46,7 +46,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		// Create the `global.credentials-path` directory if it doesn't exist.
 		CredsFileParentDir := filepath.Dir(path)
 		if _, err := os.Stat(CredsFileParentDir); os.IsNotExist(err) {
-			log.Printf(color.YellowString("%s does not exist, creating it now... "), CredsFileParentDir)
+			log.Printf(color.YellowString("Credentials directory '%s' does not exist - creating it"), CredsFileParentDir)
 
 			err = os.MkdirAll(CredsFileParentDir, 0751)
 			if err != nil {
