@@ -1,8 +1,6 @@
 package config
 
 import (
-	"bytes"
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -24,10 +22,13 @@ providers:
     username: fake@fake.com
 `)
 
-func TestGetOneLoginProvider(t *testing.T) {
-	c := newTestConfig(testConfig)
+func TestGetOneLoginProviderConfig(t *testing.T) {
+	c, err := NewFromYAML(testConfig)
+	if err != nil {
+		t.Fatalf("Error reading test config: %v", err)
+	}
 
-	want := OneLoginProvider{
+	want := OneLoginProviderConfig{
 		ClientID:     "fake-id",
 		ClientSecret: "fake-secret",
 		Duration:     3600,
@@ -37,7 +38,7 @@ func TestGetOneLoginProvider(t *testing.T) {
 		Username:     "fake@fake.com",
 	}
 
-	p, err := c.GetOneLoginProvider("sample-onelogin-provider")
+	p, err := c.GetOneLoginProviderConfig("sample-onelogin-provider")
 	if err != nil {
 		t.Fatalf("Error getting provider: %v", err)
 	}
@@ -47,17 +48,20 @@ func TestGetOneLoginProvider(t *testing.T) {
 	}
 }
 
-func TestGetOktaProvider(t *testing.T) {
-	c := newTestConfig(testConfig)
+func TestGetOktaProviderConfig(t *testing.T) {
+	c, err := NewFromYAML(testConfig)
+	if err != nil {
+		t.Fatalf("Error reading test config: %v", err)
+	}
 
-	want := OktaProvider{
+	want := OktaProviderConfig{
 		BaseURL:  "https://fake.okta.com",
 		Duration: 14400,
 		Type:     "okta",
 		Username: "fake@fake.com",
 	}
 
-	p, err := c.GetOktaProvider("sample-okta-provider")
+	p, err := c.GetOktaProviderConfig("sample-okta-provider")
 	if err != nil {
 		t.Fatalf("Error getting provider: %v", err)
 	}
@@ -65,14 +69,4 @@ func TestGetOktaProvider(t *testing.T) {
 	if !reflect.DeepEqual(*p, want) {
 		t.Fatalf("Wrong provider returned: got %v, want %v", p, want)
 	}
-}
-
-func newTestConfig(b []byte) *Config {
-	c := New()
-	err := c.v.ReadConfig(bytes.NewBuffer(testConfig))
-	if err != nil {
-		panic(fmt.Sprintf("Error reading test config: %v", err))
-	}
-
-	return c
 }
