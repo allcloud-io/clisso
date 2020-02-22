@@ -11,7 +11,6 @@ import (
 	"github.com/allcloud-io/clisso/platform/aws"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/saml"
-	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
 )
 
@@ -34,26 +33,12 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, error) {
-	// Initialize spinner
-	var s = spinner.New()
-
+func (p *Provider) Get(user string, pass string, app provider.App, duration int64) (*aws.Credentials, error) {
 	// Get OneLogin access token
-	s.Start()
 	token, err := p.Client.GenerateTokens(p.Config.ClientID, p.Config.ClientSecret)
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating access token: %s", err)
 	}
-
-	user := p.Config.Username
-	if user == "" {
-		// Get credentials from the user
-		fmt.Print("OneLogin username: ")
-		fmt.Scanln(&user)
-	}
-
-	pass, err := keyChain.Get(p.Name)
 
 	// Generate SAML assertion
 	pSAML := GenerateSamlAssertionParams{
@@ -65,9 +50,7 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 		Subdomain: p.Config.Subdomain,
 	}
 
-	s.Start()
 	rSaml, err := p.Client.GenerateSamlAssertion(token, &pSAML)
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
@@ -92,9 +75,7 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 			DoNotNotify: false,
 		}
 
-		s.Start()
 		rMfa, err = p.Client.VerifyFactor(token, &pMfa)
-		s.Stop()
 		if err != nil {
 			return nil, err
 		}
@@ -104,18 +85,15 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 		fmt.Println(rMfa.Status.Message)
 
 		timeout := MFAPushTimeout
-		s.Start()
 		for rMfa.Status.Type == "pending" && timeout > 0 {
 			time.Sleep(time.Duration(MFAInterval) * time.Second)
 			rMfa, err = p.Client.VerifyFactor(token, &pMfa)
 			if err != nil {
-				s.Stop()
 				return nil, err
 			}
 
 			timeout -= MFAInterval
 		}
-		s.Stop()
 
 		if rMfa.Status.Type == "pending" {
 			fmt.Println("MFA verification timed out - falling back to manual OTP input")
@@ -138,9 +116,7 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 			DoNotNotify: false,
 		}
 
-		s.Start()
 		rMfa, err = p.Client.VerifyFactor(token, &pMfa)
-		s.Stop()
 		if err != nil {
 			return nil, fmt.Errorf("verifying factor: %v", err)
 		}
@@ -151,16 +127,11 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 		return nil, err
 	}
 
-	s.Start()
 	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, duration)
-	s.Stop()
-
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
 			log.Println(color.YellowString(aws.DurationExceededMessage))
-			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, 3600)
-			s.Stop()
 		}
 	}
 

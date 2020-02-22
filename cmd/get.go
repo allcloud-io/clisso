@@ -8,8 +8,10 @@ import (
 	"runtime"
 
 	"github.com/fatih/color"
+	"github.com/howeyc/gopass"
 	"github.com/mitchellh/go-homedir"
 
+	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/platform/aws"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/provider/okta"
@@ -18,8 +20,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-var printToShell bool
-var writeToFile string
+var (
+	keyChain     = keychain.DefaultKeychain{}
+	printToShell bool
+	writeToFile  string
+)
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
@@ -154,7 +159,21 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
 
-		creds, err := p.Get(app, duration)
+		user := p.Username()
+		if user == "" {
+			fmt.Printf("%s username: ", pType)
+			fmt.Scanln(&user)
+		}
+		pass, err := keyChain.Get(pName)
+		if err != nil {
+			fmt.Printf("%s password: ", pType)
+			pass, err = gopass.GetPasswd()
+			if err != nil {
+				log.Fatalf(color.RedString("Could not read password from terminal: %v"), err)
+			}
+		}
+
+		creds, err := p.Get(user, string(pass), app, duration)
 		if err != nil {
 			log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 		}

@@ -64,6 +64,10 @@ func (p *Provider) GenerateSAMLAssertion() (provider.SAMLAssertion, error) {
 	return provider.NewSAMLAssertion("fake"), nil
 }
 
+func (p *Provider) Username() string {
+	return p.Config.Username
+}
+
 // New constructs a new OneLoginProvider and returns a pointer to it.
 func New(name string, pc *ProviderConfig) (*Provider, error) {
 	c, err := NewClient(pc.Region)

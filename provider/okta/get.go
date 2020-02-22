@@ -9,7 +9,6 @@ import (
 	"github.com/allcloud-io/clisso/platform/aws"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/saml"
-	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
 )
 
@@ -26,27 +25,12 @@ var (
 )
 
 // Get gets temporary credentials for the given app.
-func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, error) {
-	// Get user credentials
-	user := p.Config.Username
-	if user == "" {
-		// Get credentials from the user
-		fmt.Print("Okta username: ")
-		fmt.Scanln(&user)
-	}
-
-	pass, err := keyChain.Get(p.Name)
-
-	// Initialize spinner
-	var s = spinner.New()
-
+func (p *Provider) Get(user string, pass string, app provider.App, duration int64) (*aws.Credentials, error) {
 	// Get session token
-	s.Start()
 	resp, err := p.Client.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
 		Password: string(pass),
 	})
-	s.Stop()
 	if err != nil {
 		return nil, fmt.Errorf("getting session token: %v", err)
 	}
@@ -70,7 +54,6 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 			// Keep polling authentication transactions with WAITING result until the challenge
 			// completes or expires.
 			fmt.Println("Please approve request on Okta Verify app")
-			s.Start()
 			vfResp, err = p.Client.VerifyFactor(&VerifyFactorParams{
 				FactorID:   factor.ID,
 				StateToken: stateToken,
@@ -86,19 +69,16 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 				})
 				time.Sleep(2 * time.Second)
 			}
-			s.Stop()
 		case MFATypeTOTP:
 			fmt.Print("Please enter the OTP from your MFA device: ")
 			var otp string
 			fmt.Scanln(&otp)
 
-			s.Start()
 			vfResp, err = p.Client.VerifyFactor(&VerifyFactorParams{
 				FactorID:   factor.ID,
 				PassCode:   otp,
 				StateToken: stateToken,
 			})
-			s.Stop()
 		default:
 			return nil, fmt.Errorf("unsupported MFA type '%s'", factor.FactorType)
 		}
@@ -118,9 +98,8 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 	}
 
 	// Launch Okta app with session token
-	s.Start()
 	samlAssertion, err := p.Client.LaunchApp(&LaunchAppParams{SessionToken: st, URL: app.ID()})
-	s.Stop()
+
 	if err != nil {
 		return nil, fmt.Errorf("Error launching app: %v", err)
 	}
@@ -130,16 +109,11 @@ func (p *Provider) Get(app provider.App, duration int64) (*aws.Credentials, erro
 		return nil, err
 	}
 
-	s.Start()
 	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, duration)
-	s.Stop()
-
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
 			log.Println(color.YellowString(aws.DurationExceededMessage))
-			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, 3600)
-			s.Stop()
 		}
 	}
 
