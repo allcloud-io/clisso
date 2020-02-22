@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/keychain"
+	"github.com/allcloud-io/clisso/platform/aws"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
