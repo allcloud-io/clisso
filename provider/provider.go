@@ -1,6 +1,6 @@
 package provider
 
-import "github.com/allcloud-io/clisso/aws"
+import "github.com/allcloud-io/clisso/platform/aws"
 
 // Provider represents an identity provider.
 type Provider interface {

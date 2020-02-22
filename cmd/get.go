@@ -9,7 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
 
-	"github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/platform/aws"
 	"github.com/allcloud-io/clisso/provider"
 	"github.com/allcloud-io/clisso/provider/okta"
 	"github.com/allcloud-io/clisso/provider/onelogin"
