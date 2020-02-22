@@ -108,7 +108,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		var app provider.App
 
 		switch pType {
-		case "onelogin":
+		case provider.OneLogin:
 			pc, err := onelogin.NewProviderConfig(pName)
 			if err != nil {
 				log.Fatalf(color.RedString("Error creating provider config: %s"), err.Error())
@@ -123,7 +123,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			if err != nil {
 				log.Fatalf(color.RedString("Error creating app: %s"), err.Error())
 			}
-		case "okta":
+		case provider.Okta:
 			pc, err := okta.NewProviderConfig(pName)
 			if err != nil {
 				log.Fatalf(color.RedString("Error reading provider config: %s"), err.Error())

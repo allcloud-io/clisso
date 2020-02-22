@@ -2,6 +2,13 @@ package provider
 
 import "github.com/allcloud-io/clisso/platform/aws"
 
+const (
+	// Okta indicates a Provider of type Okta.
+	Okta = "okta"
+	// OneLogin indicates a Provider of type OneLogin.
+	OneLogin = "onelogin"
+)
+
 // Provider represents an identity provider.
 type Provider interface {
 	GenerateSAMLAssertion() (SAMLAssertion, error)
