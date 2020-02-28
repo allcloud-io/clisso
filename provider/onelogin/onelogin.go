@@ -64,6 +64,10 @@ func (p *Provider) GenerateSAMLAssertion() (provider.SAMLAssertion, error) {
 	return provider.NewSAMLAssertion("fake"), nil
 }
 
+func (p *Provider) Type() string {
+	return "OneLogin"
+}
+
 func (p *Provider) Username() string {
 	return p.Config.Username
 }

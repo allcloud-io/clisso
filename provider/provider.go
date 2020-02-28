@@ -15,6 +15,7 @@ type Provider interface {
 	// TODO Temporary! Should be broken down into separate functions for generating a SAML
 	// assertion, obtaining credentials etc.
 	Get(user string, pass string, app App, duration int64) (*aws.Credentials, error)
+	Type() string
 	Username() string
 }
 

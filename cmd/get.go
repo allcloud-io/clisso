@@ -161,12 +161,12 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		user := p.Username()
 		if user == "" {
-			fmt.Printf("%s username: ", pType)
+			fmt.Printf("%s username: ", p.Type())
 			fmt.Scanln(&user)
 		}
 		pass, err := keyChain.Get(pName)
 		if err != nil {
-			fmt.Printf("%s password: ", pType)
+			fmt.Printf("%s password: ", p.Type())
 			pass, err = gopass.GetPasswd()
 			if err != nil {
 				log.Fatalf(color.RedString("Could not read password from terminal: %v"), err)
