@@ -68,7 +68,7 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				// 1. arn:aws:iam::xxxxxxxxxxxx:role/MyRole,arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider
 				// 2. arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider,arn:aws:iam::xxxxxxxxxxxx:role/MyRole
 				// Error otherwise.
-				components := strings.Split(av.Value, ",")
+				components := strings.Split(strings.TrimSpace(av.Value), ",")
 				if len(components) != 2 {
 					// Wrong number of components - move on
 					continue
