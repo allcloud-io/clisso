@@ -11,6 +11,7 @@ import (
 	"github.com/howeyc/gopass"
 	"github.com/mitchellh/go-homedir"
 
+	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/platform/aws"
 	"github.com/allcloud-io/clisso/provider"
@@ -72,15 +73,17 @@ func processCredentials(creds *aws.Credentials, app string) error {
 // sessionDuration returns a session duration using the following order of preference:
 // app.duration -> provider.duration -> hardcoded default of 3600
 func sessionDuration(app, provider string) int64 {
-	a := viper.GetInt64(fmt.Sprintf("apps.%s.duration", app))
-	p := viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider))
+	p := config.ProviderForApp(app)
 
-	if a != 0 {
-		return a
+	ad := config.AppDuration(app)
+	pd := config.ProviderDuration(p)
+
+	if ad != 0 {
+		return ad
 	}
 
-	if p != 0 {
-		return p
+	if pd != 0 {
+		return pd
 	}
 
 	return 3600
@@ -98,10 +101,10 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		var appName string
 		if len(args) == 0 {
 			// No app specified.
-			selected := viper.GetString("global.selected-app")
+			selected := config.SelectedApp()
 			if selected == "" {
 				// No default app configured.
-				log.Fatal(color.RedString("No app specified and no default app configured"))
+				log.Fatal(color.RedString("No app specified and no app selected"))
 			}
 			appName = selected
 		} else {
@@ -109,14 +112,13 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			appName = args[0]
 		}
 
-		pName := viper.GetString(fmt.Sprintf("apps.%s.provider", appName))
-		if pName == "" {
-			log.Fatalf(color.RedString("Could not get provider for app '%s'"), appName)
+		if pName := config.ProviderForApp(appName); pName == "" {
+			log.Fatalf(color.RedString("Could not get provider for app %q"), appName)
 		}
 
-		pType := viper.GetString(fmt.Sprintf("providers.%s.type", pName))
+		pType := config.ProviderType(pName)
 		if pType == "" {
-			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), pName)
+			log.Fatalf(color.RedString("Could not get provider type for provider %q"), pName)
 		}
 
 		duration := sessionDuration(appName, pName)
