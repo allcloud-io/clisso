@@ -72,7 +72,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 
 // sessionDuration returns a session duration using the following order of preference:
 // app.duration -> provider.duration -> hardcoded default of 3600
-func sessionDuration(app, provider string) int64 {
+func sessionDuration(app string) int64 {
 	p := config.ProviderForApp(app)
 
 	ad := config.AppDuration(app)
@@ -121,7 +121,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider %q"), pName)
 		}
 
-		duration := sessionDuration(appName, pName)
+		duration := sessionDuration(appName)
 
 		var p provider.Provider
 		var app provider.App
