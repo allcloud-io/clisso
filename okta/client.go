@@ -183,7 +183,7 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	b := []byte(body)
 
-	return string(b), nil
+	return string(b), err
 }
 
 // NewClient creates a new Client and returns a pointer to it.

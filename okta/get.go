@@ -54,6 +54,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	pass, err := keyChain.Get(provider)
+	if err != nil {
+		return nil, fmt.Errorf("getting key chain: %v", err)
+	}
 
 	// Initialize spinner
 	var s = spinner.New()
