@@ -79,7 +79,7 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				}
 
 				// Prepare patterns
-				role := regexp.MustCompile(`^arn:aws:iam::(?P<Id>\d+):role/\S+$`)
+				role := regexp.MustCompile(`^arn:aws:iam::(?P<Id>\d+):(?P<Name>role/\S+)$`)
 				idp := regexp.MustCompile(`^arn:aws:iam::\d+:saml-provider/\S+$`)
 				arn := ARN{}
 
@@ -94,8 +94,9 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				// Look up the human friendly name, if available
 				if len(accounts) > 0 {
 					ids := role.FindStringSubmatch(arn.Role)
-					if len(ids) == 2 && accounts[ids[1]] != "" {
-						arn.Name = accounts[ids[1]].(string)
+					fmt.Printf("%v\n", ids)
+					if len(ids) == 3 && accounts[ids[1]] != "" {
+						arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
 					}
 				}
 
@@ -116,7 +117,7 @@ func ask(arns []ARN) (idx int) {
 			name := a.Role
 			// Add the human friendly name if available
 			if a.Name != "" {
-				name = fmt.Sprintf("%s - %s", name, a.Name)
+				name = a.Name
 			}
 
 			// Use one-based indexing for human-friendliness.
