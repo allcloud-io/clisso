@@ -94,7 +94,6 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				// Look up the human friendly name, if available
 				if len(accounts) > 0 {
 					ids := role.FindStringSubmatch(arn.Role)
-					fmt.Printf("%v\n", ids)
 					if len(ids) == 3 && accounts[ids[1]] != "" {
 						arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
 					}
