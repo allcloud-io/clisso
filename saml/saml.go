@@ -89,6 +89,8 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
 					// First component is IdP
 					arn = ARN{components[1], components[0], ""}
+				} else {
+					continue
 				}
 
 				// Look up the human friendly name, if available
