@@ -70,6 +70,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	pass, err := keyChain.Get(provider)
+	if err != nil {
+		return nil, fmt.Errorf("error getting keychain: %s", err)
+	}
 
 	// Generate SAML assertion
 	pSAML := GenerateSamlAssertionParams{
@@ -92,6 +95,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 
 	devices := rSaml.Data[0].Devices
 	device, err := getDevice(devices)
+	if err != nil {
+		return nil, fmt.Errorf("error getting devices: %s", err)
+	}
 
 	var rMfa *VerifyFactorResponse
 

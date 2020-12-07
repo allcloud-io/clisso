@@ -127,6 +127,9 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading request body: %v", err)
+	}
 	b := []byte(body)
 
 	return string(b), nil
