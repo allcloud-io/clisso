@@ -38,25 +38,39 @@ type GenerateSamlAssertionParams struct {
 
 // TODO This one assumes MFA is enabled. Need to handle all cases.
 type GenerateSamlAssertionResponse struct {
-	Status struct {
-		Error   bool   `json:"error"`
-		Code    int    `json:"code"`
-		Type    string `json:"type"`
-		Message string `json:"message"`
-	} `json:"status"`
-	Data []struct {
-		StateToken  string `json:"state_token"`
-		Devices     []Device
-		CallbackUrl string `json:"callback_url"`
-		User        struct {
-			Lastname  string `json:"lastname"`
-			Username  string `json:"username"`
-			Email     string `json:"email"`
-			Firstname string `json:"firstname"`
-			Id        int    `json:"id"`
-		}
+	StateToken  string `json:"state_token"`
+	Message     string `json:"message"`
+	Devices     []Device
+	CallbackUrl string `json:"callback_url"`
+	User        struct {
+		Lastname  string `json:"lastname"`
+		Username  string `json:"username"`
+		Email     string `json:"email"`
+		Firstname string `json:"firstname"`
+		Id        int    `json:"id"`
 	}
 }
+
+// type GenerateSamlAssertionResponse struct {
+// 	Status struct {
+// 		Error   bool   `json:"error"`
+// 		Code    int    `json:"code"`
+// 		Type    string `json:"type"`
+// 		Message string `json:"message"`
+// 	} `json:"status"`
+// 	Data []struct {
+// 		StateToken  string `json:"state_token"`
+// 		Devices     []Device
+// 		CallbackUrl string `json:"callback_url"`
+// 		User        struct {
+// 			Lastname  string `json:"lastname"`
+// 			Username  string `json:"username"`
+// 			Email     string `json:"email"`
+// 			Firstname string `json:"firstname"`
+// 			Id        int    `json:"id"`
+// 		}
+// 	}
+// }
 
 type VerifyFactorParams struct {
 	AppId       string `json:"app_id"`
@@ -67,13 +81,8 @@ type VerifyFactorParams struct {
 }
 
 type VerifyFactorResponse struct {
-	Status struct {
-		Error   bool   `json:"error"`
-		Code    int    `json:"code"`
-		Type    string `json:"type"`
-		Message string `json:"message"`
-	} `json:"status"`
-	Data string `json:"data"`
+	Message string `json:"message"`
+	Data    string `json:"data"`
 }
 
 type GetUserByEmailResponse struct {

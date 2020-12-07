@@ -64,31 +64,22 @@ func TestGenerateTokens(t *testing.T) {
 
 func TestGenerateSamlAssertion(t *testing.T) {
 	data := `{
-    "status": {
-        "type": "success",
-        "message": "MFA is required for this user",
-        "code": 200,
-        "error": false
-    },
-    "data": [
-        {
-            "state_token": "fake_state_token",
-            "devices": [
-                {
-                    "device_id": 666666,
-                    "device_type": "Google Authenticator"
-                }
-            ],
-            "callback_url": "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor",
-            "user": {
-                "lastname": "test",
-                "username": "test",
-                "email": "test@onelogin.com",
-                "firstname": "test",
-                "id": 88888888
-            }
-        }
-    ]
+	"state_token": "fake_state_token",
+	"message": "fake_message",
+	"devices": [
+		{
+			"device_id": 666666,
+			"device_type": "Google Authenticator"
+		}
+	],
+	"callback_url": "https://api.us.onelogin.com/api/2/saml_assertion/verify_factor",
+	"user": {
+		"lastname": "test",
+		"username": "test",
+		"email": "test@onelogin.com",
+		"firstname": "test",
+		"id": 88888888
+	}
 }`
 	ts := getTestServer(data)
 	defer ts.Close()
@@ -106,10 +97,10 @@ func TestGenerateSamlAssertion(t *testing.T) {
 	if err != nil {
 		t.Errorf("GenerateSamlAssertion: %s", err)
 	}
-	if resp.Data[0].StateToken != "fake_state_token" {
+	if resp.StateToken != "fake_state_token" {
 		t.Errorf(
 			"Wrong response, got: %v, want: %v",
-			resp.Data[0].StateToken, "fake_state_token",
+			resp.StateToken, "fake_state_token",
 		)
 	}
 }

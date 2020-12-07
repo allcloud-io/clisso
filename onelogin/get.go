@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
@@ -91,9 +92,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
 
-	st := rSaml.Data[0].StateToken
+	st := rSaml.StateToken
 
-	devices := rSaml.Data[0].Devices
+	devices := rSaml.Devices
 	device, err := getDevice(devices)
 	if err != nil {
 		return nil, fmt.Errorf("error getting devices: %s", err)
@@ -123,11 +124,11 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 
 		pMfa.DoNotNotify = true
 
-		fmt.Println(rMfa.Status.Message)
+		fmt.Println(rMfa.Message)
 
 		timeout := MFAPushTimeout
 		s.Start()
-		for rMfa.Status.Type == "pending" && timeout > 0 {
+		for strings.Contains(rMfa.Message, "pending") && timeout > 0 {
 			time.Sleep(time.Duration(MFAInterval) * time.Second)
 			rMfa, err = c.VerifyFactor(token, &pMfa)
 			if err != nil {
@@ -139,7 +140,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		}
 		s.Stop()
 
-		if rMfa.Status.Type == "pending" {
+		if strings.Contains(rMfa.Message, "pending") {
 			fmt.Println("MFA verification timed out - falling back to manual OTP input")
 			pushOK = false
 		}

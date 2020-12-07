@@ -12,8 +12,8 @@ func TestEndpoints_SetBase(t *testing.T) {
 		expectVerifyPath string
 		expectError      bool
 	}{
-		{"Region US", "US", "https://api.us.onelogin.com/api/1/saml_assertion/verify_factor", false},
-		{"Region EU", "EU", "https://api.eu.onelogin.com/api/1/saml_assertion/verify_factor", false},
+		{"Region US", "US", "https://api.us.onelogin.com/api/2/saml_assertion/verify_factor", false},
+		{"Region EU", "EU", "https://api.eu.onelogin.com/api/2/saml_assertion/verify_factor", false},
 		{"No such region", "no such", "", true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -43,8 +43,8 @@ func TestEndpoints_GetUserByEmail(t *testing.T) {
 		email   string
 		expect  string
 	}{
-		{"Happy path", "http://example.com", "root@example.com", "http://example.com/api/1/users%3Femail=%25s?email=root%40example.com"},
-		{"Empty email", "http://example.com", "", "http://example.com/api/1/users%3Femail=%25s?email="},
+		{"Happy path", "http://example.com", "root@example.com", "http://example.com/api/2/users%3Femail=%25s?email=root%40example.com"},
+		{"Empty email", "http://example.com", "", "http://example.com/api/2/users%3Femail=%25s?email="},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			e := Endpoints{}

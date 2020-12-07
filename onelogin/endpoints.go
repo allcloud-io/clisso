@@ -9,10 +9,10 @@ const (
 	usBase = "https://api.us.onelogin.com"
 	euBase = "https://api.eu.onelogin.com"
 
-	GenerateSamlAssertionPath string = "/api/1/saml_assertion"
+	GenerateSamlAssertionPath string = "/api/2/saml_assertion"
 	GenerateTokensPath        string = "/auth/oauth2/v2/token"
-	GetUserByEmailPath        string = "/api/1/users?email=%s"
-	VerifyFactorPath          string = "/api/1/saml_assertion/verify_factor"
+	GetUserByEmailPath        string = "/api/2/users?email=%s"
+	VerifyFactorPath          string = "/api/2/saml_assertion/verify_factor"
 )
 
 // Endpoints represent the OneLogin API HTTP endpoints.
