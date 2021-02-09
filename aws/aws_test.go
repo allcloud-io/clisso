@@ -65,8 +65,11 @@ func TestWriteToFile(t *testing.T) {
 	s := cfg.Section(p)
 
 	// Verify File
-	if s.HasKey("aws_access_key_id") || s.HasKey("aws_secret_access_key") || s.HasKey("aws_session_token") || s.HasKey("aws_expiration") {
-		t.Fatal("Expired profile was not cleaned up")
+	keys := []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", "aws_expiration"}
+	for _, k := range keys {
+		if s.HasKey(k) {
+			t.Fatal("Expired profile was not cleaned up")
+		}
 	}
 
 	p = "testprofile"
