@@ -32,7 +32,7 @@ func TestWriteToFile(t *testing.T) {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
 
-	// Sleep so above credentials expire
+	// Sleep so above credentials expire, we can't fake it but have to wait. The WriteToFile func call above should not save expired credentials.
 	time.Sleep(time.Duration(2) * time.Second)
 
 	id = "testkey"
