@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
+	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -34,7 +35,7 @@ func printStatus() {
 	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
 	profiles, err := aws.GetNonExpiredCredentials(configfile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf(color.RedString("Failed to retrieve non-expired credentials: %s"), err)
 	}
 	log.Print("The following profiles are currently not expired:")
 	for _, p := range *profiles {
