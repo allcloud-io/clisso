@@ -41,13 +41,13 @@ type GenerateSamlAssertionResponse struct {
 	StateToken  string `json:"state_token"`
 	Message     string `json:"message"`
 	Devices     []Device
-	CallbackUrl string `json:"callback_url"`
+	CallbackURL string `json:"callback_url"`
 	User        struct {
 		Lastname  string `json:"lastname"`
 		Username  string `json:"username"`
 		Email     string `json:"email"`
 		Firstname string `json:"firstname"`
-		Id        int    `json:"id"`
+		ID        int    `json:"id"`
 	}
 	Data string `json:"data"`
 }

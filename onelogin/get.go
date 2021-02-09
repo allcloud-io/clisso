@@ -190,6 +190,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, 3600)
 			s.Stop()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

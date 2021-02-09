@@ -9,10 +9,17 @@ const (
 	usBase = "https://api.us.onelogin.com"
 	euBase = "https://api.eu.onelogin.com"
 
+	// GenerateSamlAssertionPath - OneLogin API endpoint to generate a SAML assertions
 	GenerateSamlAssertionPath string = "/api/2/saml_assertion"
-	GenerateTokensPath        string = "/auth/oauth2/v2/token"
-	GetUserByEmailPath        string = "/api/2/users?email=%s"
-	VerifyFactorPath          string = "/api/2/saml_assertion/verify_factor"
+
+	// GenerateTokensPath - OneLogin API endpoint to generate an access token and refresh token
+	GenerateTokensPath string = "/auth/oauth2/v2/token"
+
+	// GetUserByEmailPath - OneLogin API endpoint to get a paginated list of users via email address
+	GetUserByEmailPath string = "/api/2/users?email=%s"
+
+	// VerifyFactorPath - OneLogin API endpoint to verify a one-time password (OTP) value
+	VerifyFactorPath string = "/api/2/saml_assertion/verify_factor"
 )
 
 // Endpoints represent the OneLogin API HTTP endpoints.
