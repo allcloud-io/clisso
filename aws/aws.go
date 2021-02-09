@@ -91,7 +91,7 @@ func GetNonExpiredCredentials(filename string) (*[]Profile, error) {
 		if s.HasKey("aws_expiration") {
 			v, err := s.Key("aws_expiration").TimeFormat(time.RFC3339)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("%s key has invalid time format: %s", "aws_expiration", err)
 			}
 
 			if time.Now().UTC().Unix() < v.Unix() {
