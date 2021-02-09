@@ -16,10 +16,6 @@ build:
 test:
 	$(GOCMD) test -v ./...
 
-.PHONY: darwin-386
-darwin-386:
-	GOOS=darwin GOARCH=386 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-darwin-386 -v
-
 .PHONY: darwin-amd64
 darwin-amd64:
 	GOOS=darwin GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-darwin-amd64 -v
@@ -41,15 +37,15 @@ windows-amd64:
 	GOOS=windows GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-windows-amd64.exe -v
 
 .PHONY: all
-all: darwin-386 darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
+all: darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
 
 .PHONY: zip
 zip:
-	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip'`; do zip $$i.zip $$i; done
+	for i in `ls -1 $(BUILDPATH)/$(BINARY_NAME)* | grep -v '.zip'`; do zip $$i.zip $$i; done
 
 .PHONY: brew
 brew:
-	bash make_brew_release.sh $(BINARY_NAME) $(VERSION)
+	bash make_brew_release.sh $(BINARY_NAME) $(VERSION) $(BUILDPATH)
 
 .PHONY: release
 release: clean all zip brew
