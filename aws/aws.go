@@ -19,13 +19,10 @@ type Credentials struct {
 	Expiration      time.Time
 }
 
+// Profile represents an AWS profile
 type Profile struct {
 	Name         string
 	LifetimeLeft time.Duration
-}
-
-type Profiles struct {
-	Profiles []Profile
 }
 
 // WriteToFile writes credentials to an AWS CLI credentials file
@@ -84,8 +81,8 @@ func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 }
 
 // GetNonExpiredCredentials Return profiles which have a aws_expiration key but are not yet expired.
-func GetNonExpiredCredentials(filename string) (*Profiles, error) {
-	profiles := Profiles{}
+func GetNonExpiredCredentials(filename string) (*[]Profile, error) {
+	var profiles []Profile
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		return nil, err
@@ -99,7 +96,7 @@ func GetNonExpiredCredentials(filename string) (*Profiles, error) {
 
 			if time.Now().UTC().Unix() < v.Unix() {
 				profile := Profile{Name: s.Name(), LifetimeLeft: v.Sub(time.Now().UTC())}
-				profiles.Profiles = append(profiles.Profiles, profile)
+				profiles = append(profiles, profile)
 			}
 
 		}

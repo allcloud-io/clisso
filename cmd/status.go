@@ -37,7 +37,7 @@ func printStatus() {
 		log.Fatal(err)
 	}
 	log.Print("The following profiles are currently not expired:")
-	for _, p := range profiles.Profiles {
+	for _, p := range *profiles {
 		log.Printf("%v: remaining time %v", p.Name, p.LifetimeLeft.Round(time.Second))
 	}
 }
