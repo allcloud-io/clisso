@@ -25,6 +25,8 @@ type Profile struct {
 	LifetimeLeft time.Duration
 }
 
+const expireKey = "aws_expiration"
+
 // WriteToFile writes credentials to an AWS CLI credentials file
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
@@ -88,10 +90,10 @@ func GetNonExpiredCredentials(filename string) (*[]Profile, error) {
 		return nil, err
 	}
 	for _, s := range cfg.Sections() {
-		if s.HasKey("aws_expiration") {
-			v, err := s.Key("aws_expiration").TimeFormat(time.RFC3339)
+		if s.HasKey(expireKey) {
+			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				return nil, fmt.Errorf("%s key has invalid time format: %s", "aws_expiration", err)
+				return nil, fmt.Errorf("%s key has invalid time format: %s", expireKey, err)
 			}
 
 			if time.Now().UTC().Unix() < v.Unix() {
