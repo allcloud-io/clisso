@@ -3,11 +3,13 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,8 +46,13 @@ func printStatus() {
 		return
 	}
 
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"App", "Expire At", "Remaining"})
+
 	log.Print("The following apps currently have valid credentials:")
 	for _, p := range *profiles {
-		log.Printf("%v: remaining time %v", p.Name, p.LifetimeLeft.Round(time.Second))
+		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAt), fmt.Sprintf("%s", p.LifetimeLeft.Round(time.Second))})
 	}
+
+	table.Render()
 }
