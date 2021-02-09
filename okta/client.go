@@ -45,6 +45,7 @@ type GetSessionTokenResponse struct {
 					Href string `json:"href"`
 				} `json:"verify"`
 			} `json:"_links"`
+			FactorType string `json:"factorType"`
 		} `json:"factors"`
 	} `json:"_embedded"`
 }
@@ -97,6 +98,7 @@ type VerifyFactorResponse struct {
 	ExpiresAt    time.Time `json:"expiresAt"`
 	SessionToken string    `json:"sessionToken"`
 	Status       string    `json:"status"`
+	FactorResult string    `json:"factorResult,omitempty"`
 }
 
 // VerifyFactor performs MFA verification.

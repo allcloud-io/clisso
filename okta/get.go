@@ -3,6 +3,7 @@ package okta
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
@@ -10,6 +11,14 @@ import (
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/fatih/color"
+)
+
+const (
+	MFATypePush = "push"
+	MFATypeTOTP = "token:software:totp"
+
+	VerifyFactorStatusSuccess = "SUCCESS"
+	VerifyFactorStatusWaiting = "WAITING"
 )
 
 var (
@@ -63,24 +72,62 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	var st string
 
 	// TODO Handle multiple MFA devices (allow user to choose)
-	// TODO Verify MFA type?
 	switch resp.Status {
 	case StatusSuccess:
 		st = resp.SessionToken
 	case StatusMFARequired:
-		fmt.Print("Please enter the OTP from your MFA device: ")
-		var otp string
-		fmt.Scanln(&otp)
+		factor := resp.Embedded.Factors[0]
+		stateToken := resp.StateToken
 
-		s.Start()
-		vfResp, err := c.VerifyFactor(&VerifyFactorParams{
-			FactorID:   resp.Embedded.Factors[0].ID,
-			PassCode:   otp,
-			StateToken: resp.StateToken,
-		})
-		s.Stop()
+		var vfResp *VerifyFactorResponse
+
+		switch factor.FactorType {
+		case MFATypePush:
+			// Okta Verify push notification:
+			// https://developer.okta.com/docs/api/resources/authn/#verify-push-factor
+			// Keep polling authentication transactions with WAITING result until the challenge
+			// completes or expires.
+			fmt.Println("Please approve request on Okta Verify app")
+			s.Start()
+			vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+				FactorID:   factor.ID,
+				StateToken: stateToken,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("verifying MFA: %v", err)
+			}
+
+			for vfResp.FactorResult == VerifyFactorStatusWaiting {
+				vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+					FactorID:   factor.ID,
+					StateToken: stateToken,
+				})
+				time.Sleep(2 * time.Second)
+			}
+			s.Stop()
+		case MFATypeTOTP:
+			fmt.Print("Please enter the OTP from your MFA device: ")
+			var otp string
+			fmt.Scanln(&otp)
+
+			s.Start()
+			vfResp, err = c.VerifyFactor(&VerifyFactorParams{
+				FactorID:   factor.ID,
+				PassCode:   otp,
+				StateToken: stateToken,
+			})
+			s.Stop()
+		default:
+			return nil, fmt.Errorf("unsupported MFA type '%s'", factor.FactorType)
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("verifying MFA: %v", err)
+		}
+
+		// Handle failed MFA verification (verification rejected or timed out)
+		if vfResp.Status != VerifyFactorStatusSuccess {
+			return nil, fmt.Errorf("MFA verification failed")
 		}
 
 		st = vfResp.SessionToken

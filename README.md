@@ -42,17 +42,30 @@ To update Clisso to the latest release, run the following command:
 
 ### Building from Source
 
-Clisso uses [dep][5] for dependency management. You will need it to install dependencies. You will
-also need **Go** to compile the code, and **Git** which is used by `go get`.
+#### Requirements
+
+- Go `1.12` or above
+- Git
+- Make
+
+#### Building
 
 To build Clisso from source, do the following:
 
-1. Download the source code using `go get -d github.com/allcloud-io/clisso`.
-1. `cd` to `$GOPATH/src/github.com/allcloud-io/clisso`.
-1. Run `dep ensure` to install the dependencies.
-1. Run `make` to build the binary.
-1. Run `make install` to put the binary in your `$PATH`.
-1. Run `make clean` to clean up after the build.
+```
+# Get the source
+git clone github.com/allcloud-io/clisso
+
+# Build the binary
+cd clisso
+make
+
+# Install the binary in $GOPATH/bin
+make install
+
+# Clean up
+make clean
+```
 
 ## Configuration
 
