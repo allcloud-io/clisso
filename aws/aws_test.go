@@ -112,7 +112,7 @@ func TestWriteToFile(t *testing.T) {
 	}
 }
 
-func TestGetNonExpiredCredentials(t *testing.T) {
+func TestGetValidCredentials(t *testing.T) {
 	fn := "test_creds.txt"
 
 	id := "testkey"
@@ -171,7 +171,7 @@ func TestGetNonExpiredCredentials(t *testing.T) {
 
 	time.Sleep(time.Duration(1) * time.Second)
 
-	data, err := GetNonExpiredCredentials(fn)
+	data, err := GetValidCredentials(fn)
 	if err != nil {
 		t.Fatal("Failed to get NonExpiredCredentials")
 	}
@@ -194,7 +194,7 @@ func TestGetNonExpiredCredentials(t *testing.T) {
 		t.Fatalf("Could not remove file %v during cleanup", fn)
 	}
 
-	_, err = GetNonExpiredCredentials(fn)
+	_, err = GetValidCredentials(fn)
 	if err != nil {
 		t.Fatal("Function did crash on missing file")
 	}

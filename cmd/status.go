@@ -34,7 +34,7 @@ var cmdStatus = &cobra.Command{
 
 func printStatus() {
 	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
-	profiles, err := aws.GetNonExpiredCredentials(configfile)
+	profiles, err := aws.GetValidCredentials(configfile)
 	if err != nil {
 		log.Fatalf(color.RedString("Failed to retrieve non-expired credentials: %s"), err)
 	}
@@ -43,7 +43,7 @@ func printStatus() {
 		fmt.Println("No apps with valid credentials")
 		return
 	}
-	
+
 	log.Print("The following apps currently have valid credentials:")
 	for _, p := range *profiles {
 		log.Printf("%v: remaining time %v", p.Name, p.LifetimeLeft.Round(time.Second))
