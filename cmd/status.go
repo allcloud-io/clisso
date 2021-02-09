@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -37,7 +38,13 @@ func printStatus() {
 	if err != nil {
 		log.Fatalf(color.RedString("Failed to retrieve non-expired credentials: %s"), err)
 	}
-	log.Print("The following profiles are currently not expired:")
+
+	if len(*profiles) == 0 {
+		fmt.Println("No apps with valid credentials")
+		return
+	}
+	
+	log.Print("The following apps currently have valid credentials:")
 	for _, p := range *profiles {
 		log.Printf("%v: remaining time %v", p.Name, p.LifetimeLeft.Round(time.Second))
 	}
