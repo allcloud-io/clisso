@@ -174,20 +174,20 @@ func TestGetValidCredentials(t *testing.T) {
 
 	time.Sleep(time.Duration(1) * time.Second)
 
-	data, err := GetValidCredentials(fn)
+	profiles, err := GetValidCredentials(fn)
 	if err != nil {
 		t.Fatal("Failed to get NonExpiredCredentials")
 	}
 
-	if len(data.Profiles) != 1 {
+	if len(profiles) != 1 {
 		t.Fatal("Got more than 1 expected credential set")
 	}
 
-	if data.Profiles[0].Name != "valid" {
+	if profiles[0].Name != "valid" {
 		t.Fatal("Returned wrong profile name")
 	}
 
-	if data.Profiles[0].LifetimeLeft.Seconds() < 3597 || data.Profiles[0].LifetimeLeft.Seconds() > 3599 {
+	if profiles[0].LifetimeLeft.Seconds() < 3597 || profiles[0].LifetimeLeft.Seconds() > 3599 {
 		// Lets factor in some slow time
 		t.Fatal("Expiration is outside of expected scope")
 	}
