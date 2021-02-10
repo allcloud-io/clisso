@@ -138,5 +138,6 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		} else {
 			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
 		}
+		printStatus()
 	},
 }
