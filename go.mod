@@ -11,7 +11,6 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/go-ini/ini v1.42.0
 	github.com/guelfey/go.dbus v0.0.0-20131113121618-f6a3a2366cc3 // indirect
-	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.4
@@ -21,5 +20,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/term v0.0.0-20201117132131-f5c789dd3221
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/challarao/keyring"
-	"github.com/howeyc/gopass"
+	"golang.org/x/term"
 )
 
 const (
@@ -40,7 +40,7 @@ func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
 	if err != nil {
 		// If we ever implement a logfile we might want to log what error occurred.
 		fmt.Printf("Please enter %s password: ", provider)
-		pass, err = gopass.GetPasswd()
+		pass, err = term.ReadPassword(0)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't read password from terminal")
 		}

@@ -8,9 +8,9 @@ import (
 
 	"github.com/allcloud-io/clisso/keychain"
 	"github.com/fatih/color"
-	"github.com/howeyc/gopass"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/term"
 )
 
 // OneLogin
@@ -97,7 +97,7 @@ var cmdProvidersPassword = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		provider := args[0]
 		fmt.Printf("Please enter the password for the '%s' provider: ", provider)
-		pass, err := gopass.GetPasswd()
+		pass, err := term.ReadPassword(0)
 		if err != nil {
 			log.Fatalf(color.RedString("Could not read password"))
 		}
