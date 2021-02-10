@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/aws/aws-sdk-go v1.37.8
-	github.com/briandowns/spinner v0.0.0-20190319032542-ac46072a5a91
+	github.com/briandowns/spinner v1.12.0
 	github.com/challarao/keyring v0.0.0-20190721191509-6be0d53230e3
 	github.com/edaniels/go-saml v0.0.0-20160724042625-8c877c3ab101
 	github.com/fatih/color v1.10.0
