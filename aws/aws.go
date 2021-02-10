@@ -44,16 +44,17 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 
 	// Remove expired credentials.
 	for _, s := range cfg.Sections() {
-		if s.HasKey(expireKey) {
-			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
-			if err != nil {
-				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s"),
-					s.Key(expireKey), s.Name(), err)
-				continue
-			}
-			if time.Now().UTC().Unix() > v.Unix() {
-				cfg.DeleteSection(s.Name())
-			}
+		if !s.HasKey(expireKey) {
+			continue
+		}
+		v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
+		if err != nil {
+			log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s"),
+				s.Key(expireKey), s.Name(), err)
+			continue
+		}
+		if time.Now().UTC().Unix() > v.Unix() {
+			cfg.DeleteSection(s.Name())
 		}
 	}
 
@@ -94,7 +95,6 @@ func GetValidCredentials(filename string) ([]Profile, error) {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				// return nil, fmt.Errorf("%s key has invalid time format: %w", expireKey, err)
 				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s"),
 						s.Key(expireKey), s.Name(), err)
 				continue
