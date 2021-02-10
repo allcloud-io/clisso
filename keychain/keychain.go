@@ -3,6 +3,7 @@ package keychain
 import (
 	"fmt"
 
+	"github.com/challarao/keyring"
 	"github.com/howeyc/gopass"
 )
 
@@ -45,4 +46,14 @@ func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
 		}
 	}
 	return pass, nil
+}
+
+func set(provider string, password []byte) (err error) {
+	return keyring.Set(KeyChainName, provider, string(password))
+}
+
+func get(provider string) (pw []byte, err error) {
+	pwString, err := keyring.Get(KeyChainName, provider)
+	pw = []byte(pwString)
+	return
 }
