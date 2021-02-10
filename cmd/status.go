@@ -51,7 +51,7 @@ func printStatus() {
 
 	log.Print("The following apps currently have valid credentials:")
 	for _, p := range *profiles {
-		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAt), fmt.Sprintf("%s", p.LifetimeLeft.Round(time.Second))})
+		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAtUnix), fmt.Sprintf("%s", p.LifetimeLeft.Round(time.Second))})
 	}
 
 	table.Render()

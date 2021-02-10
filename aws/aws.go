@@ -23,7 +23,7 @@ type Credentials struct {
 type Profile struct {
 	Name         string
 	LifetimeLeft time.Duration
-	ExpireAt     int64
+	ExpireAtUnix int64
 }
 
 const expireKey = "aws_expiration"
@@ -98,7 +98,7 @@ func GetValidCredentials(filename string) (*[]Profile, error) {
 			}
 
 			if time.Now().UTC().Unix() < v.Unix() {
-				profile := Profile{Name: s.Name(), ExpireAt: v.Unix(), LifetimeLeft: v.Sub(time.Now().UTC())}
+				profile := Profile{Name: s.Name(), ExpireAtUnix: v.Unix(), LifetimeLeft: v.Sub(time.Now().UTC())}
 				profiles = append(profiles, profile)
 			}
 
