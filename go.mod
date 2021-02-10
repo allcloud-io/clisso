@@ -9,7 +9,7 @@ require (
 	github.com/challarao/keyring v0.0.0-20190721191509-6be0d53230e3
 	github.com/edaniels/go-saml v0.0.0-20160724042625-8c877c3ab101
 	github.com/fatih/color v1.10.0
-	github.com/go-ini/ini v1.42.0
+	github.com/go-ini/ini v1.62.0
 	github.com/guelfey/go.dbus v0.0.0-20131113121618-f6a3a2366cc3 // indirect
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mitchellh/go-homedir v1.1.0
