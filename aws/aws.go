@@ -88,13 +88,13 @@ func GetValidCredentials(filename string) ([]Profile, error) {
 	var profiles []Profile
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s contains errors: %w", filename, err)
 	}
 	for _, s := range cfg.Sections() {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				return nil, fmt.Errorf("%s key has invalid time format: %s", expireKey, err)
+				return nil, fmt.Errorf("%s key has invalid time format: %w", expireKey, err)
 			}
 
 			if time.Now().UTC().Unix() < v.Unix() {
