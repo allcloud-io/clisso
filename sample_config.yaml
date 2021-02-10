@@ -12,6 +12,10 @@ apps:
 global:
   credentials-path: ~/.aws/credentials
   selected-app: sample-app-1
+  accounts:
+    "0000000000000": Dev
+    "1111111111111": Prod
+    "2222222222222": QA
 providers:
   sample-onelogin-provider:
     client-id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

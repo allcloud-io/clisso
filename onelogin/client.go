@@ -38,24 +38,18 @@ type GenerateSamlAssertionParams struct {
 
 // TODO This one assumes MFA is enabled. Need to handle all cases.
 type GenerateSamlAssertionResponse struct {
-	Status struct {
-		Error   bool   `json:"error"`
-		Code    int    `json:"code"`
-		Type    string `json:"type"`
-		Message string `json:"message"`
-	} `json:"status"`
-	Data []struct {
-		StateToken  string `json:"state_token"`
-		Devices     []Device
-		CallbackUrl string `json:"callback_url"`
-		User        struct {
-			Lastname  string `json:"lastname"`
-			Username  string `json:"username"`
-			Email     string `json:"email"`
-			Firstname string `json:"firstname"`
-			Id        int    `json:"id"`
-		}
+	StateToken  string `json:"state_token"`
+	Message     string `json:"message"`
+	Devices     []Device
+	CallbackURL string `json:"callback_url"`
+	User        struct {
+		Lastname  string `json:"lastname"`
+		Username  string `json:"username"`
+		Email     string `json:"email"`
+		Firstname string `json:"firstname"`
+		ID        int    `json:"id"`
 	}
+	Data string `json:"data"`
 }
 
 type VerifyFactorParams struct {
@@ -67,13 +61,8 @@ type VerifyFactorParams struct {
 }
 
 type VerifyFactorResponse struct {
-	Status struct {
-		Error   bool   `json:"error"`
-		Code    int    `json:"code"`
-		Type    string `json:"type"`
-		Message string `json:"message"`
-	} `json:"status"`
-	Data string `json:"data"`
+	Message string `json:"message"`
+	Data    string `json:"data"`
 }
 
 type GetUserByEmailResponse struct {
@@ -127,6 +116,9 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading request body: %v", err)
+	}
 	b := []byte(body)
 
 	return string(b), nil

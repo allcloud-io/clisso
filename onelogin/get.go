@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
@@ -70,6 +71,9 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 	}
 
 	pass, err := keyChain.Get(provider)
+	if err != nil {
+		return nil, fmt.Errorf("error getting keychain: %s", err)
+	}
 
 	// Generate SAML assertion
 	pSAML := GenerateSamlAssertionParams{
@@ -88,95 +92,107 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
 
-	st := rSaml.Data[0].StateToken
+	var rData string
+	if rSaml.Message != "Success" {
+		st := rSaml.StateToken
 
-	devices := rSaml.Data[0].Devices
-	device, err := getDevice(devices)
-
-	var rMfa *VerifyFactorResponse
-
-	var pushOK = false
-
-	if device.DeviceType == MFADeviceOneLoginProtect {
-		// Push is supported by the selected MFA device - try pushing and fall back to manual input
-		pushOK = true
-		pMfa := VerifyFactorParams{
-			AppId:       a.ID,
-			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
-			StateToken:  st,
-			OtpToken:    "",
-			DoNotNotify: false,
-		}
-
-		s.Start()
-		rMfa, err = c.VerifyFactor(token, &pMfa)
-		s.Stop()
+		devices := rSaml.Devices
+		device, err := getDevice(devices)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error getting devices: %s", err)
 		}
 
-		pMfa.DoNotNotify = true
+		var rMfa *VerifyFactorResponse
 
-		fmt.Println(rMfa.Status.Message)
+		var pushOK = false
 
-		timeout := MFAPushTimeout
-		s.Start()
-		for rMfa.Status.Type == "pending" && timeout > 0 {
-			time.Sleep(time.Duration(MFAInterval) * time.Second)
+		if device.DeviceType == MFADeviceOneLoginProtect {
+			// Push is supported by the selected MFA device - try pushing and fall back to manual input
+			pushOK = true
+			pMfa := VerifyFactorParams{
+				AppId:       a.ID,
+				DeviceId:    fmt.Sprintf("%v", device.DeviceID),
+				StateToken:  st,
+				OtpToken:    "",
+				DoNotNotify: false,
+			}
+
+			s.Start()
 			rMfa, err = c.VerifyFactor(token, &pMfa)
+			s.Stop()
 			if err != nil {
-				s.Stop()
 				return nil, err
 			}
 
-			timeout -= MFAInterval
-		}
-		s.Stop()
+			pMfa.DoNotNotify = true
 
-		if rMfa.Status.Type == "pending" {
-			fmt.Println("MFA verification timed out - falling back to manual OTP input")
-			pushOK = false
+			fmt.Println(rMfa.Message)
+
+			timeout := MFAPushTimeout
+			s.Start()
+			for strings.Contains(rMfa.Message, "pending") && timeout > 0 {
+				time.Sleep(time.Duration(MFAInterval) * time.Second)
+				rMfa, err = c.VerifyFactor(token, &pMfa)
+				if err != nil {
+					s.Stop()
+					return nil, err
+				}
+
+				timeout -= MFAInterval
+			}
+			s.Stop()
+
+			if strings.Contains(rMfa.Message, "pending") {
+				fmt.Println("MFA verification timed out - falling back to manual OTP input")
+				pushOK = false
+			}
 		}
+
+		if !pushOK {
+			// Push failed or not supported by the selected MFA device
+			fmt.Print("Please enter the OTP from your MFA device: ")
+			var otp string
+			fmt.Scanln(&otp)
+
+			// Verify MFA
+			pMfa := VerifyFactorParams{
+				AppId:       a.ID,
+				DeviceId:    fmt.Sprintf("%v", device.DeviceID),
+				StateToken:  st,
+				OtpToken:    otp,
+				DoNotNotify: false,
+			}
+
+			s.Start()
+			rMfa, err = c.VerifyFactor(token, &pMfa)
+			s.Stop()
+			if err != nil {
+				return nil, fmt.Errorf("verifying factor: %v", err)
+			}
+		}
+		rData = rMfa.Data
+	} else {
+		rData = rSaml.Data
 	}
 
-	if !pushOK {
-		// Push failed or not supported by the selected MFA device
-		fmt.Print("Please enter the OTP from your MFA device: ")
-		var otp string
-		fmt.Scanln(&otp)
-
-		// Verify MFA
-		pMfa := VerifyFactorParams{
-			AppId:       a.ID,
-			DeviceId:    fmt.Sprintf("%v", device.DeviceID),
-			StateToken:  st,
-			OtpToken:    otp,
-			DoNotNotify: false,
-		}
-
-		s.Start()
-		rMfa, err = c.VerifyFactor(token, &pMfa)
-		s.Stop()
-		if err != nil {
-			return nil, fmt.Errorf("verifying factor: %v", err)
-		}
-	}
-
-	arn, err := saml.Get(rMfa.Data)
+	arn, err := saml.Get(rData)
 	if err != nil {
 		return nil, err
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, duration)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, duration)
 	s.Stop()
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
 			log.Println(color.YellowString(aws.DurationExceededMessage))
 			s.Start()
-			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rMfa.Data, 3600)
+			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, 3600)
 			s.Stop()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

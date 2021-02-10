@@ -10,11 +10,13 @@ import (
 	"strings"
 
 	"github.com/edaniels/go-saml"
+	"github.com/spf13/viper"
 )
 
 type ARN struct {
 	Role     string
 	Provider string
+	Name     string
 }
 
 func Get(data string) (a ARN, err error) {
@@ -54,6 +56,8 @@ func decode(in string) (b []byte, err error) {
 }
 
 func extractArns(attrs []saml.Attribute) (arns []ARN) {
+	// check for human readable ARN strings in config
+	accounts := viper.GetStringMap("global.accounts")
 	arns = make([]ARN, 0)
 
 	for _, attr := range attrs {
@@ -75,18 +79,35 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 				}
 
 				// Prepare patterns
-				role := regexp.MustCompile(`^arn:aws:iam::\d+:role/\S+$`)
-				idp := regexp.MustCompile(`^arn:aws:iam::\d+:saml-provider/\S+$`)
+				role := regexp.MustCompile(`^arn:aws:iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
+				idp := regexp.MustCompile(`^arn:aws:iam::\d+:saml-provider\/\S+$`)
+				arn := ARN{}
 
 				if role.MatchString(components[0]) && idp.MatchString(components[1]) {
 					// First component is role
-					arns = append(arns, ARN{components[0], components[1]})
+					arn = ARN{components[0], components[1], ""}
 				} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
 					// First component is IdP
-					arns = append(arns, ARN{components[1], components[0]})
+					arn = ARN{components[1], components[0], ""}
 				} else {
-					// Malformed ARNs - move on
+					continue
 				}
+
+				// Look up the human friendly name, if available
+				if len(accounts) > 0 {
+					ids := role.FindStringSubmatch(arn.Role)
+
+					// if the regex matches we should have 3 entries from the regex match
+					// 1) the matching string
+					// 2) the match for Id
+					// 3) the match for Name
+					// we want to match the Id to any accounts/roles in our config
+					if len(ids) == 3 && accounts[ids[1]] != "" {
+						arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
+					}
+				}
+
+				arns = append(arns, arn)
 			}
 
 			return
@@ -100,8 +121,14 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 func ask(arns []ARN) (idx int) {
 	for {
 		for i, a := range arns {
+			name := a.Role
+			// Add the human friendly name if available
+			if a.Name != "" {
+				name = a.Name
+			}
+
 			// Use one-based indexing for human-friendliness.
-			fmt.Printf("%d. %s\n", i+1, a.Role)
+			fmt.Printf("%d. %s\n", i+1, name)
 		}
 
 		var input string

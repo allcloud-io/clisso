@@ -9,7 +9,10 @@ import (
 
 func getTestServer(data string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(data))
+		_, err := w.Write([]byte(data))
+		if err != nil {
+			panic(err)
+		}
 	}))
 
 	return ts
