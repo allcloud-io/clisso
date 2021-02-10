@@ -84,7 +84,7 @@ func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 }
 
 // GetValidCredentials returns profiles which have a aws_expiration key but are not yet expired.
-func GetValidCredentials(filename string) (*[]Profile, error) {
+func GetValidCredentials(filename string) ([]Profile, error) {
 	var profiles []Profile
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
@@ -104,5 +104,5 @@ func GetValidCredentials(filename string) (*[]Profile, error) {
 
 		}
 	}
-	return &profiles, nil
+	return profiles, nil
 }

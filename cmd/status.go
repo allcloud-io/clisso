@@ -41,7 +41,7 @@ func printStatus() {
 		log.Fatalf(color.RedString("Failed to retrieve non-expired credentials: %s"), err)
 	}
 
-	if len(*profiles) == 0 {
+	if len(profiles) == 0 {
 		fmt.Println("No apps with valid credentials")
 		return
 	}
@@ -50,7 +50,7 @@ func printStatus() {
 	table.SetHeader([]string{"App", "Expire At", "Remaining"})
 
 	log.Print("The following apps currently have valid credentials:")
-	for _, p := range *profiles {
+	for _, p := range profiles {
 		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAtUnix), fmt.Sprintf("%s", p.LifetimeLeft.Round(time.Second))})
 	}
 
