@@ -24,7 +24,8 @@ SOURCE_DIR=$(pwd)
 
 
 function cleanup() {
-  rm -f ${BINARY_NAME}.rb.bottle*
+  set -x
+  rm -f "${BINARY_NAME}".rb.bottle*
 }
 
 trap cleanup EXIT
@@ -33,57 +34,62 @@ trap cleanup EXIT
 brew tap allcloud-io/tools
 TAP_DIR=$(brew --repo allcloud-io/tools)
 # change to tap directory
-cd $TAP_DIR
+cd "$TAP_DIR" || exit 1
 # stash all changes so we have a clean working directory
-git clean -d -x -f && git reset --hard && git checkout master
+git clean -d -x -f
+git reset --hard
+git fetch --all
+git checkout master
+git pull
 
 # set the correct version
-sed "s:%VERSION%:${VERSION}:" ${BINARY_NAME}.rb.template | sed "s:%BOTTLE%::" > ${BINARY_NAME}.rb
+sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | sed "s:%BOTTLE%::" > "${BINARY_NAME}.rb"
 # and calc sha256
-SHA256=$(brew fetch ${BINARY_NAME} --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
+SHA256=$(brew fetch "${BINARY_NAME}" --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
 
 # replace version and sha256 placeholder in template
-sed "s:%VERSION%:${VERSION}:" ${BINARY_NAME}.rb.template | \
-sed "s:%SOURCE_SHA%:${SHA256}:" > ${BINARY_NAME}.rb.bottle
+sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | \
+sed "s:%SOURCE_SHA%:${SHA256}:" > "${BINARY_NAME}.rb.bottle"
 
 # generate parts to be assembled later
-grep -B100 '%BOTTLE%' ${BINARY_NAME}.rb.bottle | grep -v '%BOTTLE%' > ${BINARY_NAME}.rb.bottle.head
-grep -A100 '%BOTTLE%' ${BINARY_NAME}.rb.bottle | grep -v '%BOTTLE%' > ${BINARY_NAME}.rb.bottle.tail
+grep -B100 '%BOTTLE%' "${BINARY_NAME}.rb.bottle" | grep -v '%BOTTLE%' > "${BINARY_NAME}.rb.bottle.head"
+grep -A100 '%BOTTLE%' "${BINARY_NAME}.rb.bottle" | grep -v '%BOTTLE%' > "${BINARY_NAME}.rb.bottle.tail"
 
 # skip the bottle placeholder for now
-cat ${BINARY_NAME}.rb.bottle.head ${BINARY_NAME}.rb.bottle.tail > ${BINARY_NAME}.rb
+cat "${BINARY_NAME}.rb.bottle.head" "${BINARY_NAME}.rb.bottle.tail" > "${BINARY_NAME}.rb"
 
 # change back to original workdir
-cd $SOURCE_DIR
+cd "$SOURCE_DIR" || exit 1
 # build the bottle
-brew test-bot allcloud-io/tools/${BINARY_NAME}
+brew test-bot "allcloud-io/tools/${BINARY_NAME}"
 
 # create a tempfile
 TEMPFILE=$(mktemp)
 
-for json in `ls -1 *bottle.json`; do
+for json in *bottle.json; do
   # extract the mac version the bottle was build for
-  MAC_VERSION=$(echo $json | cut -d. -f4);
+  MAC_VERSION=$(echo "$json" | cut -d. -f4);
   # extract the sha256 of the bottle
-  SHA=$(cat $json | jq ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.sha256")
+  SHA=$(jq ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.sha256" < "$json")
   # get the local file name
-  LOCAL=$(cat $json | jq -r ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.local_filename")
+  LOCAL=$(jq -r ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.local_filename" < "$json")
   # get the remote filename
-  REMOTE=$(cat $json | jq -r ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.filename")
+  REMOTE=$(jq -r ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.filename" < "$json")
   # rename to the correct name
-  mv $LOCAL $REMOTE
+  mv "$LOCAL" "$REMOTE"
   # append to tempfile
-  echo "    sha256 $SHA => :$MAC_VERSION" >> ${TEMPFILE}
-  rm $json
+  echo "    sha256 $SHA => :$MAC_VERSION" >> "${TEMPFILE}"
+  rm "$json"
 done
 
-cd $TAP_DIR
+cd "$TAP_DIR" || exit 1
 
 # add all the bottles
-cat ${BINARY_NAME}.rb.bottle.head ${TEMPFILE} ${BINARY_NAME}.rb.bottle.tail > ${BINARY_NAME}.rb
+cat "${BINARY_NAME}.rb.bottle.head" "${TEMPFILE}" "${BINARY_NAME}.rb.bottle.tail" > "${BINARY_NAME}.rb"
 
 # commit to git and push to origin
 BRANCHNAME=auto/${BINARY_NAME}-${VERSION}
-git checkout -b $BRANCHNAME || git checkout $BRANCHNAME
-git add ${BINARY_NAME}.rb && git commit -m "Automatic commit of bottle build for version $VERSION of $BINARY_NAME."
-git push origin $BRANCHNAME
+git checkout -b "$BRANCHNAME" || git checkout "$BRANCHNAME"
+git add "${BINARY_NAME}.rb"
+git commit -m "Automatic commit of bottle build for version $VERSION of $BINARY_NAME."
+git push origin "$BRANCHNAME"
