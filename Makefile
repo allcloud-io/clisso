@@ -2,6 +2,7 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 BUILDPATH=build
+ASSETPATH=assets
 BINARY_NAME=clisso
 VERSION=`git describe --tags --always`
 
@@ -37,8 +38,12 @@ windows-amd64:
 all: darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
 
 .PHONY: zip
-zip:
-	for i in `ls -1 $(BUILDPATH)/$(BINARY_NAME)* | grep -v '.zip'`; do zip $$i.zip $$i; done
+zip: all
+	mkdir -p $(ASSETPATH)
+	cd $(BUILDPATH) && \
+	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip'`; do zip ../$(ASSETPATH)/$$i.zip $$i; done
+	cd $(ASSETPATH) && \
+	sha256sum *zip > SHASUMS256.txt
 
 .PHONY: brew
 brew:
@@ -54,4 +59,4 @@ install:
 .PHONY: clean
 clean:
 	$(GOCLEAN)
-	rm -f $(BUILDPATH)/$(BINARY_NAME)*
+	rm -f $(BUILDPATH)/$(BINARY_NAME)* $(ASSETPATH)/*
