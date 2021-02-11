@@ -1,0 +1,51 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+name: run tests
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Run linters
+      uses: golangci/golangci-lint-action@v2
+      with:
+        version: v1.29
+
+  test:
+    strategy:
+      matrix:
+        go: [1.15]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: ${{ matrix.go }}
+      - uses: actions/checkout@v2
+      - run: go test -v -coverprofile=profile ./...
+
+      - name: Send coverage
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: profile
+          flag-name: Platform-${{ matrix.platform }}
+          parallel: true
+  # notifies that all test jobs are finished.
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          parallel-finished: true

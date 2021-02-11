@@ -1,5 +1,7 @@
 # Clisso: CLI Single Sign-On
 
+[![Coverage Status](https://coveralls.io/repos/github/allcloud-io/clisso/badge.svg)](https://coveralls.io/github/allcloud-io/clisso)
+
 Clisso (pronounced `/ˈklIsoʊ/`) allows you to retrieve temporary credentials for cloud platforms
 by authenticating with an identity provider (IdP).
 
