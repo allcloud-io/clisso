@@ -98,7 +98,7 @@ var cmdProvidersPassword = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		provider := args[0]
 		fmt.Printf("Please enter the password for the '%s' provider: ", provider)
-		pass, err := term.ReadPassword(syscall.Stdin)
+		pass, err := term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
 			log.Fatalf(color.RedString("Could not read password"))
 		}
