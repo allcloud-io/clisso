@@ -26,7 +26,10 @@ func init() {
 
 func Execute(version string) {
 	VERSION = version
-	RootCmd.Execute()
+	err := RootCmd.Execute()
+	if err != nil {
+		log.Fatalf("Failed to execute: %v", err)
+	}
 }
 
 func initConfig() {

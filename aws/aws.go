@@ -37,10 +37,22 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 		return err
 	}
 	cfg.DeleteSection(section)
-	cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyID)
-	cfg.Section(section).NewKey("aws_secret_access_key", c.SecretAccessKey)
-	cfg.Section(section).NewKey("aws_session_token", c.SessionToken)
-	cfg.Section(section).NewKey(expireKey, c.Expiration.UTC().Format(time.RFC3339))
+	_, err = cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyID)
+	if err != nil {
+		return err
+	}
+	_, err = cfg.Section(section).NewKey("aws_secret_access_key", c.SecretAccessKey)
+	if err != nil {
+		return err
+	}
+	_, err = cfg.Section(section).NewKey("aws_session_token", c.SessionToken)
+	if err != nil {
+		return err
+	}
+	_, err = cfg.Section(section).NewKey(expireKey, c.Expiration.UTC().Format(time.RFC3339))
+	if err != nil {
+		return err
+	}
 
 	// Remove expired credentials.
 	for _, s := range cfg.Sections() {

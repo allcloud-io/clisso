@@ -38,9 +38,9 @@ func init() {
 		"Region in which the OneLogin API lives")
 	cmdProvidersCreateOneLogin.Flags().IntVar(&providerDuration, "duration", 0, "(Optional) Default session duration in seconds")
 
-	cmdProvidersCreateOneLogin.MarkFlagRequired("client-id")
-	cmdProvidersCreateOneLogin.MarkFlagRequired("client-secret")
-	cmdProvidersCreateOneLogin.MarkFlagRequired("subdomain")
+	mandatoryFlag(cmdProvidersCreateOneLogin, "client-id")
+	mandatoryFlag(cmdProvidersCreateOneLogin, "client-secret")
+	mandatoryFlag(cmdProvidersCreateOneLogin, "subdomain")
 
 	// Okta
 	cmdProvidersCreateOkta.Flags().StringVar(&baseURL, "base-url", "", "Okta base URL")
@@ -48,7 +48,7 @@ func init() {
 		"Don't ask for a username and use this instead")
 	cmdProvidersCreateOkta.Flags().IntVar(&providerDuration, "duration", 0, "(Optional) Default session duration in seconds")
 
-	cmdProvidersCreateOkta.MarkFlagRequired("base-url")
+	mandatoryFlag(cmdProvidersCreateOkta, "base-url")
 
 	// Build command tree
 	RootCmd.AddCommand(cmdProviders)

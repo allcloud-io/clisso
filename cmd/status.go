@@ -22,7 +22,10 @@ func init() {
 		&readFromFile, "read-from-file", "r", "",
 		"Read credentials from this file instead of the default ($HOME/.aws/credentials)",
 	)
-	viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
+	err := viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
+	 if err != nil {
+		log.Fatalf(color.RedString("Error binding flag global.credentials-path: %v"), err)
+	}
 }
 
 var cmdStatus = &cobra.Command{
@@ -36,6 +39,10 @@ var cmdStatus = &cobra.Command{
 
 func printStatus() {
 	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
+	if err != nil {
+		log.Fatalf(color.RedString("Failed to expand home: %s"), err)
+	}
+
 	profiles, err := aws.GetValidCredentials(configfile)
 	if err != nil {
 		log.Fatalf(color.RedString("Failed to retrieve non-expired credentials: %s"), err)
@@ -51,7 +58,7 @@ func printStatus() {
 
 	log.Print("The following apps currently have valid credentials:")
 	for _, p := range profiles {
-		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAtUnix), fmt.Sprintf("%s", p.LifetimeLeft.Round(time.Second))})
+		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAtUnix), p.LifetimeLeft.Round(time.Second).String()})
 	}
 
 	table.Render()

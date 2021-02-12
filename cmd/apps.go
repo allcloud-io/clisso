@@ -18,7 +18,7 @@ var duration int
 // OneLogin
 var appID string
 
-// Okta
+// URL holds the Okta URL
 var URL string
 
 func init() {
@@ -26,15 +26,15 @@ func init() {
 	cmdAppsCreateOneLogin.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
 	cmdAppsCreateOneLogin.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 	cmdAppsCreateOneLogin.Flags().IntVar(&duration, "duration", 0, "(Optional) Session duration in seconds")
-	cmdAppsCreateOneLogin.MarkFlagRequired("app-id")
-	cmdAppsCreateOneLogin.MarkFlagRequired("provider")
+	mandatoryFlag(cmdAppsCreateOneLogin, "app-id")
+	mandatoryFlag(cmdAppsCreateOneLogin, "provider")
 
 	// Okta
 	cmdAppsCreateOkta.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 	cmdAppsCreateOkta.Flags().StringVar(&URL, "url", "", "Okta app URL")
 	cmdAppsCreateOkta.Flags().IntVar(&duration, "duration", 0, "(Optional) Session duration in seconds")
-	cmdAppsCreateOkta.MarkFlagRequired("provider")
-	cmdAppsCreateOkta.MarkFlagRequired("url")
+	mandatoryFlag(cmdAppsCreateOkta, "provider")
+	mandatoryFlag(cmdAppsCreateOkta, "url")
 
 	// Build command tree
 	RootCmd.AddCommand(cmdApps)

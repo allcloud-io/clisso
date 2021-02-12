@@ -29,7 +29,10 @@ func init() {
 		&writeToFile, "write-to-file", "w", "",
 		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
 	)
-	viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
+	err := viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
+	 if err != nil {
+		log.Fatalf(color.RedString("Error binding flag global.credentials-path: %v"), err)
+	}
 }
 
 // processCredentials prints the given Credentials to a file and/or to the shell.
