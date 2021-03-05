@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"syscall"
 
-	"github.com/challarao/keyring"
+	keyring "github.com/zalando/go-keyring"
 	"golang.org/x/term"
 )
 
