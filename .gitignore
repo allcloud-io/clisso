@@ -6,3 +6,4 @@ vendor
 *.zip
 .DS_Store
 brewbot
+*.tar.gz

@@ -2,6 +2,7 @@ package keychain
 
 import (
 	"fmt"
+	"syscall"
 
 	"github.com/challarao/keyring"
 	"golang.org/x/term"
@@ -40,9 +41,9 @@ func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
 	if err != nil {
 		// If we ever implement a logfile we might want to log what error occurred.
 		fmt.Printf("Please enter %s password: ", provider)
-		pass, err = term.ReadPassword(0)
+		pass, err = term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
-			return nil, fmt.Errorf("couldn't read password from terminal")
+			return nil, fmt.Errorf("couldn't read password from terminal: %w", err)
 		}
 	}
 	return pass, nil
