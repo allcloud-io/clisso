@@ -303,8 +303,26 @@ apps using `clisso apps ls`.
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
-- No support for storing passwords on Windows.
 
+## Troubleshooting
+### Storing passwords is not working
+
+`dbus: couldn't determine address of session bus` This behavior has been [observed][13] on Ubuntu 20.04 WSL.
+Simply running `sudo systemd-machine-id-setup` gets you past the initial missing machine id setup.
+
+`failed to unlock correct collection '/org/freedesktop/secrets/collection/login'`,
+`The name org.freedesktop.secrets was not provided by any .service files` Check that you have a working
+keychain setup. On headless systems like WSL this might not be easy to archive. Installing `gnome-keyring`
+along with the proper DBus setup is required. During tests adding the below to the `~/.bashrc` on Ubuntu 20.04 WSL
+was enough.
+
+```bash
+ if [ "$DBUS_SESSION_BUS_ADDRESS" = "" ]; then
+    exec dbus-run-session -- bash;
+else
+    eval $(echo "$(/lib/cryptsetup/askpass 'Password: ')" | gnome-keyring-daemon --unlock);
+fi
+```
 ## Contributing
 
 TODO
@@ -321,3 +339,5 @@ TODO
 [10]: https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
 [11]: sample_config.yaml
 [12]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
+[13]: https://github.com/Versent/saml2aws/issues/436
+[14]: https://github.com/zalando/go-keyring/issues/48
