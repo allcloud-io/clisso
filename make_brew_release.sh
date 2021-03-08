@@ -50,6 +50,7 @@ SHA256=$(brew fetch "${BINARY_NAME}" --build-from-source 2>/dev/null | grep SHA2
 if [[ $AC_USERNAME ]]; then
   BUILD_TARGET=sign
 else
+  sed -i.bak '/mitchellh\/gon\/gon/d' "${BINARY_NAME}.rb.template"
   BUILD_TARGET=unsigned-darwin-amd64-zip
 fi
 
