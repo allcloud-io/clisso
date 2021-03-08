@@ -7,3 +7,5 @@ vendor
 .DS_Store
 brewbot
 *.tar.gz
+steps_output.txt
+.vscode/

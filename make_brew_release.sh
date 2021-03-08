@@ -25,7 +25,7 @@ SOURCE_DIR=$(pwd)
 
 function cleanup() {
   set -x
-  rm -f "${BINARY_NAME}".rb.bottle*
+  rm -f "${BINARY_NAME}".rb.bottle* "${BINARY_NAME}".rb.bak
 }
 
 trap cleanup EXIT
@@ -47,9 +47,18 @@ sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | sed "s:%BOTTLE%::" 
 # and calc sha256
 SHA256=$(brew fetch "${BINARY_NAME}" --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
 
+if [[ $AC_USERNAME ]]; then
+  BUILD_TARGET=sign
+else
+  sed -i.bak '/mitchellh\/gon\/gon/d' "${BINARY_NAME}.rb.template"
+  BUILD_TARGET=unsigned-darwin-amd64-zip
+fi
+
 # replace version and sha256 placeholder in template
 sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | \
-sed "s:%SOURCE_SHA%:${SHA256}:" > "${BINARY_NAME}.rb.bottle"
+sed "s:%SOURCE_SHA%:${SHA256}:" | \
+sed "s:%AC_USERNAME%:$AC_USERNAME:" | \
+sed "s:%BUILD_TARGET%:$BUILD_TARGET:" > "${BINARY_NAME}.rb.bottle"
 
 # generate parts to be assembled later
 grep -B100 '%BOTTLE%' "${BINARY_NAME}.rb.bottle" | grep -v '%BOTTLE%' > "${BINARY_NAME}.rb.bottle.head"
@@ -90,6 +99,9 @@ cat "${BINARY_NAME}.rb.bottle.head" "${TEMPFILE}" "${BINARY_NAME}.rb.bottle.tail
 # commit to git and push to origin
 BRANCHNAME=auto/${BINARY_NAME}-${VERSION}
 git checkout -b "$BRANCHNAME" || git checkout "$BRANCHNAME"
+sed -i.bak '/ENV\["AC_USERNAME"\]/d' "${BINARY_NAME}.rb"
+sed -i.bak '/mitchellh\/gon\/gon/d' "${BINARY_NAME}.rb"
+sed -i.bak 's:"sign":"unsigned-darwin-amd64-zip":' "${BINARY_NAME}.rb"
 git add "${BINARY_NAME}.rb"
 git commit -m "Automatic commit of bottle build for version $VERSION of $BINARY_NAME."
 git push origin "$BRANCHNAME"

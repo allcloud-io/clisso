@@ -37,13 +37,25 @@ windows-amd64:
 .PHONY: all
 all: darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
 
+.PHONY: sign
+sign: darwin-amd64
+	# sign
+	gon -log-level=debug -log-json ./gon.json
+
 .PHONY: zip
-zip: all
+zip: all sign
 	mkdir -p $(ASSETPATH)
 	cd $(BUILDPATH) && \
-	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip'`; do zip ../$(ASSETPATH)/$$i.zip $$i; done
+	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip' | grep -v darwin`; do zip ../$(ASSETPATH)/$$i.zip $$i; done
 	cd $(ASSETPATH) && \
 	sha256sum *zip > SHASUMS256.txt
+
+.PHONY: unsigned-darwin-amd64-zip
+unsigned-darwin-amd64-zip: darwin-amd64
+	# used by brew if signing isn't setup
+	mkdir -p $(ASSETPATH)
+	cd $(BUILDPATH) && \
+	zip ../$(ASSETPATH)/clisso-darwin-amd64.zip clisso-darwin-amd64
 
 .PHONY: brew
 brew:
