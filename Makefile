@@ -50,6 +50,13 @@ zip: all sign
 	cd $(ASSETPATH) && \
 	sha256sum *zip > SHASUMS256.txt
 
+.PHONY: unsigned-darwin-amd64-zip
+unsigned-darwin-amd64-zip: darwin-amd64
+	# used by brew if signing isn't setup
+	mkdir -p $(ASSETPATH)
+	cd $(BUILDPATH) && \
+	zip ../$(ASSETPATH)/clisso-darwin-amd64.zip clisso-darwin-amd64
+
 .PHONY: brew
 brew:
 	bash make_brew_release.sh $(BINARY_NAME) $(VERSION)

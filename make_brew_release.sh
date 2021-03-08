@@ -47,9 +47,17 @@ sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | sed "s:%BOTTLE%::" 
 # and calc sha256
 SHA256=$(brew fetch "${BINARY_NAME}" --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
 
+if [[ $AC_USERNAME ]]; then
+  BUILD_TARGET=sign
+else
+  BUILD_TARGET=unsigned-darwin-amd64-zip
+fi
+
 # replace version and sha256 placeholder in template
 sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | \
-sed "s:%SOURCE_SHA%:${SHA256}:" > "${BINARY_NAME}.rb.bottle"
+sed "s:%SOURCE_SHA%:${SHA256}:" | \
+sed "s:%AC_USERNAME%:$AC_USERNAME:" | \
+sed "s:%BUILD_TARGET%:$BUILD_TARGET:" > "${BINARY_NAME}.rb.bottle"
 
 # generate parts to be assembled later
 grep -B100 '%BOTTLE%' "${BINARY_NAME}.rb.bottle" | grep -v '%BOTTLE%' > "${BINARY_NAME}.rb.bottle.head"
