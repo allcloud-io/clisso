@@ -25,7 +25,7 @@ SOURCE_DIR=$(pwd)
 
 function cleanup() {
   set -x
-  rm -f "${BINARY_NAME}".rb.bottle*
+  rm -f "${BINARY_NAME}".rb.bottle* "${BINARY_NAME}".rb.bak
 }
 
 trap cleanup EXIT
@@ -98,6 +98,9 @@ cat "${BINARY_NAME}.rb.bottle.head" "${TEMPFILE}" "${BINARY_NAME}.rb.bottle.tail
 # commit to git and push to origin
 BRANCHNAME=auto/${BINARY_NAME}-${VERSION}
 git checkout -b "$BRANCHNAME" || git checkout "$BRANCHNAME"
+sed -i.bak '/ENV\["AC_USERNAME"\]/d' "${BINARY_NAME}.rb"
+sed -i.bak '/mitchellh\/gon\/gon/d' "${BINARY_NAME}.rb"
+sed -i.bak 's:"sign":"unsigned-darwin-amd64-zip":' "${BINARY_NAME}.rb"
 git add "${BINARY_NAME}.rb"
 git commit -m "Automatic commit of bottle build for version $VERSION of $BINARY_NAME."
 git push origin "$BRANCHNAME"
