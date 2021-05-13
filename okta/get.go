@@ -146,7 +146,8 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		return nil, fmt.Errorf("Error launching app: %v", err)
 	}
 
-	arn, err := saml.Get(*samlAssertion)
+	// Passing in "" to the saml.Get since okta does not support the pArn value (yet)
+	arn, err := saml.Get(*samlAssertion, "")
 	if err != nil {
 		return nil, err
 	}

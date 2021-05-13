@@ -19,7 +19,7 @@ type ARN struct {
 	Name     string
 }
 
-func Get(data string) (a ARN, err error) {
+func Get(data, pArn string) (a ARN, err error) {
 	samlBody, err := decode(data)
 	if err != nil {
 		return
@@ -31,7 +31,7 @@ func Get(data string) (a ARN, err error) {
 		return
 	}
 
-	arns := extractArns(x.Assertion.AttributeStatement.Attributes)
+	arns := extractArns(x.Assertion.AttributeStatement.Attributes, pArn)
 
 	switch len(arns) {
 	case 0:
@@ -55,7 +55,7 @@ func decode(in string) (b []byte, err error) {
 	return base64.StdEncoding.DecodeString(in)
 }
 
-func extractArns(attrs []saml.Attribute) (arns []ARN) {
+func extractArns(attrs []saml.Attribute, pArn string) (arns []ARN) {
 	// check for human readable ARN strings in config
 	accounts := viper.GetStringMap("global.accounts")
 	arns = make([]ARN, 0)
@@ -78,32 +78,46 @@ func extractArns(attrs []saml.Attribute) (arns []ARN) {
 					continue
 				}
 
-				// Prepare patterns
-				role := regexp.MustCompile(`^arn:aws:iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
-				idp := regexp.MustCompile(`^arn:aws:iam::\d+:saml-provider\/\S+$`)
 				arn := ARN{}
 
-				if role.MatchString(components[0]) && idp.MatchString(components[1]) {
-					// First component is role
-					arn = ARN{components[0], components[1], ""}
-				} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
-					// First component is IdP
-					arn = ARN{components[1], components[0], ""}
+				// Logic here for "preferred arn" for the desired account.
+				// If pArn is empty, it proceeds as normal.
+				// Otherwise it matches it with what is in the .clisso.yaml file
+				if pArn != "" {
+					if components[0] == pArn {
+						arn = ARN{components[0], components[1], ""}
+					} else if components[1] == pArn {
+						arn = ARN{components[1], components[0], ""}
+					} else {
+						continue
+					}
 				} else {
-					continue
-				}
+					// Prepare patterns
+					role := regexp.MustCompile(`^arn:aws:iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
+					idp := regexp.MustCompile(`^arn:aws:iam::\d+:saml-provider\/\S+$`)
 
-				// Look up the human friendly name, if available
-				if len(accounts) > 0 {
-					ids := role.FindStringSubmatch(arn.Role)
+					if role.MatchString(components[0]) && idp.MatchString(components[1]) {
+						// First component is role
+						arn = ARN{components[0], components[1], ""}
+					} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
+						// First component is IdP
+						arn = ARN{components[1], components[0], ""}
+					} else {
+						continue
+					}
 
-					// if the regex matches we should have 3 entries from the regex match
-					// 1) the matching string
-					// 2) the match for Id
-					// 3) the match for Name
-					// we want to match the Id to any accounts/roles in our config
-					if len(ids) == 3 && accounts[ids[1]] != "" && accounts[ids[1]] != nil {
-						arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
+					// Look up the human friendly name, if available
+					if len(accounts) > 0 {
+						ids := role.FindStringSubmatch(arn.Role)
+
+						// if the regex matches we should have 3 entries from the regex match
+						// 1) the matching string
+						// 2) the match for Id
+						// 3) the match for Name
+						// we want to match the Id to any accounts/roles in our config
+						if len(ids) == 3 && accounts[ids[1]] != "" && accounts[ids[1]] != nil {
+							arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
+						}
 					}
 				}
 

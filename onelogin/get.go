@@ -35,7 +35,7 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider string, duration int64) (*aws.Credentials, error) {
+func Get(app, provider, pArn string, duration int64) (*aws.Credentials, error) {
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
@@ -175,7 +175,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		rData = rSaml.Data
 	}
 
-	arn, err := saml.Get(rData)
+	arn, err := saml.Get(rData, pArn)
 	if err != nil {
 		return nil, err
 	}
