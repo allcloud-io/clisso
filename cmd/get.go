@@ -133,7 +133,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider, duration)
+			creds, err := okta.Get(app, provider, pArn, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}

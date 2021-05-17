@@ -26,7 +26,7 @@ var (
 )
 
 // Get gets temporary credentials for the given app.
-func Get(app, provider string, duration int64) (*aws.Credentials, error) {
+func Get(app, provider, pArn string, duration int64) (*aws.Credentials, error) {
 	// Get provider config
 	p, err := config.GetOktaProvider(provider)
 	if err != nil {
@@ -146,8 +146,7 @@ func Get(app, provider string, duration int64) (*aws.Credentials, error) {
 		return nil, fmt.Errorf("Error launching app: %v", err)
 	}
 
-	// Passing in "" to the saml.Get since okta does not support the pArn value (yet)
-	arn, err := saml.Get(*samlAssertion, "")
+	arn, err := saml.Get(*samlAssertion, pArn)
 	if err != nil {
 		return nil, err
 	}

@@ -13,6 +13,7 @@ import (
 
 // Common
 var provider string
+var arn string
 var duration int
 
 // OneLogin
@@ -26,6 +27,7 @@ func init() {
 	cmdAppsCreateOneLogin.Flags().StringVar(&appID, "app-id", "", "OneLogin app ID")
 	cmdAppsCreateOneLogin.Flags().StringVar(&provider, "provider", "", "Name of the Clisso provider")
 	cmdAppsCreateOneLogin.Flags().IntVar(&duration, "duration", 0, "(Optional) Session duration in seconds")
+	cmdAppsCreateOneLogin.Flags().StringVar(&arn, "arn", "", "(Optional) preferred arn for app")
 	mandatoryFlag(cmdAppsCreateOneLogin, "app-id")
 	mandatoryFlag(cmdAppsCreateOneLogin, "provider")
 
@@ -118,6 +120,10 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 		conf := map[string]string{
 			"app-id":   appID,
 			"provider": provider,
+		}
+
+		if arn != "" {
+			conf["arn"] = arn
 		}
 
 		if duration != 0 {
