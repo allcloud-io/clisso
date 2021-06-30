@@ -59,7 +59,7 @@ func TestGet(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			b, _ := ioutil.ReadFile(test.path)
 
-			arn, err := Get(string(b))
+			arn, err := Get(string(b), "")
 			if test.expectError && err == nil {
 				t.Errorf("expected error")
 			}

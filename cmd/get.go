@@ -30,7 +30,7 @@ func init() {
 		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
 	)
 	err := viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
-	 if err != nil {
+	if err != nil {
 		log.Fatalf(color.RedString("Error binding flag global.credentials-path: %v"), err)
 	}
 }
@@ -116,10 +116,14 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
 		}
 
+		// allow preferred "arn" to be specified in the config file for each app
+		// if this is not specified the value will be empty ("")
+		pArn := viper.GetString(fmt.Sprintf("apps.%s.arn", app))
+
 		duration := sessionDuration(app, provider)
 
 		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider, duration)
+			creds, err := onelogin.Get(app, provider, pArn, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
@@ -129,7 +133,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider, duration)
+			creds, err := okta.Get(app, provider, pArn, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}

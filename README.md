@@ -141,7 +141,8 @@ To create a OneLogin identity provider, use the following command:
         --subdomain mycompany \
         --username user@mycompany.com \
         --region US \
-        --duration 14400
+        --duration 14400 \
+        --arn arn:aws:iam::123456789012:role/Worker
 
 The example above creates a OneLogin identity provider configuration for Clisso, with the name
 `my-provider`.
@@ -166,6 +167,10 @@ duration, in seconds, instead of the default of 3600 (1 hour). Valid values are 
 the role in AWS. If a longer session time is requested than what is configured on the AWS role,
 Clisso will fallback to a duration of 3600. The default duration specified for the provider can be
 overridden on a per-app basis (see below).
+
+The `--arn` flag is optional. If specified, it will not prompt for a choice of roles presented
+from the list of available AWS accounts/roles. This makes it easy to run `clisso get my-app` 
+and get the correct account/role.
 
 #### Okta
 
