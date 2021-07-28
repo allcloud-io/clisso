@@ -33,6 +33,13 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - uses: actions/checkout@v2
+      - name: Install Dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install python-gnomekeyring
+          sudo apt-get install gnome-keyring
+          dbus-launch /usr/bin/python -c "import gnomekeyring;gnomekeyring.create_sync('login', '');"
+        if: matrix.os == 'ubuntu-16.04'
       - run: go test -v -coverprofile=profile ./...
 
       - name: Send coverage
