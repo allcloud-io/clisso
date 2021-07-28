@@ -78,6 +78,10 @@ func extractArns(attrs []saml.Attribute, pArn string) (arns []ARN) {
 					continue
 				}
 
+				// people like to put spaces in there, AWS accepts them, let's remove them on our end too.
+				components[0] = strings.TrimSpace(components[0])
+				components[1] = strings.TrimSpace(components[1])
+
 				arn := ARN{}
 
 				// Logic here for "preferred arn" for the desired account.

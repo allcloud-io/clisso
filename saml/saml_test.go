@@ -3,7 +3,84 @@ package saml
 import (
 	"io/ioutil"
 	"testing"
+
+	"github.com/edaniels/go-saml"
 )
+
+func TestExtractArns(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		attrs []saml.Attribute
+		expectARN []ARN
+	}{
+		{"aws-normal", []saml.Attribute{
+			{FriendlyName: "Role",
+			Name: "https://aws.amazon.com/SAML/Attributes/Role",
+			NameFormat: "string",
+			Values: []saml.AttributeValue{{Value: "arn:aws:iam::1234567890:role/MyRole,arn:aws:iam::1234567890:saml-provider/MyProvider"}}},
+		},
+		[]ARN{{"arn:aws:iam::1234567890:role/MyRole", "arn:aws:iam::1234567890:saml-provider/MyProvider", ""}}},
+		{"aws-reversed", []saml.Attribute{
+			{FriendlyName: "Role",
+			Name: "https://aws.amazon.com/SAML/Attributes/Role",
+			NameFormat: "string",
+			Values: []saml.AttributeValue{{Value: "arn:aws:iam::1234567890:saml-provider/MyProvider,arn:aws:iam::1234567890:role/MyRole"}}},
+		},
+		[]ARN{{"arn:aws:iam::1234567890:role/MyRole", "arn:aws:iam::1234567890:saml-provider/MyProvider", ""}}},
+		{"aws-spaced-front", []saml.Attribute{
+			{FriendlyName: "Role",
+			Name: "https://aws.amazon.com/SAML/Attributes/Role",
+			NameFormat: "string",
+			Values: []saml.AttributeValue{{Value: " arn:aws:iam::1234567890:saml-provider/MyProvider,arn:aws:iam::1234567890:role/MyRole"}}},
+		},
+		[]ARN{{"arn:aws:iam::1234567890:role/MyRole", "arn:aws:iam::1234567890:saml-provider/MyProvider", ""}}},
+		{"aws-spaced-end", []saml.Attribute{
+			{FriendlyName: "Role",
+			Name: "https://aws.amazon.com/SAML/Attributes/Role",
+			NameFormat: "string",
+			Values: []saml.AttributeValue{{Value: "arn:aws:iam::1234567890:saml-provider/MyProvider,arn:aws:iam::1234567890:role/MyRole "}}},
+		},
+		[]ARN{{"arn:aws:iam::1234567890:role/MyRole", "arn:aws:iam::1234567890:saml-provider/MyProvider", ""}}},
+		{"aws-spaced-between", []saml.Attribute{
+			{FriendlyName: "Role",
+			Name: "https://aws.amazon.com/SAML/Attributes/Role",
+			NameFormat: "string",
+			Values: []saml.AttributeValue{{Value: "arn:aws:iam::1234567890:saml-provider/MyProvider, arn:aws:iam::1234567890:role/MyRole"}}},
+		},
+		[]ARN{{"arn:aws:iam::1234567890:role/MyRole", "arn:aws:iam::1234567890:saml-provider/MyProvider", ""}}},
+		{"aws-cn", []saml.Attribute{
+			{FriendlyName: "Role",
+			Name: "https://aws.amazon.com/SAML/Attributes/Role",
+			NameFormat: "string",
+			Values: []saml.AttributeValue{{Value: "arn:aws-cn:iam::1234567890:saml-provider/MyProvider,arn:aws-cn:iam::1234567890:role/MyRole"}}},
+		},
+		[]ARN{{"arn:aws-cn:iam::1234567890:role/MyRole", "arn:aws-cn:iam::1234567890:saml-provider/MyProvider", ""}}},
+	}{
+		t.Run(test.name, func(t *testing.T){
+			arn := extractArns(test.attrs, "")
+
+			if len(test.expectARN) > 0 && len(arn) == 0 {
+				t.Fatalf("expected %d arns, received nothing", len(test.expectARN))
+			}
+			if len(test.expectARN) != len(arn) {
+				t.Errorf("expected %d arns, received %d arns", len(test.expectARN), len(arn))
+			}
+			for i := 0; i < len(test.expectARN); i++ {
+				if test.expectARN[i].Name != arn[i].Name {
+					t.Errorf("expected %q, received %q", test.expectARN[i].Name, arn[i].Name)
+				}
+
+				if test.expectARN[i].Provider != arn[i].Provider {
+					t.Errorf("expected %q, received %q", test.expectARN[i].Provider, arn[i].Provider)
+				}
+
+				if test.expectARN[i].Role != arn[i].Role {
+					t.Errorf("expected %q, received %q", test.expectARN[i].Role, arn[i].Role)
+				}
+			}
+		})
+	}
+}
 
 func TestDecode(t *testing.T) {
 	for _, test := range []struct {
