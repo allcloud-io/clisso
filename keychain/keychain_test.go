@@ -40,7 +40,7 @@ func TestCycle(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			err := keyChain.Set(test.name, test.password)
 			if err != nil {
-				t.Errorf("unexpected error %+v", err)
+				t.Fatalf("unexpected error %+v", err)
 			}
 
 			retrievedPass, err := keyChain.Get(test.name)
