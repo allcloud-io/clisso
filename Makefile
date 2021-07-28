@@ -40,7 +40,7 @@ all: darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
 .PHONY: sign
 sign: darwin-amd64
 	# sign
-	gon -log-level=debug -log-json ./gon.json
+	gon -log-level=info ./gon.json
 
 .PHONY: zip
 zip: all sign

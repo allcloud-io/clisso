@@ -2,6 +2,7 @@ package aws
 
 import (
 	"errors"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -58,7 +59,14 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64)
 	}
 
 	sess := session.Must(session.NewSession())
-	svc := sts.New(sess)
+
+	config := aws.NewConfig()
+	// If we request credentials for China we need to provide a Chinese region
+	idp := regexp.MustCompile(`^arn:aws-cn:iam::\d+:saml-provider\/\S+$`)
+	if idp.MatchString(PrincipalArn) {
+		config = config.WithRegion("cn-north-1")
+	}
+	svc := sts.New(sess, config)
 
 	aResp, err := svc.AssumeRoleWithSAML(&input)
 	if err != nil {
