@@ -7,7 +7,6 @@ require (
 	github.com/aws/aws-sdk-go v1.40.10
 	github.com/briandowns/spinner v1.12.0
 	github.com/danieljoos/wincred v1.1.1 // indirect
-	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/edaniels/go-saml v0.0.0-20160724042625-8c877c3ab101
 	github.com/fatih/color v1.10.0
 	github.com/go-ini/ini v1.62.0
