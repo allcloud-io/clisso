@@ -42,7 +42,14 @@ sign: darwin-amd64
 	# sign
 	gon -log-level=info ./gon.json
 
-.PHONY: zip
+.PHONY: zip-only-unsigned
+zip-only-unsigned: all
+	mkdir -p $(ASSETPATH)
+	cd $(BUILDPATH) && \
+	for i in `ls -1 $(BINARY_NAME)* | grep -v '.zip' | grep -v darwin`; do zip ../$(ASSETPATH)/$$i.zip $$i; done
+	cd $(ASSETPATH) && \
+	sha256sum *zip > SHASUMS256.txt
+
 zip: all sign
 	mkdir -p $(ASSETPATH)
 	cd $(BUILDPATH) && \
