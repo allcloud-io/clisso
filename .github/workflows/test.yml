@@ -26,13 +26,20 @@ jobs:
     strategy:
       matrix:
         go: [1.15]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-16.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/setup-go@v1
         with:
           go-version: ${{ matrix.go }}
       - uses: actions/checkout@v2
+      - name: Install Dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install python-gnomekeyring
+          sudo apt-get install gnome-keyring
+          dbus-launch /usr/bin/python -c "import gnomekeyring;gnomekeyring.create_sync('login', '');"
+        if: matrix.platform == 'ubuntu-16.04'
       - run: go test -v -coverprofile=profile ./...
 
       - name: Send coverage
