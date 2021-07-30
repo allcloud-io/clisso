@@ -9,3 +9,4 @@ brewbot
 *.tar.gz
 steps_output.txt
 .vscode/
+bottle_output.txt
