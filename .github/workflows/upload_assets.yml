@@ -17,7 +17,7 @@ jobs:
       - name: build
         run: |
           echo "GO111MODULE=on" >> $GITHUB_ENV
-          make zip
+          make zip-only-unsigned
       - name: Upload release assets
         uses: skx/github-action-publish-binaries@master
         env:

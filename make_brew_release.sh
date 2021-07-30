@@ -30,6 +30,14 @@ function cleanup() {
 
 trap cleanup EXIT
 
+# download source and calc sha256
+SHA256=$(wget "https://github.com/allcloud-io/${BINARY_NAME}/archive/${VERSION}.tar.gz" -O source.tar.gz -o /dev/null && sha256sum source.tar.gz | awk '{ print $1 }' && rm -f source.tar.gz)
+
+# create signed zip files
+make sign
+SHA256_ZIP_DARWIN_AMD64=$(sha256sum "assets/${BINARY_NAME}-darwin-amd64.zip" | awk '{ print $1 }' )
+SHA256_ZIP_DARWIN_ARM64=$(sha256sum "assets/${BINARY_NAME}-darwin-arm64.zip" | awk '{ print $1 }' )
+
 # add tap in case it's missing
 brew tap allcloud-io/tools
 TAP_DIR=$(brew --repo allcloud-io/tools)
@@ -44,64 +52,21 @@ git pull
 
 # set the correct version
 sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | sed "s:%BOTTLE%::" > "${BINARY_NAME}.rb"
-# and calc sha256
-SHA256=$(brew fetch "${BINARY_NAME}" --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
-
-if [[ $AC_USERNAME ]]; then
-  BUILD_TARGET=sign
-else
-  sed -i.bak '/mitchellh\/gon\/gon/d' "${BINARY_NAME}.rb.template"
-  BUILD_TARGET=unsigned-darwin-amd64-zip
-fi
 
 # replace version and sha256 placeholder in template
 sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | \
 sed "s:%SOURCE_SHA%:${SHA256}:" | \
-sed "s:%AC_USERNAME%:$AC_USERNAME:" | \
-sed "s:%BUILD_TARGET%:$BUILD_TARGET:" > "${BINARY_NAME}.rb.bottle"
-
-# generate parts to be assembled later
-grep -B100 '%BOTTLE%' "${BINARY_NAME}.rb.bottle" | grep -v '%BOTTLE%' > "${BINARY_NAME}.rb.bottle.head"
-grep -A100 '%BOTTLE%' "${BINARY_NAME}.rb.bottle" | grep -v '%BOTTLE%' > "${BINARY_NAME}.rb.bottle.tail"
-
-# skip the bottle placeholder for now
-cat "${BINARY_NAME}.rb.bottle.head" "${BINARY_NAME}.rb.bottle.tail" > "${BINARY_NAME}.rb"
+sed "s:%BUILD_DARWIN_AMD64_SHA%:${SHA256_ZIP_DARWIN_AMD64}:" | \
+sed "s:%BUILD_DARWIN_ARM64_SHA%:${SHA256_ZIP_DARWIN_ARM64}:" > "${BINARY_NAME}.rb"
 
 # change back to original workdir
 cd "$SOURCE_DIR" || exit 1
 # build the bottle
 brew test-bot "allcloud-io/tools/${BINARY_NAME}"
 
-# create a tempfile
-TEMPFILE=$(mktemp)
-
-for json in *bottle.json; do
-  # extract the mac version the bottle was build for
-  MAC_VERSION=$(echo "$json" | cut -d. -f4);
-  # extract the sha256 of the bottle
-  SHA=$(jq ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.sha256" < "$json")
-  # get the local file name
-  LOCAL=$(jq -r ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.local_filename" < "$json")
-  # get the remote filename
-  REMOTE=$(jq -r ".\"allcloud-io/tools/${BINARY_NAME}\".bottle.tags.$MAC_VERSION.filename" < "$json")
-  # rename to the correct name
-  mv "$LOCAL" "$REMOTE"
-  # append to tempfile
-  echo "    sha256 $SHA => :$MAC_VERSION" >> "${TEMPFILE}"
-  rm "$json"
-done
-
-cd "$TAP_DIR" || exit 1
-
-# add all the bottles
-cat "${BINARY_NAME}.rb.bottle.head" "${TEMPFILE}" "${BINARY_NAME}.rb.bottle.tail" > "${BINARY_NAME}.rb"
-
 # commit to git and push to origin
 BRANCHNAME=auto/${BINARY_NAME}-${VERSION}
 git checkout -b "$BRANCHNAME" || git checkout "$BRANCHNAME"
-sed -i.bak '/ENV\["AC_USERNAME"\]/d' "${BINARY_NAME}.rb"
-sed -i.bak '/mitchellh\/gon\/gon/d' "${BINARY_NAME}.rb"
-sed -i.bak 's:"sign":"unsigned-darwin-amd64-zip":' "${BINARY_NAME}.rb"
 git add "${BINARY_NAME}.rb"
 git commit -m "Automatic commit of bottle build for version $VERSION of $BINARY_NAME."
 git push origin "$BRANCHNAME"
