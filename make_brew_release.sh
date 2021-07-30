@@ -30,10 +30,13 @@ function cleanup() {
 
 trap cleanup EXIT
 
-# create a signed zip file
-# make sign
+# download source and calc sha256
+SHA256=$(wget "https://github.com/allcloud-io/${BINARY_NAME}/archive/${VERSION}.tar.gz" -O source.tar.gz -o /dev/null && sha256sum source.tar.gz | awk '{ print $1 }' && rm -f source.tar.gz)
 
-SHA256_ZIP_DARWIN=$(sha256sum "assets/${BINARY_NAME}-darwin-amd64.zip" | awk '{ print $1 }' )
+# create signed zip files
+make sign
+SHA256_ZIP_DARWIN_AMD64=$(sha256sum "assets/${BINARY_NAME}-darwin-amd64.zip" | awk '{ print $1 }' )
+SHA256_ZIP_DARWIN_ARM64=$(sha256sum "assets/${BINARY_NAME}-darwin-arm64.zip" | awk '{ print $1 }' )
 
 # add tap in case it's missing
 brew tap allcloud-io/tools
@@ -49,13 +52,12 @@ git pull
 
 # set the correct version
 sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | sed "s:%BOTTLE%::" > "${BINARY_NAME}.rb"
-# and calc sha256
-SHA256=$(brew fetch "${BINARY_NAME}" --build-from-source 2>/dev/null | grep SHA256 | cut -d" " -f2 || true)
 
 # replace version and sha256 placeholder in template
 sed "s:%VERSION%:${VERSION}:" "${BINARY_NAME}.rb.template" | \
 sed "s:%SOURCE_SHA%:${SHA256}:" | \
-sed "s:%BUILD_DARWIN_SHA%:${SHA256_ZIP_DARWIN}:" > "${BINARY_NAME}.rb"
+sed "s:%BUILD_DARWIN_AMD64_SHA%:${SHA256_ZIP_DARWIN_AMD64}:" | \
+sed "s:%BUILD_DARWIN_ARM64_SHA%:${SHA256_ZIP_DARWIN_ARM64}:" > "${BINARY_NAME}.rb"
 
 # change back to original workdir
 cd "$SOURCE_DIR" || exit 1
