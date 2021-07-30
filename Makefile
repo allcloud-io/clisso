@@ -18,6 +18,10 @@ test:
 darwin-amd64:
 	GOOS=darwin GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-darwin-amd64 -v
 
+.PHONY: darwin-arm64
+darwin-arm64:
+	GOOS=darwin GOARCH=arm64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-darwin-arm64 -v
+
 .PHONY: linux-386
 linux-386:
 	GOOS=linux GOARCH=386 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-linux-386 -v
@@ -34,13 +38,18 @@ windows-386:
 windows-amd64:
 	GOOS=windows GOARCH=amd64 $(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME)-windows-amd64.exe -v
 
+.PHONY: native
+native:
+	$(GOBUILD) -ldflags "-X main.version=$(VERSION)" -o $(BUILDPATH)/$(BINARY_NAME) -v
+
 .PHONY: all
-all: darwin-amd64 linux-386 linux-amd64 windows-386 windows-amd64
+all: darwin-amd64 darwin-arm64 linux-386 linux-amd64 windows-386 windows-amd64
 
 .PHONY: sign
-sign: darwin-amd64
+sign: darwin-amd64 darwin-arm64
 	# sign
-	gon -log-level=info ./gon.json
+	gon -log-level=info ./gon-arm64.json
+	gon -log-level=info ./gon-amd64.json
 
 .PHONY: zip-only-unsigned
 zip-only-unsigned: all
@@ -57,12 +66,13 @@ zip: all sign
 	cd $(ASSETPATH) && \
 	sha256sum *zip > SHASUMS256.txt
 
-.PHONY: unsigned-darwin-amd64-zip
-unsigned-darwin-amd64-zip: darwin-amd64
-	# used by brew if signing isn't setup
+.PHONY: unsigned-darwin-zip
+unsigned-darwin-zip: darwin-amd64 darwin-arm64
+	# use if signing isn't setup
 	mkdir -p $(ASSETPATH)
 	cd $(BUILDPATH) && \
-	zip ../$(ASSETPATH)/clisso-darwin-amd64.zip clisso-darwin-amd64
+	zip ../$(ASSETPATH)/clisso-darwin-amd64.zip clisso-darwin-amd64 && \
+	zip ../$(ASSETPATH)/clisso-darwin-arm64.zip clisso-darwin-arm64
 
 .PHONY: brew
 brew:

@@ -1,0 +1,15 @@
+{
+    "source": [
+        "./build/clisso-darwin-arm64"
+    ],
+    "bundle_id": "io.allcloud.clisso",
+    "apple_id": {
+        "password": "@keychain:AC_PASSWORD"
+    },
+    "sign": {
+        "application_identity": "5791D17F2B7A187DD559F87F7631BD8F934B4204"
+    },
+    "zip": {
+        "output_path": "./assets/clisso-darwin-arm64.zip"
+    }
+}
