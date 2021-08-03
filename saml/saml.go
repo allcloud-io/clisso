@@ -97,8 +97,8 @@ func extractArns(attrs []saml.Attribute, pArn string) (arns []ARN) {
 					}
 				} else {
 					// Prepare patterns
-					role := regexp.MustCompile(`^arn:(aws|aws-cn):iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
-					idp := regexp.MustCompile(`^arn:(aws|aws-cn):iam::\d+:saml-provider\/\S+$`)
+					role := regexp.MustCompile(`^arn:(?:aws|aws-cn):iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
+					idp := regexp.MustCompile(`^arn:(?:aws|aws-cn):iam::\d+:saml-provider\/\S+$`)
 
 					if role.MatchString(components[0]) && idp.MatchString(components[1]) {
 						// First component is role
