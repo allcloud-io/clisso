@@ -34,7 +34,7 @@ trap cleanup EXIT
 SHA256=$(wget "https://github.com/allcloud-io/${BINARY_NAME}/archive/${VERSION}.tar.gz" -O source.tar.gz -o /dev/null && sha256sum source.tar.gz | awk '{ print $1 }' && rm -f source.tar.gz)
 
 # create signed zip files
-make sign
+# make sign
 SHA256_ZIP_DARWIN_AMD64=$(sha256sum "assets/${BINARY_NAME}-darwin-amd64.zip" | awk '{ print $1 }' )
 SHA256_ZIP_DARWIN_ARM64=$(sha256sum "assets/${BINARY_NAME}-darwin-arm64.zip" | awk '{ print $1 }' )
 
@@ -65,6 +65,7 @@ cd "$SOURCE_DIR" || exit 1
 brew test-bot "allcloud-io/tools/${BINARY_NAME}"
 
 # commit to git and push to origin
+cd "$TAP_DIR" || exit 1
 BRANCHNAME=auto/${BINARY_NAME}-${VERSION}
 git checkout -b "$BRANCHNAME" || git checkout "$BRANCHNAME"
 git add "${BINARY_NAME}.rb"
