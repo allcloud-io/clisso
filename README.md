@@ -332,6 +332,12 @@ fi
 
 TODO
 
+## License
+
+This code is released under the Apache 2.0 License. Please see [LICENSE](LICENSE) and [NOTICE](NOTICE) for more details.
+
+Copyright &copy; 2021 AllCloud
+
 [1]: https://aws.amazon.com/
 [2]: https://www.onelogin.com/
 [3]: https://www.okta.com/
