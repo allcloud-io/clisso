@@ -37,9 +37,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gnome-keyring build-essential ca-certificates
-          mkdir -p /github/home/.cache/
-          mkdir -p /github/home/.local/share/keyrings/
-          chmod 700 -R /github/home/.local/
+          mkdir -p $HOME/.cache/
+          mkdir -p $HOME/.local/share/keyrings/
+          chmod 700 -R $HOME/.local/
         if: matrix.platform == 'ubuntu-latest'
       - run: go test -v -coverprofile=profile ./...
         if: matrix.platform != 'ubuntu-latest'
