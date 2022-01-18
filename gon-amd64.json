@@ -1,6 +1,6 @@
 {
     "source": [
-        "./build/clisso-darwin-amd64"
+        "./dist/macos-amd64_darwin_amd64/clisso"
     ],
     "bundle_id": "io.allcloud.clisso",
     "apple_id": {
@@ -10,6 +10,6 @@
         "application_identity": "5791D17F2B7A187DD559F87F7631BD8F934B4204"
     },
     "zip": {
-        "output_path": "./assets/clisso-darwin-amd64.zip"
+        "output_path": "./dist/macos-amd64_darwin_amd64/clisso.zip"
     }
 }

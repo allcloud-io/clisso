@@ -1,0 +1,61 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+project_name: clisso
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+  - id: other
+    binary: clisso
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarm:
+      - "6"
+      - "7"
+  - id: macos-amd64
+    binary: clisso
+    goos:
+      - darwin
+    goarch:
+      - "amd64"
+    hooks:
+      post: gon gon-amd64.json
+  - id: macos-arm64
+    binary: clisso
+    goos:
+      - darwin
+    goarch:
+      - "arm64"
+    hooks:
+      post: gon gon-arm64.json
+
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+
+brews:
+  - tap:
+     owner: allcloud-io
+     name: homebrew-tools
+     branch: master
+
+env_files:
+  github_token: ~/.goreleaser

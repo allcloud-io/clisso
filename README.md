@@ -169,7 +169,7 @@ Clisso will fallback to a duration of 3600. The default duration specified for t
 overridden on a per-app basis (see below).
 
 The `--arn` flag is optional. If specified, it will not prompt for a choice of roles presented
-from the list of available AWS accounts/roles. This makes it easy to run `clisso get my-app` 
+from the list of available AWS accounts/roles. This makes it easy to run `clisso get my-app`
 and get the correct account/role.
 
 #### Okta
