@@ -16,7 +16,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/spf13/cobra v1.3.0
-	github.com/spf13/viper v1.10.0
+	github.com/spf13/viper v1.10.1
 	github.com/zalando/go-keyring v0.1.2-0.20210728174650-46cefa2ba97e
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
