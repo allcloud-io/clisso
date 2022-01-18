@@ -3,7 +3,7 @@ module github.com/allcloud-io/clisso
 go 1.12
 
 require (
-	github.com/PuerkitoBio/goquery v1.5.0
+	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/aws/aws-sdk-go v1.42.35
 	github.com/briandowns/spinner v1.18.0
 	github.com/danieljoos/wincred v1.1.1 // indirect
