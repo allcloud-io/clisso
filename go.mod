@@ -11,7 +11,7 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/go-ini/ini v1.62.0
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
-	github.com/mattn/go-colorable v0.1.8
+	github.com/mattn/go-colorable v0.1.12
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pelletier/go-toml v1.4.0 // indirect
