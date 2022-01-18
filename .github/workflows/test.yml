@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         go: [1.15]
-        platform: [ubuntu-16.04, macos-latest, windows-latest]
+        platform: [ubuntu-latest , macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/setup-go@v1
@@ -36,11 +36,20 @@ jobs:
       - name: Install Dependencies (Linux)
         run: |
           sudo apt-get update
-          sudo apt-get install python-gnomekeyring
-          sudo apt-get install gnome-keyring
-          dbus-launch /usr/bin/python -c "import gnomekeyring;gnomekeyring.create_sync('login', '');"
-        if: matrix.platform == 'ubuntu-16.04'
-      - run: go test -v -coverprofile=profile ./...
+          sudo apt-get install -y gnome-keyring build-essential ca-certificates
+          mkdir -p $HOME/.cache/
+          mkdir -p $HOME/.local/share/keyrings/
+          chmod 700 -R $HOME/.local/
+        if: matrix.platform == 'ubuntu-latest'
+      - name: tests (other)
+        run: go test -v -coverprofile=profile ./...
+        if: matrix.platform != 'ubuntu-latest'
+      - name: tests (Linux)
+        run: |
+          echo 'somecredstorepass' | gnome-keyring-daemon --unlock
+          go test -v -coverprofile=profile ./...
+        shell: dbus-run-session -- bash --noprofile --norc -eo pipefail {0}
+        if: matrix.platform == 'ubuntu-latest'
 
       - name: Send coverage
         uses: shogo82148/actions-goveralls@v1
