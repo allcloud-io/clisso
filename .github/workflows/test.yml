@@ -41,9 +41,11 @@ jobs:
           mkdir -p $HOME/.local/share/keyrings/
           chmod 700 -R $HOME/.local/
         if: matrix.platform == 'ubuntu-latest'
-      - run: go test -v -coverprofile=profile ./...
+      - name: tests (other)
+        run: go test -v -coverprofile=profile ./...
         if: matrix.platform != 'ubuntu-latest'
-      - run: |
+      - name: tests (Linux)
+        run: |
           echo 'somecredstorepass' | gnome-keyring-daemon --unlock
           go test -v -coverprofile=profile ./...
         shell: dbus-run-session -- bash --noprofile --norc -eo pipefail {0}
