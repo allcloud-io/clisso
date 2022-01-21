@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/edaniels/go-saml"
+	"github.com/crewjam/saml"
 )
 
 func TestExtractArns(t *testing.T) {
@@ -57,7 +57,7 @@ func TestExtractArns(t *testing.T) {
 		[]ARN{{"arn:aws-cn:iam::1234567890:role/MyRole", "arn:aws-cn:iam::1234567890:saml-provider/MyProvider", ""}}},
 	}{
 		t.Run(test.name, func(t *testing.T){
-			arn := extractArns(test.attrs, "")
+			arn := extractArns([]saml.AttributeStatement{{Attributes: test.attrs}}, "")
 
 			if len(test.expectARN) > 0 && len(arn) == 0 {
 				t.Fatalf("expected %d arns, received nothing", len(test.expectARN))
