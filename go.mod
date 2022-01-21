@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.42.35
 	github.com/briandowns/spinner v1.18.0
 	github.com/danieljoos/wincred v1.1.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/edaniels/go-saml v0.0.0-20160724042625-8c877c3ab101
 	github.com/fatih/color v1.13.0
 	github.com/go-ini/ini v1.66.2
