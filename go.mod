@@ -6,9 +6,8 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/aws/aws-sdk-go v1.42.35
 	github.com/briandowns/spinner v1.18.0
+	github.com/crewjam/saml v0.4.6
 	github.com/danieljoos/wincred v1.1.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/edaniels/go-saml v0.0.0-20160724042625-8c877c3ab101
 	github.com/fatih/color v1.13.0
 	github.com/go-ini/ini v1.66.2
 	github.com/mattn/go-colorable v0.1.12

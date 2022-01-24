@@ -21,8 +21,8 @@ func TestCycle(t *testing.T) {
 	keyChain := DefaultKeychain{}
 
 	for _, test := range []struct {
-		name           string
-		password           []byte
+		name     string
+		password []byte
 	}{
 		{
 			"clissotest-random",
@@ -30,13 +30,13 @@ func TestCycle(t *testing.T) {
 		},
 		{
 			"clissotest-umlaut",
-			randSeq(10,[]rune("üöäßÜÖÄ")),
+			randSeq(10, []rune("üöäßÜÖÄ")),
 		},
 		{
 			"clissotest-greek",
-			randSeq(10,[]rune("νβζγντ")),
+			randSeq(10, []rune("νβζγντ")),
 		},
-	}{
+	} {
 		t.Run(test.name, func(t *testing.T) {
 			err := keyChain.Set(test.name, test.password)
 			if err != nil {

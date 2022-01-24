@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/edaniels/go-saml"
+	"github.com/crewjam/saml"
 	"github.com/spf13/viper"
 )
 
@@ -18,6 +18,10 @@ type ARN struct {
 	Provider string
 	Name     string
 }
+
+const roleSAMLAttributeName = "https://aws.amazon.com/SAML/Attributes/Role"
+const roleRegex = `^arn:(?:aws|aws-cn):iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`
+const idpRegex = `^arn:(?:aws|aws-cn):iam::\d+:saml-provider\/\S+$`
 
 func Get(data, pArn string) (a ARN, err error) {
 	samlBody, err := decode(data)
@@ -31,7 +35,7 @@ func Get(data, pArn string) (a ARN, err error) {
 		return
 	}
 
-	arns := extractArns(x.Assertion.AttributeStatement.Attributes, pArn)
+	arns := extractArns(x.Assertion.AttributeStatements, pArn)
 
 	switch len(arns) {
 	case 0:
@@ -55,85 +59,88 @@ func decode(in string) (b []byte, err error) {
 	return base64.StdEncoding.DecodeString(in)
 }
 
-func extractArns(attrs []saml.Attribute, pArn string) (arns []ARN) {
+func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 	// check for human readable ARN strings in config
 	accounts := viper.GetStringMap("global.accounts")
-	arns = make([]ARN, 0)
+	arns := make([]ARN, 0)
 
-	for _, attr := range attrs {
-		if attr.Name == "https://aws.amazon.com/SAML/Attributes/Role" {
-			for _, av := range attr.Values {
-				// Value is empty
-				if len(av.Value) == 0 {
-					return
-				}
-
-				// Verify we have one of the following formats:
-				// 1. arn:aws:iam::xxxxxxxxxxxx:role/MyRole,arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider
-				// 2. arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider,arn:aws:iam::xxxxxxxxxxxx:role/MyRole
-				// Error otherwise.
-				components := strings.Split(strings.TrimSpace(av.Value), ",")
-				if len(components) != 2 {
-					// Wrong number of components - move on
-					continue
-				}
-
-				// people like to put spaces in there, AWS accepts them, let's remove them on our end too.
-				components[0] = strings.TrimSpace(components[0])
-				components[1] = strings.TrimSpace(components[1])
-
-				arn := ARN{}
-
-				// Logic here for "preferred arn" for the desired account.
-				// If pArn is empty, it proceeds as normal.
-				// Otherwise it matches it with what is in the .clisso.yaml file
-				if pArn != "" {
-					if components[0] == pArn {
-						arn = ARN{components[0], components[1], ""}
-					} else if components[1] == pArn {
-						arn = ARN{components[1], components[0], ""}
-					} else {
-						continue
-					}
-				} else {
-					// Prepare patterns
-					role := regexp.MustCompile(`^arn:(?:aws|aws-cn):iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
-					idp := regexp.MustCompile(`^arn:(?:aws|aws-cn):iam::\d+:saml-provider\/\S+$`)
-
-					if role.MatchString(components[0]) && idp.MatchString(components[1]) {
-						// First component is role
-						arn = ARN{components[0], components[1], ""}
-					} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
-						// First component is IdP
-						arn = ARN{components[1], components[0], ""}
-					} else {
+	for _, stmt := range stmts {
+		for _, attr := range stmt.Attributes {
+			if attr.Name == roleSAMLAttributeName {
+				for _, av := range attr.Values {
+					// Value is empty
+					if len(av.Value) == 0 {
+						// could be that other attribute statements will contain data, so we no longer return but continue
 						continue
 					}
 
-					// Look up the human friendly name, if available
-					if len(accounts) > 0 {
-						ids := role.FindStringSubmatch(arn.Role)
+					// Verify we have one of the following formats:
+					// 1. arn:aws:iam::xxxxxxxxxxxx:role/MyRole,arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider
+					// 2. arn:aws:iam::xxxxxxxxxxxx:saml-provider/MyProvider,arn:aws:iam::xxxxxxxxxxxx:role/MyRole
+					// Error otherwise.
+					components := strings.Split(strings.TrimSpace(av.Value), ",")
+					if len(components) != 2 {
+						// Wrong number of components - move on
+						continue
+					}
 
-						// if the regex matches we should have 3 entries from the regex match
-						// 1) the matching string
-						// 2) the match for Id
-						// 3) the match for Name
-						// we want to match the Id to any accounts/roles in our config
-						if len(ids) == 3 && accounts[ids[1]] != "" && accounts[ids[1]] != nil {
-							arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
+					// people like to put spaces in there, AWS accepts them, let's remove them on our end too.
+					components[0] = strings.TrimSpace(components[0])
+					components[1] = strings.TrimSpace(components[1])
+
+					arn := ARN{}
+
+					// Logic here for "preferred arn" for the desired account.
+					// If pArn is empty, it proceeds as normal.
+					// Otherwise it matches it with what is in the .clisso.yaml file
+					if pArn != "" {
+						if components[0] == pArn {
+							arn = ARN{components[0], components[1], ""}
+						} else if components[1] == pArn {
+							arn = ARN{components[1], components[0], ""}
+						} else {
+							continue
+						}
+					} else {
+						// Prepare patterns
+						role := regexp.MustCompile(roleRegex)
+						idp := regexp.MustCompile(idpRegex)
+
+						if role.MatchString(components[0]) && idp.MatchString(components[1]) {
+							// First component is role
+							arn = ARN{components[0], components[1], ""}
+						} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
+							// First component is IdP
+							arn = ARN{components[1], components[0], ""}
+						} else {
+							continue
+						}
+
+						// Look up the human friendly name, if available
+						if len(accounts) > 0 {
+							ids := role.FindStringSubmatch(arn.Role)
+
+							// if the regex matches we should have 3 entries from the regex match
+							// 1) the matching string
+							// 2) the match for Id
+							// 3) the match for Name
+							// we want to match the Id to any accounts/roles in our config
+							if len(ids) == 3 && accounts[ids[1]] != "" && accounts[ids[1]] != nil {
+								arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
+							}
 						}
 					}
+
+					arns = append(arns, arn)
 				}
 
-				arns = append(arns, arn)
+				return arns
 			}
-
-			return
 		}
 	}
 
 	// Empty :(
-	return
+	return arns
 }
 
 func ask(arns []ARN) (idx int) {
