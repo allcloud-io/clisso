@@ -21,6 +21,8 @@ jobs:
       uses: golangci/golangci-lint-action@v2
       with:
         version: v1.29
+    - name: Check code formatting using gofmt
+      uses: Jerome1337/gofmt-action@v1.0.4
 
   test:
     strategy:
