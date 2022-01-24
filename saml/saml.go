@@ -59,10 +59,10 @@ func decode(in string) (b []byte, err error) {
 	return base64.StdEncoding.DecodeString(in)
 }
 
-func extractArns(stmts []saml.AttributeStatement, pArn string) (arns []ARN) {
+func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 	// check for human readable ARN strings in config
 	accounts := viper.GetStringMap("global.accounts")
-	arns = make([]ARN, 0)
+	arns := make([]ARN, 0)
 
 	for _, stmt := range stmts {
 		for _, attr := range stmt.Attributes {
@@ -70,7 +70,8 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) (arns []ARN) {
 				for _, av := range attr.Values {
 					// Value is empty
 					if len(av.Value) == 0 {
-						return
+						// could be that other attribute statements will contain data, so we no longer return but continue
+						continue
 					}
 
 					// Verify we have one of the following formats:
@@ -133,13 +134,13 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) (arns []ARN) {
 					arns = append(arns, arn)
 				}
 
-				return
+				return arns
 			}
 		}
 	}
 
 	// Empty :(
-	return
+	return arns
 }
 
 func ask(arns []ARN) (idx int) {
