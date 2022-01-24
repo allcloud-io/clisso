@@ -19,6 +19,10 @@ type ARN struct {
 	Name     string
 }
 
+const roleSAMLAttributeName = "https://aws.amazon.com/SAML/Attributes/Role"
+const roleRegex = `^arn:(?:aws|aws-cn):iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`
+const idpRegex = `^arn:(?:aws|aws-cn):iam::\d+:saml-provider\/\S+$`
+
 func Get(data, pArn string) (a ARN, err error) {
 	samlBody, err := decode(data)
 	if err != nil {
@@ -62,7 +66,7 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) (arns []ARN) {
 
 	for _, stmt := range stmts {
 		for _, attr := range stmt.Attributes {
-			if attr.Name == "https://aws.amazon.com/SAML/Attributes/Role" {
+			if attr.Name == roleSAMLAttributeName {
 				for _, av := range attr.Values {
 					// Value is empty
 					if len(av.Value) == 0 {
@@ -98,8 +102,8 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) (arns []ARN) {
 						}
 					} else {
 						// Prepare patterns
-						role := regexp.MustCompile(`^arn:(?:aws|aws-cn):iam::(?P<Id>\d+):(?P<Name>role\/\S+)$`)
-						idp := regexp.MustCompile(`^arn:(?:aws|aws-cn):iam::\d+:saml-provider\/\S+$`)
+						role := regexp.MustCompile(roleRegex)
+						idp := regexp.MustCompile(idpRegex)
 
 						if role.MatchString(components[0]) && idp.MatchString(components[1]) {
 							// First component is role
