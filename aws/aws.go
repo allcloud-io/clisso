@@ -108,7 +108,7 @@ func GetValidCredentials(filename string) ([]Profile, error) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
 				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s"),
-						s.Key(expireKey), s.Name(), err)
+					s.Key(expireKey), s.Name(), err)
 				continue
 			}
 

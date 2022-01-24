@@ -23,7 +23,7 @@ func init() {
 		"Read credentials from this file instead of the default ($HOME/.aws/credentials)",
 	)
 	err := viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
-	 if err != nil {
+	if err != nil {
 		log.Fatalf(color.RedString("Error binding flag global.credentials-path: %v"), err)
 	}
 }
