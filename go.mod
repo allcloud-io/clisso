@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/aws/aws-sdk-go v1.42.39
+	github.com/aws/aws-sdk-go v1.42.48
 	github.com/briandowns/spinner v1.18.1
 	github.com/crewjam/saml v0.4.6
 	github.com/danieljoos/wincred v1.1.1 // indirect
