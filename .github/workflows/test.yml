@@ -16,7 +16,7 @@ jobs:
       with:
         go-version: 1.15
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Run linters
       uses: golangci/golangci-lint-action@v3.1.0
       with:
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-go@v1
         with:
           go-version: ${{ matrix.go }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Dependencies (Linux)
         run: |
           sudo apt-get update
