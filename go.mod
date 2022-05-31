@@ -14,8 +14,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.4.0
-	github.com/spf13/viper v1.11.0
+	github.com/spf13/viper v1.12.0
 	github.com/zalando/go-keyring v0.1.2-0.20210728174650-46cefa2ba97e
-	golang.org/x/net v0.0.0-20220412020605-290c469a71a5
+	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 )
