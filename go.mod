@@ -9,7 +9,7 @@ require (
 	github.com/crewjam/saml v0.4.6
 	github.com/danieljoos/wincred v1.1.1 // indirect
 	github.com/fatih/color v1.13.0
-	github.com/go-ini/ini v1.66.4
+	github.com/go-ini/ini v1.66.6
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
