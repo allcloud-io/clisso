@@ -13,7 +13,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/viper v1.12.0
 	github.com/zalando/go-keyring v0.1.2-0.20210728174650-46cefa2ba97e
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
