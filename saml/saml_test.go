@@ -1,7 +1,7 @@
 package saml
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/crewjam/saml"
@@ -92,7 +92,7 @@ func TestDecode(t *testing.T) {
 		{"Bad XML", "testdata/invalid-response", true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			b, _ := ioutil.ReadFile(test.path)
+			b, _ := os.ReadFile(test.path)
 
 			_, err := decode(string(b))
 			if test.expectError && err == nil {
@@ -134,7 +134,7 @@ func TestGet(t *testing.T) {
 		{"Malformed ARN components", "testdata/malformed-components", "", "", true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			b, _ := ioutil.ReadFile(test.path)
+			b, _ := os.ReadFile(test.path)
 
 			arn, err := Get(string(b), "")
 			if test.expectError && err == nil {
