@@ -9,7 +9,7 @@ require (
 	github.com/crewjam/saml v0.4.10
 	github.com/fatih/color v1.13.0
 	github.com/go-ini/ini v1.67.0
-	github.com/mattn/go-colorable v0.1.12
+	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.6.1
@@ -31,7 +31,7 @@ require (
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
