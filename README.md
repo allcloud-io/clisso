@@ -334,9 +334,9 @@ TODO
 
 ## License
 
-This code is released under the Apache 2.0 License. Please see [LICENSE](LICENSE) and [NOTICE](NOTICE) for more details.
+This code is released under the Mozilla Public License 2.0 License. Please see [LICENSE](LICENSE) and [NOTICE](NOTICE) for more details.
 
-Copyright &copy; 2021 AllCloud
+Copyright &copy; 2017-2023 AllCloud
 
 [1]: https://aws.amazon.com/
 [2]: https://www.onelogin.com/
