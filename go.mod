@@ -3,7 +3,7 @@ module github.com/allcloud-io/clisso
 go 1.17
 
 require (
-	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/aws/aws-sdk-go v1.44.189
 	github.com/briandowns/spinner v1.21.0
 	github.com/crewjam/saml v0.4.12
@@ -15,8 +15,8 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
 	github.com/zalando/go-keyring v0.1.2-0.20210728174650-46cefa2ba97e
-	golang.org/x/net v0.5.0
-	golang.org/x/term v0.4.0
+	golang.org/x/net v0.7.0
+	golang.org/x/term v0.5.0
 )
 
 require (
@@ -42,8 +42,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
