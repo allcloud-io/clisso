@@ -14,17 +14,18 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
-	github.com/zalando/go-keyring v0.1.2-0.20210728174650-46cefa2ba97e
+	github.com/zalando/go-keyring v0.2.2
 	golang.org/x/net v0.8.0
 	golang.org/x/term v0.6.0
 )
 
 require (
+	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/beevik/etree v1.1.0 // indirect
-	github.com/danieljoos/wincred v1.1.1 // indirect
+	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/godbus/dbus/v5 v5.0.4 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
