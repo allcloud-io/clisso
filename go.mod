@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.219
 	github.com/briandowns/spinner v1.23.0
 	github.com/crewjam/saml v0.4.12
-	github.com/fatih/color v1.14.1
+	github.com/fatih/color v1.15.0
 	github.com/go-ini/ini v1.67.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/go-homedir v1.1.0
