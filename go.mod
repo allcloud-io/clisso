@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
-	github.com/aws/aws-sdk-go v1.44.234
+	github.com/aws/aws-sdk-go v1.44.248
 	github.com/briandowns/spinner v1.23.0
 	github.com/crewjam/saml v0.4.13
 	github.com/fatih/color v1.15.0
