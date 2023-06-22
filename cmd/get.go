@@ -136,10 +136,10 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		duration := sessionDuration(app, provider)
 
-		region := awsRegion()
+		awsRegion := awsRegion()
 
 		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider, pArn, region, duration)
+			creds, err := onelogin.Get(app, provider, pArn, awsRegion, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
@@ -149,7 +149,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider, pArn, region, duration)
+			creds, err := okta.Get(app, provider, pArn, awsRegion, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
