@@ -305,6 +305,11 @@ You can get credentials for the currently-selected app by simply running `clisso
 specifying an app name. The currently-selected app will have an asterisk near its name when listing
 apps using `clisso apps ls`.
 
+## AWS STS Regional Endpoint
+AWS recommends using [regional STS endpoints](https://docs.aws.amazon.com/sdkref/latest/guide/feature-sts-regionalized-endpoints.html) instead of the default Global endpoint when requesting a token.
+
+To use a regional endpoint, specify the region via the `global.aws-region` field in the config file.
+
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
