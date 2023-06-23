@@ -88,9 +88,13 @@ func sessionDuration(app, provider string) int32 {
 	return 3600
 }
 
-// awsRegion returns a configured AWS Region, with harcoded default of 'aws-global'
+// awsRegion returns a configured AWS Region, with hardcoded default of 'aws-global'
 // This retains backwards compatibility with legacy STS global endpoint used by aws-sdk-go v1.
-func awsRegion() string {
+func awsRegion(app string) string {
+	appRegion := fmt.Sprintf("apps.%s.aws-region", app)
+	if viper.IsSet(appRegion) {
+		return viper.GetString(appRegion)
+	}
 	if viper.IsSet("global.aws-region") {
 		return viper.GetString("global.aws-region")
 	}
@@ -136,7 +140,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		duration := sessionDuration(app, provider)
 
-		awsRegion := awsRegion()
+		awsRegion := awsRegion(app)
 
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider, pArn, awsRegion, duration)

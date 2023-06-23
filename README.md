@@ -286,7 +286,7 @@ To save the credentials to a custom file, use the `-w` flag.
 To print the credentials to the shell instead of storing them in a file, use the `-s` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
 
-### Storing the password in the keychain
+### Storing the password in the key chain
 
 > WARNING: Storing the password without having MFA enabled is a security risk. It allows anyone
 > to assume your roles who has access to your computer.
@@ -306,9 +306,10 @@ specifying an app name. The currently-selected app will have an asterisk near it
 apps using `clisso apps ls`.
 
 ## AWS STS Regional Endpoint
+
 AWS recommends using [regional STS endpoints](https://docs.aws.amazon.com/sdkref/latest/guide/feature-sts-regionalized-endpoints.html) instead of the default Global endpoint when requesting a token.
 
-To use a regional endpoint, specify the region via the `global.aws-region` field in the config file.
+To use a regional endpoint, specify the region via the `global.aws-region` field in the config file. A per app configuration using `apps.<app>.aws-region` is also possible.
 
 ## Caveats and Limitations
 

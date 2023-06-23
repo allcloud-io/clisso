@@ -76,7 +76,7 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 
 	// If we request credentials for China we need to provide a Chinese region
 	idp := regexp.MustCompile(`^arn:aws-cn:iam::\d+:saml-provider\/\S+$`)
-	if idp.MatchString(PrincipalArn) {
+	if idp.MatchString(PrincipalArn) && !strings.HasPrefix(awsRegion, "cn-") {
 		config.Region = "cn-north-1"
 	}
 	svc := sts.NewFromConfig(config)
