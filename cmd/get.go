@@ -73,9 +73,9 @@ func processCredentials(creds *aws.Credentials, app string) error {
 
 // sessionDuration returns a session duration using the following order of preference:
 // app.duration -> provider.duration -> hardcoded default of 3600
-func sessionDuration(app, provider string) int64 {
-	a := viper.GetInt64(fmt.Sprintf("apps.%s.duration", app))
-	p := viper.GetInt64(fmt.Sprintf("providers.%s.duration", provider))
+func sessionDuration(app, provider string) int32 {
+	a := viper.GetInt32(fmt.Sprintf("apps.%s.duration", app))
+	p := viper.GetInt32(fmt.Sprintf("providers.%s.duration", provider))
 
 	if a != 0 {
 		return a
@@ -86,6 +86,19 @@ func sessionDuration(app, provider string) int64 {
 	}
 
 	return 3600
+}
+
+// awsRegion returns a configured AWS Region, with hardcoded default of 'aws-global'
+// This retains backwards compatibility with legacy STS global endpoint used by aws-sdk-go v1.
+func awsRegion(app string) string {
+	appRegion := fmt.Sprintf("apps.%s.aws-region", app)
+	if viper.IsSet(appRegion) {
+		return viper.GetString(appRegion)
+	}
+	if viper.IsSet("global.aws-region") {
+		return viper.GetString("global.aws-region")
+	}
+	return "aws-global"
 }
 
 var cmdGet = &cobra.Command{
@@ -127,8 +140,10 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		duration := sessionDuration(app, provider)
 
+		awsRegion := awsRegion(app)
+
 		if pType == "onelogin" {
-			creds, err := onelogin.Get(app, provider, pArn, duration)
+			creds, err := onelogin.Get(app, provider, pArn, awsRegion, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}
@@ -138,7 +153,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
 			}
 		} else if pType == "okta" {
-			creds, err := okta.Get(app, provider, pArn, duration)
+			creds, err := okta.Get(app, provider, pArn, awsRegion, duration)
 			if err != nil {
 				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
 			}

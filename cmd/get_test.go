@@ -12,9 +12,9 @@ import (
 )
 
 var testdata = []struct {
-	app      int64
-	provider int64
-	result   int64
+	app      int32
+	provider int32
+	result   int32
 }{
 	{0, 0, 3600},
 	{7200, 0, 7200},

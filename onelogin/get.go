@@ -40,7 +40,7 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider, pArn string, duration int64) (*aws.Credentials, error) {
+func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credentials, error) {
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
@@ -186,14 +186,14 @@ func Get(app, provider, pArn string, duration int64) (*aws.Credentials, error) {
 	}
 
 	s.Start()
-	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, duration)
+	creds, err := aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, awsRegion, duration)
 	s.Stop()
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
 			log.Println(color.YellowString(aws.DurationExceededMessage))
 			s.Start()
-			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, 3600)
+			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, awsRegion, 3600)
 			s.Stop()
 			if err != nil {
 				return nil, err

@@ -6,13 +6,15 @@
 package aws
 
 import (
+	"context"
 	"errors"
 	"regexp"
+	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go"
 )
 
 const (
@@ -36,18 +38,20 @@ const (
 // In cases where the requested session duration is higher than the maximum allowed on AWS, STS
 // returns a specific error message to indicate that. In this case we return a custom error to the
 // caller to allow special handling such as retrying with a lower duration.
-func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64) (*Credentials, error) {
-	creds, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, duration)
+func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, duration int32) (*Credentials, error) {
+	creds, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion, duration)
 	if err != nil {
-		// Verify error is an AWS error.
-		if awsErr, ok := err.(awserr.Error); ok {
-			// Check if error indicates exceeded duration.
-			if awsErr.Message() == ErrInvalidSessionDuration {
+		// Check if API error returned by AWS
+		var ae smithy.APIError
+		if errors.As(err, &ae) {
+			// Check if error indicates exceeded duration, no structured error exists so check error message content.
+			if strings.Contains(ae.ErrorMessage(), "'durationSeconds' failed to satisfy constraint") {
 				// Return a custom error to allow the caller to retry etc.
 				// TODO Return a custom error type instead of a special value:
 				// https://dave.cheney.net/2014/12/24/inspecting-errors
 				return nil, errors.New(ErrDurationExceeded)
 			}
+
 		}
 		return nil, err
 	}
@@ -55,25 +59,29 @@ func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64)
 	return creds, nil
 }
 
-func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion string, duration int64) (*Credentials, error) {
+func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, duration int32) (*Credentials, error) {
 	input := sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:    aws.String(PrincipalArn),
 		RoleArn:         aws.String(RoleArn),
 		SAMLAssertion:   aws.String(SAMLAssertion),
-		DurationSeconds: aws.Int64(duration),
+		DurationSeconds: aws.Int32(duration),
 	}
 
-	sess := session.Must(session.NewSession())
+	ctx := context.Background()
 
-	config := aws.NewConfig()
+	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion))
+	if err != nil {
+		return nil, err
+	}
+
 	// If we request credentials for China we need to provide a Chinese region
 	idp := regexp.MustCompile(`^arn:aws-cn:iam::\d+:saml-provider\/\S+$`)
-	if idp.MatchString(PrincipalArn) {
-		config = config.WithRegion("cn-north-1")
+	if idp.MatchString(PrincipalArn) && !strings.HasPrefix(awsRegion, "cn-") {
+		config.Region = "cn-north-1"
 	}
-	svc := sts.New(sess, config)
+	svc := sts.NewFromConfig(config)
 
-	aResp, err := svc.AssumeRoleWithSAML(&input)
+	aResp, err := svc.AssumeRoleWithSAML(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
