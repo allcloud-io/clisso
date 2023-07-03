@@ -45,7 +45,7 @@ func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 		var ae smithy.APIError
 		if errors.As(err, &ae) {
 			// Check if error indicates exceeded duration, no structured error exists so check error message content.
-			if strings.Contains(ae.ErrorMessage(), "'durationSeconds' failed to satisfy constraint") {
+			if strings.Contains(ae.ErrorMessage(), "'durationSeconds' failed to satisfy constraint") || ae.ErrorMessage() == ErrInvalidSessionDuration {
 				// Return a custom error to allow the caller to retry etc.
 				// TODO Return a custom error type instead of a special value:
 				// https://dave.cheney.net/2014/12/24/inspecting-errors
