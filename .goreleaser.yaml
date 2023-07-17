@@ -24,16 +24,16 @@ builds:
       - darwin
     goarch:
       - "amd64"
-    # hooks:
-    #   post: gon gon-amd64.json
+    hooks:
+      post: gon gon-amd64.json
   - id: macos-arm64
     binary: clisso
     goos:
       - darwin
     goarch:
       - "arm64"
-    # hooks:
-    #   post: gon gon-arm64.json
+    hooks:
+      post: gon gon-arm64.json
 
 archives:
   - format: zip
