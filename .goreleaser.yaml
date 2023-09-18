@@ -52,7 +52,7 @@ changelog:
 
 
 brews:
-  - tap:
+  - repository:
      owner: allcloud-io
      name: homebrew-tools
      branch: master
