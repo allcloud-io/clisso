@@ -96,8 +96,8 @@ var cmdProvidersList = &cobra.Command{
 
 var cmdProvidersPassword = &cobra.Command{
 	Use:   "passwd",
-	Short: "Save password in KeyChain for provider",
-	Long:  "Save password in KeyChain for provider, see github.com/tmc/keyring for supported stores.",
+	Short: "Save password in keyring for provider",
+	Long:  "Save password in keyring for provider, see github.com/zalando/go-keyring for supported stores.",
 	Args:  cobra.ExactArgs(1),
 
 	Run: func(cmd *cobra.Command, args []string) {
