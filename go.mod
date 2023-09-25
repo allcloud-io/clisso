@@ -6,7 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.39
-	github.com/aws/aws-sdk-go-v2/service/sts v1.21.5
+	github.com/aws/aws-sdk-go-v2/service/sts v1.22.0
 	github.com/aws/smithy-go v1.14.2
 	github.com/briandowns/spinner v1.23.0
 	github.com/crewjam/saml v0.4.13
