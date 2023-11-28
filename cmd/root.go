@@ -16,11 +16,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-var VERSION = "unreleased"
-
 var cfgFile string
 
-var RootCmd = &cobra.Command{Use: "clisso", Version: VERSION}
+var RootCmd = &cobra.Command{Use: "clisso", Version: "0.0.0"}
 
 const usageTemplate = `Usage:{{if .Runnable}}
   {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
@@ -73,8 +71,10 @@ func init() {
 	RootCmd.SetVersionTemplate(versionTemplate)
 }
 
-func Execute(version string) {
-	VERSION = version
+func Execute(version, commit, date string) {
+	// transfer version from main to cmd
+	// format as "0.0.0 (commit date)"
+	RootCmd.Version = version + " (" + commit + " " + date + ")"
 	err := RootCmd.Execute()
 	if err != nil {
 		log.Fatalf("Failed to execute: %v", err)

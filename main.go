@@ -15,7 +15,11 @@ import (
 )
 
 // This variable is used by the "version" command and is set during build.
-var version = "undefined"
+var (
+	version = "dev"
+	commit = "none"
+	date = "unknown"
+)
 
 func main() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
@@ -25,5 +29,5 @@ func main() {
 		log.SetOutput(colorable.NewColorableStdout())
 	}
 
-	cmd.Execute(version)
+	cmd.Execute(version, commit, date)
 }
