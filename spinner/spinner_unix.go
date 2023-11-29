@@ -13,8 +13,12 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
+	log "github.com/sirupsen/logrus"
 )
 
 func new() SpinnerWrapper {
+	if (log.GetLevel() >= log.DebugLevel) {
+		return &noopSpinner{}
+	}
 	return spinner.New(spinner.CharSets[14], 50*time.Millisecond)
 }
