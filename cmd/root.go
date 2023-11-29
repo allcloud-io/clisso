@@ -6,19 +6,31 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
 
-var RootCmd = &cobra.Command{Use: "clisso", Version: "0.0.0"}
+var RootCmd = &cobra.Command{
+	Use:     "clisso",
+	Version: "0.0.0",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// get log level flag value
+		logLevelFlag := cmd.Flag("log-level").Value.String()
+		// parse log level flag and set log level
+		logLevel, err := log.ParseLevel(logLevelFlag)
+		if err != nil {
+			log.Fatalf("Error parsing log level: %v", err)
+		}
+		log.SetLevel(logLevel)
+	},
+}
 
 const usageTemplate = `Usage:{{if .Runnable}}
   {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
@@ -66,6 +78,8 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "",
 		"config file (default is $HOME/.clisso.yaml)",
 	)
+	// Add a global log level flag
+	RootCmd.PersistentFlags().String("log-level", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
 
 	RootCmd.SetUsageTemplate(usageTemplate)
 	RootCmd.SetVersionTemplate(versionTemplate)
@@ -87,7 +101,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			log.Fatalf(color.RedString("Error getting home directory: %v"), err)
+			log.Fatalf("Error getting home directory: %v", err)
 		}
 
 		viper.SetConfigType("yaml")
@@ -99,7 +113,7 @@ func initConfig() {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			_, err := os.Create(file)
 			if err != nil {
-				log.Fatalf(color.RedString("Error creating config file: %v"), err)
+				log.Fatalf("Error creating config file: %v", err)
 			}
 		}
 
@@ -108,6 +122,6 @@ func initConfig() {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf(color.RedString("Can't read config: %v"), err)
+		log.Fatalf("Can't read config: %v", err)
 	}
 }

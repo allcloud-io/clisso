@@ -10,11 +10,11 @@ require (
 	github.com/aws/smithy-go v1.17.0
 	github.com/briandowns/spinner v1.23.0
 	github.com/crewjam/saml v0.4.14
-	github.com/fatih/color v1.16.0
 	github.com/go-ini/ini v1.67.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.17.0
 	github.com/zalando/go-keyring v0.2.3
@@ -35,6 +35,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.19.1 // indirect
 	github.com/beevik/etree v1.1.0 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
+	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

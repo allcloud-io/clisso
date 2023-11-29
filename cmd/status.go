@@ -7,14 +7,13 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
-	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/olekukonko/tablewriter"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,7 +28,7 @@ func init() {
 	)
 	err := viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
 	if err != nil {
-		log.Fatalf(color.RedString("Error binding flag global.credentials-path: %v"), err)
+		log.Fatalf("Error binding flag global.credentials-path: %v", err)
 	}
 }
 
@@ -45,12 +44,12 @@ var cmdStatus = &cobra.Command{
 func printStatus() {
 	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
 	if err != nil {
-		log.Fatalf(color.RedString("Failed to expand home: %s"), err)
+		log.Fatalf("Failed to expand home: %s", err)
 	}
 
 	profiles, err := aws.GetValidCredentials(configfile)
 	if err != nil {
-		log.Fatalf(color.RedString("Failed to retrieve non-expired credentials: %s"), err)
+		log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
 	}
 
 	if len(profiles) == 0 {
