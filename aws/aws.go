@@ -8,11 +8,10 @@ package aws
 import (
 	"fmt"
 	"io"
-	"log"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/go-ini/ini"
+	log "github.com/sirupsen/logrus"
 )
 
 // Credentials represents a set of temporary credentials received from AWS STS
@@ -66,7 +65,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 		}
 		v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 		if err != nil {
-			log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s"),
+			log.Warnf("Cannot parse date (%v) in section %s: %s",
 				s.Key(expireKey), s.Name(), err)
 			continue
 		}
@@ -81,7 +80,7 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 // WriteToShell writes (prints) credentials to stdout. If windows is true, Windows syntax will be
 // used.
 func WriteToShell(c *Credentials, windows bool, w io.Writer) {
-	log.Println(color.GreenString("Please paste the following in your shell:"))
+	fmt.Print("Please paste the following in your shell:")
 	if windows {
 		fmt.Fprintf(
 			w,
@@ -112,7 +111,7 @@ func GetValidCredentials(filename string) ([]Profile, error) {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				log.Printf(color.YellowString("Cannot parse date (%v) in section %s: %s"),
+				log.Warnf("Cannot parse date (%v) in section %s: %s",
 					s.Key(expireKey), s.Name(), err)
 				continue
 			}

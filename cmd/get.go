@@ -7,13 +7,12 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 
-	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/okta"
@@ -36,7 +35,7 @@ func init() {
 	)
 	err := viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
 	if err != nil {
-		log.Fatalf(color.RedString("Error binding flag global.credentials-path: %v"), err)
+		log.Fatalf("Error binding flag global.credentials-path: %v", err)
 	}
 }
 
@@ -54,7 +53,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		// Create the `global.credentials-path` directory if it doesn't exist.
 		credsFileParentDir := filepath.Dir(path)
 		if _, err := os.Stat(credsFileParentDir); os.IsNotExist(err) {
-			log.Printf(color.YellowString("Credentials directory '%s' does not exist - creating it"), credsFileParentDir)
+			log.Warnf("Credentials directory '%s' does not exist - creating it", credsFileParentDir)
 
 			err = os.MkdirAll(credsFileParentDir, 0755)
 			if err != nil {
@@ -65,7 +64,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		if err = aws.WriteToFile(creds, path, app); err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
 		}
-		log.Printf(color.GreenString("Credentials written successfully to '%s'"), path)
+		log.Printf("Credentials written successfully to '%s'", path)
 	}
 
 	return nil
@@ -116,7 +115,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			selected := viper.GetString("global.selected-app")
 			if selected == "" {
 				// No default app configured.
-				log.Fatal(color.RedString("No app specified and no default app configured"))
+				log.Fatal("No app specified and no default app configured")
 			}
 			app = selected
 		} else {
@@ -126,12 +125,12 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
-			log.Fatalf(color.RedString("Could not get provider for app '%s'"), app)
+			log.Fatalf("Could not get provider for app '%s'", app)
 		}
 
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType == "" {
-			log.Fatalf(color.RedString("Could not get provider type for provider '%s'"), provider)
+			log.Fatalf("Could not get provider type for provider '%s'", provider)
 		}
 
 		// allow preferred "arn" to be specified in the config file for each app
@@ -145,25 +144,25 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider, pArn, awsRegion, duration)
 			if err != nil {
-				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
+				log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
 			err = processCredentials(creds, app)
 			if err != nil {
-				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
+				log.Fatalf("Error processing credentials: %v", err)
 			}
 		} else if pType == "okta" {
 			creds, err := okta.Get(app, provider, pArn, awsRegion, duration)
 			if err != nil {
-				log.Fatal(color.RedString("Could not get temporary credentials: "), err)
+				log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
 			err = processCredentials(creds, app)
 			if err != nil {
-				log.Fatalf(color.RedString("Error processing credentials: %v"), err)
+				log.Fatalf("Error processing credentials: %v", err)
 			}
 		} else {
-			log.Fatalf(color.RedString("Unsupported identity provider type '%s' for app '%s'"), pType, app)
+			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
 		printStatus()
 	},

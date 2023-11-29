@@ -7,7 +7,6 @@ package okta
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
@@ -15,7 +14,7 @@ import (
 	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
-	"github.com/fatih/color"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -162,7 +161,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
-			log.Println(color.YellowString(aws.DurationExceededMessage))
+			log.Warn(aws.DurationExceededMessage)
 			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, awsRegion, 3600)
 			s.Stop()

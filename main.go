@@ -6,10 +6,10 @@
 package main
 
 import (
-	"log"
 	"runtime"
 
 	"github.com/mattn/go-colorable"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/allcloud-io/clisso/cmd"
 )
@@ -17,17 +17,20 @@ import (
 // This variable is used by the "version" command and is set during build.
 var (
 	version = "dev"
-	commit = "none"
-	date = "unknown"
+	commit  = "none"
+	date    = "unknown"
 )
 
-func main() {
-	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
-
-	// Handle terminal colors on Windows machines.
+func init() {
 	if runtime.GOOS == "windows" {
+		// Handle terminal colors on Windows machines.
+		// TODO, check if still required with the switch to logrus
 		log.SetOutput(colorable.NewColorableStdout())
 	}
 
+	log.SetFormatter(&log.TextFormatter{PadLevelText: true})
+}
+
+func main() {
 	cmd.Execute(version, commit, date)
 }
