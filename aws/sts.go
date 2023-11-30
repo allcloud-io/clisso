@@ -91,7 +91,10 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 		log.Trace("Setting region to cn-north-1")
 		config.Region = "cn-north-1"
 	}
-	svc := sts.NewFromConfig(config)
+	svc := sts.NewFromConfig(config, func(o *sts.Options) {
+		// see https://github.com/aws/aws-sdk-go-v2/issues/2392 for reasoning
+		o.Credentials = nil
+	})
 
 	aResp, err := svc.AssumeRoleWithSAML(ctx, &input)
 	if err != nil {
