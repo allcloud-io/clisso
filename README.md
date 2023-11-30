@@ -84,19 +84,21 @@ Clisso has the following commands:
 
     $ ./clisso
     Usage:
-    clisso [command]
+        clisso [command]
 
     Available Commands:
-    apps        Manage apps
-    get         Get temporary credentials for an app
-    help        Help about any command
-    providers   Manage providers
-    status      Show active (non-expired) credentials
-    version     Show version info
+        apps        Manage apps
+        completion  Generate the autocompletion script for the specified shell
+        get         Get temporary credentials for an app
+        help        Help about any command
+        providers   Manage providers
+        status      Show active (non-expired) credentials
 
     Flags:
-    -c, --config string   config file (default is $HOME/.clisso.yaml)
-    -h, --help            help for clisso
+        -c, --config string      config file (default is $HOME/.clisso.yaml)
+        -h, --help               help for clisso
+            --log-level string   set log level to trace, debug, info, warn, error, fatal or panic (default "info")
+        -v, --version            version for clisso
 
     Use "clisso [command] --help" for more information about a command.
 
@@ -316,6 +318,11 @@ To use a regional endpoint, specify the region via the `global.aws-region` field
 - No support for Okta applications with MFA enabled **at the application level**.
 
 ## Troubleshooting
+
+### Clisso is not working
+
+Clisso logs to `stderr` by default. To enable more detailed logging, set the `--log-level` flag to `debug` or `trace`. With `trace` log level, sensitive information will be logged.
+
 ### Storing passwords is not working
 
 `dbus: couldn't determine address of session bus` This behavior has been [observed][13] on Ubuntu 20.04 WSL.

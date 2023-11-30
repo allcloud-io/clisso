@@ -36,6 +36,10 @@ const expireKey = "aws_expiration"
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
 func WriteToFile(c *Credentials, filename string, section string) error {
+	log.WithFields(log.Fields{
+		"filename": filename,
+		"section":  section,
+	}).Debug("Writing credentials to file")
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		return err
@@ -61,15 +65,17 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	// Remove expired credentials.
 	for _, s := range cfg.Sections() {
 		if !s.HasKey(expireKey) {
+			log.Tracef("Skipping profile %s because it does not have an %s key", s.Name(), expireKey)
 			continue
 		}
 		v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 		if err != nil {
-			log.Warnf("Cannot parse date (%v) in section %s: %s",
+			log.Warnf("Cannot parse date (%v) in profile %s: %s",
 				s.Key(expireKey), s.Name(), err)
 			continue
 		}
 		if time.Now().UTC().Unix() > v.Unix() {
+			log.Tracef("Removing expired credentials for profile %s", s.Name())
 			cfg.DeleteSection(s.Name())
 		}
 	}
@@ -103,9 +109,12 @@ func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 // GetValidCredentials returns profiles which have a aws_expiration key but are not yet expired.
 func GetValidCredentials(filename string) ([]Profile, error) {
 	var profiles []Profile
+	log.WithField("filename", filename).Trace("Loading AWS credentials file")
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
-		return nil, fmt.Errorf("%s contains errors: %w", filename, err)
+		err = fmt.Errorf("%s contains errors: %w", filename, err)
+		log.Trace(err)
+		return nil, err
 	}
 	for _, s := range cfg.Sections() {
 		if s.HasKey(expireKey) {

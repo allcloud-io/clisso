@@ -17,7 +17,7 @@ import (
 )
 
 func new() SpinnerWrapper {
-	if (log.GetLevel() >= log.DebugLevel) {
+	if log.GetLevel() >= log.DebugLevel {
 		return &noopSpinner{}
 	}
 	return spinner.New(spinner.CharSets[14], 50*time.Millisecond)
