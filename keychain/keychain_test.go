@@ -8,7 +8,6 @@ package keychain
 import (
 	"math/rand"
 	"testing"
-	"time"
 )
 
 func randSeq(n int, letters []rune) []byte {
@@ -22,7 +21,6 @@ func randSeq(n int, letters []rune) []byte {
 // TestCycle sets a password and checks if the password can be retrieved again
 // we use a random password to make sure the set was really successful and not due to a previous run
 func TestCycle(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	keyChain := DefaultKeychain{}
 
 	for _, test := range []struct {
