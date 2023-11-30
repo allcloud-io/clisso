@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -176,6 +177,13 @@ func (c *Client) LaunchApp(p *LaunchAppParams) (*string, error) {
 // using the client, handles any HTTP-related errors and returns any data as a string.
 func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
+	log.WithFields(log.Fields{
+		"status": resp.Status,
+		"url":    resp.Request.URL,
+		"host":   resp.Request.Host,
+		"code":   resp.StatusCode,
+		"method": resp.Request.Method,
+	}).WithError(err).Trace("HTTP request sent")
 	if err != nil {
 		return "", fmt.Errorf("sending HTTP request: %v", err)
 	}

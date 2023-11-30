@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"syscall"
 
+	log "github.com/sirupsen/logrus"
 	keyring "github.com/zalando/go-keyring"
 	"golang.org/x/term"
 )
@@ -42,13 +43,16 @@ func (DefaultKeychain) Set(provider string, password []byte) (err error) {
 // and just ask the user for the password instead. Error could be anything from access denied to
 // password not found.
 func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
+	log.WithField("provider", provider).Trace("Reading password from keychain")
 	pass, err := get(provider)
 	if err != nil {
-		// If we ever implement a logfile we might want to log what error occurred.
+		log.WithError(err).Trace("Couldn't read password from keychain")
 		fmt.Printf("Please enter %s password: ", provider)
 		pass, err = term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
-			return nil, fmt.Errorf("couldn't read password from terminal: %w", err)
+			err = fmt.Errorf("couldn't read password from terminal: %w", err)
+			log.WithError(err).Trace("Couldn't read password from terminal")
+			return nil, err
 		}
 	}
 	return pass, nil

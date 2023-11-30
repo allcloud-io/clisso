@@ -17,6 +17,7 @@ import (
 	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
+	"github.com/icza/gog"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,6 +41,13 @@ var (
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
 func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credentials, error) {
+	log.WithFields(log.Fields{
+		"app":       app,
+		"provider":  provider,
+		"pArn":      pArn,
+		"awsRegion": awsRegion,
+		"duration":  duration,
+	}).Trace("Getting credentials from OneLogin")
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
 	if err != nil {
@@ -61,6 +69,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 
 	// Get OneLogin access token
 	s.Start()
+	log.Trace("Generating access token")
 	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
 	s.Stop()
 	if err != nil {
@@ -69,6 +78,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 
 	user := p.Username
 	if user == "" {
+		log.Trace("No username provided")
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
 		fmt.Scanln(&user)
@@ -89,6 +99,14 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 		Subdomain: p.Subdomain,
 	}
 
+	log.WithFields(log.Fields{
+		"UsernameOrEmail": user,
+		// print password only in Trace Log Level
+		"Password":  gog.If(log.GetLevel() == log.TraceLevel, string(pass), "<redacted>"),
+		"AppId":     a.ID,
+		"Subdomain": p.Subdomain,
+	}).Debug("Calling GenerateSamlAssertion")
+
 	s.Start()
 	rSaml, err := c.GenerateSamlAssertion(token, &pSAML)
 	s.Stop()
@@ -96,11 +114,14 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
 
+	log.WithField("Message", rSaml.Message).Debug("GenerateSamlAssertion is done")
+
 	var rData string
 	if rSaml.Message != "Success" {
 		st := rSaml.StateToken
 
 		devices := rSaml.Devices
+		log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
 		device, err := getDevice(devices)
 		if err != nil {
 			return nil, fmt.Errorf("error getting devices: %s", err)
@@ -120,6 +141,11 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 				OtpToken:    "",
 				DoNotNotify: false,
 			}
+			log.WithFields(log.Fields{
+				"AppId":      a.ID,
+				"DeviceId":   device.DeviceID,
+				"StateToken": st,
+			}).Trace("Calling VerifyFactor")
 
 			s.Start()
 			rMfa, err = c.VerifyFactor(token, &pMfa)
@@ -136,6 +162,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 			s.Start()
 			for strings.Contains(rMfa.Message, "pending") && timeout > 0 {
 				time.Sleep(time.Duration(MFAInterval) * time.Second)
+				log.Trace("MFAInterval completed, calling VerifyFactor again")
 				rMfa, err = c.VerifyFactor(token, &pMfa)
 				if err != nil {
 					s.Stop()
@@ -175,6 +202,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 			}
 		}
 		rData = rMfa.Data
+		log.Trace("Factor is verified")
 	} else {
 		rData = rSaml.Data
 	}
@@ -208,11 +236,12 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 func getDevice(devices []Device) (device *Device, err error) {
 	if len(devices) == 0 {
 		// This should never happen
-		err = errors.New("No MFA device returned by Onelogin")
+		err = errors.New("no MFA device returned by Onelogin")
 		return
 	}
 
 	if len(devices) == 1 {
+		log.Trace("Only one MFA device returned by Onelogin, automatically selecting it.")
 		device = &Device{DeviceID: devices[0].DeviceID, DeviceType: devices[0].DeviceType}
 		return
 	}

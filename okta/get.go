@@ -14,6 +14,7 @@ import (
 	"github.com/allcloud-io/clisso/keychain"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
+	"github.com/icza/gog"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,6 +32,13 @@ var (
 
 // Get gets temporary credentials for the given app.
 func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credentials, error) {
+	log.WithFields(log.Fields{
+		"app":       app,
+		"provider":  provider,
+		"pArn":      pArn,
+		"awsRegion": awsRegion,
+		"duration":  duration,
+	}).Trace("Getting credentials from Okta")
 	// Get provider config
 	p, err := config.GetOktaProvider(provider)
 	if err != nil {
@@ -67,11 +75,17 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 
 	// Get session token
 	s.Start()
+	log.WithFields(log.Fields{
+		"Username": user,
+		// print password only in Trace Log Level
+		"Password": gog.If(log.GetLevel() == log.TraceLevel, string(pass), "<redacted>"),
+	}).Debug("Calling GetSessionToken")
 	resp, err := c.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
 		Password: string(pass),
 	})
 	s.Stop()
+	log.WithField("Status", resp.Status).WithError(err).Trace("GetSessionToken done")
 	if err != nil {
 		return nil, fmt.Errorf("getting session token: %v", err)
 	}
@@ -85,6 +99,12 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 	case StatusMFARequired:
 		factor := resp.Embedded.Factors[0]
 		stateToken := resp.StateToken
+		log.WithFields(log.Fields{
+			"factorID":   factor.ID,
+			"factorLink": factor.Links.Verify.Href,
+			"stateToken": stateToken,
+			"factorType": factor.FactorType,
+		}).Debug("MFA required")
 
 		var vfResp *VerifyFactorResponse
 
@@ -134,20 +154,26 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 
 		// Handle failed MFA verification (verification rejected or timed out)
 		if vfResp.Status != VerifyFactorStatusSuccess {
+			err = fmt.Errorf("MFA verification failed")
+			log.WithField("status", vfResp.Status).WithError(err).Warn("MFA verification failed")
 			return nil, fmt.Errorf("MFA verification failed")
 		}
 
 		st = vfResp.SessionToken
 	default:
-		return nil, fmt.Errorf("Invalid status %s", resp.Status)
+		return nil, fmt.Errorf("invalid status %s", resp.Status)
 	}
 
 	// Launch Okta app with session token
 	s.Start()
+	log.WithFields(log.Fields{
+		"SessionToken": st,
+		"URL":          a.URL,
+	}).Trace("Calling LaunchApp")
 	samlAssertion, err := c.LaunchApp(&LaunchAppParams{SessionToken: st, URL: a.URL})
 	s.Stop()
 	if err != nil {
-		return nil, fmt.Errorf("Error launching app: %v", err)
+		return nil, fmt.Errorf("error launching app: %v", err)
 	}
 
 	arn, err := saml.Get(*samlAssertion, pArn)
