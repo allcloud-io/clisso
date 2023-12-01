@@ -77,7 +77,9 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 		if time.Now().UTC().Unix() > v.Unix() {
 			log.Tracef("Removing expired credentials for profile %s", s.Name())
 			cfg.DeleteSection(s.Name())
+			continue
 		}
+		log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
 	}
 
 	return cfg.SaveTo(filename)

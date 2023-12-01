@@ -159,7 +159,7 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 			}
 		}
 	}
-
+	log.Trace("No statements in SAML assertion or no ARNs found.")
 	// Empty :(
 	return arns
 }
