@@ -80,6 +80,7 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 
 	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion))
 	if err != nil {
+		log.WithError(err).Debug("Error loading default configuration")
 		return nil, err
 	}
 	log.WithField("awsRegion", config.Region).Trace("Loaded default config")
