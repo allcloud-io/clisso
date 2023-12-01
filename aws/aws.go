@@ -113,7 +113,7 @@ func GetValidCredentials(filename string) ([]Profile, error) {
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		err = fmt.Errorf("%s contains errors: %w", filename, err)
-		log.Trace(err)
+		log.WithError(err).Trace("Failed to load AWS credentials file")
 		return nil, err
 	}
 	for _, s := range cfg.Sections() {
