@@ -85,9 +85,9 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	return cfg.SaveTo(filename)
 }
 
-// WriteToShell writes (prints) credentials to stdout. If windows is true, Windows syntax will be
-// used.
-func WriteToShell(c *Credentials, windows bool, w io.Writer) {
+// WriteToStdOutAsEnvironment writes (prints) credentials to stdout. If windows is true, Windows syntax will be
+// used. The output can be used to set environment variables.
+func WriteToStdOutAsEnvironment(c *Credentials, windows bool, w io.Writer) {
 	fmt.Print("Please paste the following in your shell:")
 	if windows {
 		fmt.Fprintf(
@@ -108,8 +108,22 @@ func WriteToShell(c *Credentials, windows bool, w io.Writer) {
 	}
 }
 
-// GetValidCredentials returns profiles which have a aws_expiration key but are not yet expired.
-func GetValidCredentials(filename string) ([]Profile, error) {
+// WriteCredentialsToStdOutAsCredentialProcess writes (prints) credentials to stdout in the format required by the AWS CLI.
+// The output can be used to set the credential_process option in the AWS CLI configuration file.
+func WriteCredentialsToStdOutAsCredentialProcess(c *Credentials, w io.Writer) {
+	fmt.Fprintf(
+		w,
+		`{ "Version": 1, "AccessKeyId": %q, "SecretAccessKey": %q, "SessionToken": %q, "Expiration": %q }`,
+		c.AccessKeyID,
+		c.SecretAccessKey,
+		c.SessionToken,
+		// Time must be in ISO8601 format
+		c.Expiration.Format(time.RFC3339),
+	)
+}
+
+// GetValidProfiles returns profiles which have a aws_expiration key but are not yet expired.
+func GetValidProfiles(filename string) ([]Profile, error) {
 	var profiles []Profile
 	log.WithField("filename", filename).Trace("Loading AWS credentials file")
 	cfg, err := ini.LooseLoad(filename)
@@ -135,4 +149,39 @@ func GetValidCredentials(filename string) ([]Profile, error) {
 		}
 	}
 	return profiles, nil
+}
+
+// GetValidCredentials returns credentials which have a aws_expiration key but are not yet expired.
+// returns a map of profile name to credentials
+func GetValidCredentials(filename string) (map[string]Credentials, error) {
+	credentials := make(map[string]Credentials)
+	log.WithField("filename", filename).Trace("Loading credentials file")
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		err = fmt.Errorf("%s contains errors: %w", filename, err)
+		log.WithError(err).Trace("Failed to load credentials file")
+		return nil, err
+	}
+	for _, s := range cfg.Sections() {
+		if s.HasKey(expireKey) {
+			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
+			if err != nil {
+				log.Warnf("Cannot parse date (%v) in section %s: %s",
+					s.Key(expireKey), s.Name(), err)
+				continue
+			}
+
+			if time.Now().UTC().Unix() < v.Unix() {
+				credential := Credentials{
+					AccessKeyID:     s.Key("aws_access_key_id").String(),
+					SecretAccessKey: s.Key("aws_secret_access_key").String(),
+					SessionToken:    s.Key("aws_session_token").String(),
+					Expiration:      v,
+				}
+				credentials[s.Name()] = credential
+			}
+
+		}
+	}
+	return credentials, nil
 }

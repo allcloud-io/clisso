@@ -120,7 +120,7 @@ func TestWriteToFile(t *testing.T) {
 	}
 }
 
-func TestGetValidCredentials(t *testing.T) {
+func TestGetValidProfiles(t *testing.T) {
 	fn := "test_creds.txt"
 
 	id := "testkey"
@@ -179,7 +179,7 @@ func TestGetValidCredentials(t *testing.T) {
 
 	time.Sleep(time.Duration(1) * time.Second)
 
-	profiles, err := GetValidCredentials(fn)
+	profiles, err := GetValidProfiles(fn)
 	if err != nil {
 		t.Fatal("Failed to get NonExpiredCredentials")
 	}
@@ -202,7 +202,7 @@ func TestGetValidCredentials(t *testing.T) {
 		t.Fatalf("Could not remove file %v during cleanup", fn)
 	}
 
-	_, err = GetValidCredentials(fn)
+	_, err = GetValidProfiles(fn)
 	if err != nil {
 		t.Fatal("Function did crash on missing file")
 	}
@@ -222,7 +222,7 @@ func TestWriteToShellUnix(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToShell(&c, false, &b)
+	WriteToStdOutAsEnvironment(&c, false, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(
@@ -251,7 +251,7 @@ func TestWriteToShellWindows(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToShell(&c, true, &b)
+	WriteToStdOutAsEnvironment(&c, true, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(

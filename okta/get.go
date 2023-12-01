@@ -31,13 +31,14 @@ var (
 )
 
 // Get gets temporary credentials for the given app.
-func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credentials, error) {
+func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool) (*aws.Credentials, error) {
 	log.WithFields(log.Fields{
 		"app":       app,
 		"provider":  provider,
 		"pArn":      pArn,
 		"awsRegion": awsRegion,
 		"duration":  duration,
+		"interactive": interactive,
 	}).Trace("Getting credentials from Okta")
 	// Get provider config
 	p, err := config.GetOktaProvider(provider)
@@ -71,7 +72,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 	}
 
 	// Initialize spinner
-	var s = spinner.New()
+	var s = spinner.New(interactive)
 
 	// Get session token
 	s.Start()
@@ -114,7 +115,9 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 			// https://developer.okta.com/docs/api/resources/authn/#verify-push-factor
 			// Keep polling authentication transactions with WAITING result until the challenge
 			// completes or expires.
-			fmt.Println("Please approve request on Okta Verify app")
+			if interactive {
+				fmt.Println("Please approve request on Okta Verify app")
+			}
 			s.Start()
 			vfResp, err = c.VerifyFactor(&VerifyFactorParams{
 				FactorID:   factor.ID,

@@ -16,8 +16,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func new() SpinnerWrapper {
-	if log.GetLevel() >= log.DebugLevel {
+func new(interactive bool) SpinnerWrapper {
+	if log.GetLevel() >= log.DebugLevel || !interactive {
 		return &noopSpinner{}
 	}
 	return spinner.New(spinner.CharSets[14], 50*time.Millisecond)

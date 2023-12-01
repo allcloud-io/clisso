@@ -42,12 +42,12 @@ var cmdStatus = &cobra.Command{
 }
 
 func printStatus() {
-	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
+	credentialFile, err := homedir.Expand(viper.GetString("global.credentials-path"))
 	if err != nil {
 		log.Fatalf("Failed to expand home: %s", err)
 	}
 
-	profiles, err := aws.GetValidCredentials(configfile)
+	profiles, err := aws.GetValidProfiles(credentialFile)
 	if err != nil {
 		log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
 	}

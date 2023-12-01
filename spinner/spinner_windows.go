@@ -8,6 +8,6 @@
  */
 package spinner
 
-func new() SpinnerWrapper {
+func new(interactive bool) SpinnerWrapper {
 	return &noopSpinner{}
 }

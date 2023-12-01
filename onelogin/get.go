@@ -8,6 +8,7 @@ package onelogin
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -40,13 +41,14 @@ var (
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
-func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credentials, error) {
+func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool) (*aws.Credentials, error) {
 	log.WithFields(log.Fields{
 		"app":       app,
 		"provider":  provider,
 		"pArn":      pArn,
 		"awsRegion": awsRegion,
 		"duration":  duration,
+		"interactive": interactive,
 	}).Trace("Getting credentials from OneLogin")
 	// Read config
 	p, err := config.GetOneLoginProvider(provider)
@@ -65,7 +67,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 	}
 
 	// Initialize spinner
-	var s = spinner.New()
+	var s = spinner.New(interactive)
 
 	// Get OneLogin access token
 	s.Start()
@@ -155,8 +157,12 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 			}
 
 			pMfa.DoNotNotify = true
-
-			fmt.Println(rMfa.Message)
+			if interactive {
+				fmt.Println(rMfa.Message)
+			} else {
+				// print to StdErr if we're not interactive
+				fmt.Fprintln(os.Stderr, rMfa.Message)
+			}
 
 			timeout := MFAPushTimeout
 			s.Start()
