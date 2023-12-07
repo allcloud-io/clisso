@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/okta"
@@ -41,7 +41,7 @@ func init() {
 	)
 	err := viper.BindPFlag("global.cache-credentials", cmdGet.Flags().Lookup("cache-credentials"))
 	if err != nil {
-		log.Fatalf("Error binding flag global.credentials-cache-path: %v", err)
+		log.Log.Fatalf("Error binding flag global.credentials-cache-path: %v", err)
 	}
 	cmdGet.Flags().StringVarP(
 		&cacheToFile, "cache-file", "", "~/.aws/credentials-cache",
@@ -49,7 +49,7 @@ func init() {
 	)
 	err = viper.BindPFlag("global.credentials-cache-path", cmdGet.Flags().Lookup("cache-file"))
 	if err != nil {
-		log.Fatalf("Error binding flag global.credentials-cache-path: %v", err)
+		log.Log.Fatalf("Error binding flag global.credentials-cache-path: %v", err)
 	}
 	cmdGet.Flags().StringVarP(
 		&writeToFile, "write-to-file", "w", "~/.aws/credentials",
@@ -57,7 +57,7 @@ func init() {
 	)
 	err = viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
 	if err != nil {
-		log.Fatalf("Error binding flag global.credentials-path: %v", err)
+		log.Log.Fatalf("Error binding flag global.credentials-path: %v", err)
 	}
 }
 
@@ -89,7 +89,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		// Create the `global.credentials-path` directory if it doesn't exist.
 		credsFileParentDir := filepath.Dir(path)
 		if _, err := os.Stat(credsFileParentDir); os.IsNotExist(err) {
-			log.Warnf("Credentials directory '%s' does not exist - creating it", credsFileParentDir)
+			log.Log.Warnf("Credentials directory '%s' does not exist - creating it", credsFileParentDir)
 			// Lets default to strict permissions on the folders we create
 			err = os.MkdirAll(credsFileParentDir, 0700)
 			if err != nil {
@@ -100,7 +100,7 @@ func processCredentials(creds *aws.Credentials, app string) error {
 		if err := aws.WriteToFile(creds, path, app); err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
 		}
-		log.Printf("Credentials written successfully to '%s'", path)
+		log.Log.Printf("Credentials written successfully to '%s'", path)
 	}
 	return nil
 }
@@ -139,12 +139,12 @@ func getCachedCredential(app string) (*aws.Credentials, error) {
 	// get the credentials from the cache file
 	credentialFile, err := homedir.Expand(viper.GetString("global.credentials-cache-path"))
 	if err != nil {
-		log.Fatalf("Failed to expand home: %s", err)
+		log.Log.Fatalf("Failed to expand home: %s", err)
 	}
 
 	profiles, err := aws.GetValidCredentials(credentialFile)
 	if err != nil {
-		log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
+		log.Log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
 	}
 
 	if len(profiles) == 0 {
@@ -175,7 +175,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			selected := viper.GetString("global.selected-app")
 			if selected == "" {
 				// No default app configured.
-				log.Fatal("No app specified and no default app configured")
+				log.Log.Fatal("No app specified and no default app configured")
 			}
 			app = selected
 		} else {
@@ -185,12 +185,12 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		provider := viper.GetString(fmt.Sprintf("apps.%s.provider", app))
 		if provider == "" {
-			log.Fatalf("Could not get provider for app '%s'", app)
+			log.Log.Fatalf("Could not get provider for app '%s'", app)
 		}
 
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType == "" {
-			log.Fatalf("Could not get provider type for provider '%s'", provider)
+			log.Log.Fatalf("Could not get provider type for provider '%s'", provider)
 		}
 
 		// allow preferred "arn" to be specified in the config file for each app
@@ -202,11 +202,11 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		awsRegion := awsRegion(app)
 
 		if printToCredentialProcess && cacheCredentials {
-			log.Trace("Using --cache-credentials and --credential-process")
+			log.Log.Trace("Using --cache-credentials and --credential-process")
 			// we need to cache the credentials to a file and return valid credentials instead of constantly hitting the IdPs
 			credential, err := getCachedCredential(app)
 			if err != nil {
-				log.WithError(err).Debugf("Failed to find cached credentials for app '%s'", app)
+				log.Log.WithError(err).Debugf("Failed to find cached credentials for app '%s'", app)
 			}
 			if credential != nil {
 				aws.WriteCredentialsToStdOutAsCredentialProcess(credential, os.Stdout)
@@ -218,25 +218,25 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		if pType == "onelogin" {
 			creds, err := onelogin.Get(app, provider, pArn, awsRegion, duration, interactive)
 			if err != nil {
-				log.Fatal("Could not get temporary credentials: ", err)
+				log.Log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
 			err = processCredentials(creds, app)
 			if err != nil {
-				log.Fatalf("Error processing credentials: %v", err)
+				log.Log.Fatalf("Error processing credentials: %v", err)
 			}
 		} else if pType == "okta" {
 			creds, err := okta.Get(app, provider, pArn, awsRegion, duration, interactive)
 			if err != nil {
-				log.Fatal("Could not get temporary credentials: ", err)
+				log.Log.Fatal("Could not get temporary credentials: ", err)
 			}
 			// Process credentials
 			err = processCredentials(creds, app)
 			if err != nil {
-				log.Fatalf("Error processing credentials: %v", err)
+				log.Log.Fatalf("Error processing credentials: %v", err)
 			}
 		} else {
-			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
+			log.Log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
 		if interactive {
 			printStatus()

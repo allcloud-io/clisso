@@ -10,8 +10,9 @@ import (
 	"io"
 	"time"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/go-ini/ini"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Credentials represents a set of temporary credentials received from AWS STS
@@ -36,7 +37,7 @@ const expireKey = "aws_expiration"
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
 func WriteToFile(c *Credentials, filename string, section string) error {
-	log.WithFields(log.Fields{
+	log.Log.WithFields(logrus.Fields{
 		"filename": filename,
 		"section":  section,
 	}).Debug("Writing credentials to file")
@@ -65,21 +66,21 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	// Remove expired credentials.
 	for _, s := range cfg.Sections() {
 		if !s.HasKey(expireKey) {
-			log.Tracef("Skipping profile %s because it does not have an %s key", s.Name(), expireKey)
+			log.Log.Tracef("Skipping profile %s because it does not have an %s key", s.Name(), expireKey)
 			continue
 		}
 		v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 		if err != nil {
-			log.Warnf("Cannot parse date (%v) in profile %s: %s",
+			log.Log.Warnf("Cannot parse date (%v) in profile %s: %s",
 				s.Key(expireKey), s.Name(), err)
 			continue
 		}
 		if time.Now().UTC().Unix() > v.Unix() {
-			log.Tracef("Removing expired credentials for profile %s", s.Name())
+			log.Log.Tracef("Removing expired credentials for profile %s", s.Name())
 			cfg.DeleteSection(s.Name())
 			continue
 		}
-		log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
+		log.Log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
 	}
 
 	return cfg.SaveTo(filename)
@@ -125,18 +126,18 @@ func WriteCredentialsToStdOutAsCredentialProcess(c *Credentials, w io.Writer) {
 // GetValidProfiles returns profiles which have a aws_expiration key but are not yet expired.
 func GetValidProfiles(filename string) ([]Profile, error) {
 	var profiles []Profile
-	log.WithField("filename", filename).Trace("Loading AWS credentials file")
+	log.Log.WithField("filename", filename).Trace("Loading AWS credentials file")
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		err = fmt.Errorf("%s contains errors: %w", filename, err)
-		log.WithError(err).Trace("Failed to load AWS credentials file")
+		log.Log.WithError(err).Trace("Failed to load AWS credentials file")
 		return nil, err
 	}
 	for _, s := range cfg.Sections() {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				log.Warnf("Cannot parse date (%v) in section %s: %s",
+				log.Log.Warnf("Cannot parse date (%v) in section %s: %s",
 					s.Key(expireKey), s.Name(), err)
 				continue
 			}
@@ -155,18 +156,18 @@ func GetValidProfiles(filename string) ([]Profile, error) {
 // returns a map of profile name to credentials
 func GetValidCredentials(filename string) (map[string]Credentials, error) {
 	credentials := make(map[string]Credentials)
-	log.WithField("filename", filename).Trace("Loading credentials file")
+	log.Log.WithField("filename", filename).Trace("Loading credentials file")
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		err = fmt.Errorf("%s contains errors: %w", filename, err)
-		log.WithError(err).Trace("Failed to load credentials file")
+		log.Log.WithError(err).Trace("Failed to load credentials file")
 		return nil, err
 	}
 	for _, s := range cfg.Sections() {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				log.Warnf("Cannot parse date (%v) in section %s: %s",
+				log.Log.Warnf("Cannot parse date (%v) in section %s: %s",
 					s.Key(expireKey), s.Name(), err)
 				continue
 			}

@@ -14,7 +14,8 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/allcloud-io/clisso/log"
+	"github.com/sirupsen/logrus"
 )
 
 // Client represents a OneLogin API client.
@@ -115,14 +116,13 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
 
 	if resp != nil {
-		log.WithFields(
-			log.Fields{
-				"status": resp.Status,
-				"url":    resp.Request.URL,
-				"host":   resp.Request.Host,
-				"code":   resp.StatusCode,
-				"method": resp.Request.Method,
-			}).WithError(err).Trace("HTTP request sent")
+		log.Log.WithFields(logrus.Fields{
+			"status": resp.Status,
+			"url":    resp.Request.URL,
+			"host":   resp.Request.Host,
+			"code":   resp.StatusCode,
+			"method": resp.Request.Method,
+		}).WithError(err).Trace("HTTP request sent")
 	}
 
 	if err != nil {

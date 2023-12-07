@@ -14,8 +14,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/crewjam/saml"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -32,14 +33,14 @@ const idpRegex = `^arn:(?:aws|aws-cn):iam::\d+:saml-provider\/\S+$`
 func Get(data, pArn string) (a ARN, err error) {
 	samlBody, err := decode(data)
 	if err != nil {
-		log.WithError(err).Error("Error decoding SAML assertion")
+		log.Log.WithError(err).Error("Error decoding SAML assertion")
 		return
 	}
 
 	x := new(saml.Response)
 	err = xml.Unmarshal(samlBody, x)
 	if err != nil {
-		log.WithError(err).Error("Error parsing SAML assertion")
+		log.Log.WithError(err).Error("Error parsing SAML assertion")
 		return
 	}
 
@@ -67,10 +68,10 @@ func decode(in string) (b []byte, err error) {
 }
 
 func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
-	log.WithField("preferredARN", pArn).Trace("Extracting ARNs from SAML AttributeStatements")
+	log.Log.WithField("preferredARN", pArn).Trace("Extracting ARNs from SAML AttributeStatements")
 	// check for human readable ARN strings in config
 	accounts := viper.GetStringMap("global.accounts")
-	log.WithFields(accounts).Trace("Accounts loaded from config")
+	log.Log.WithFields(accounts).Trace("Accounts loaded from config")
 	arns := make([]ARN, 0)
 
 	for _, stmt := range stmts {
@@ -90,7 +91,7 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 					components := strings.Split(strings.TrimSpace(av.Value), ",")
 					if len(components) != 2 {
 						// Wrong number of components - move on
-						log.WithFields(log.Fields{
+						log.Log.WithFields(logrus.Fields{
 							"components": components,
 							"length":     len(components),
 							"value":      av.Value,
@@ -101,7 +102,7 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 					// people like to put spaces in there, AWS accepts them, let's remove them on our end too.
 					components[0] = strings.TrimSpace(components[0])
 					components[1] = strings.TrimSpace(components[1])
-					log.WithField("components", components).Trace("ARN components extracted from SAML assertion")
+					log.Log.WithField("components", components).Trace("ARN components extracted from SAML assertion")
 
 					arn := ARN{}
 
@@ -110,13 +111,13 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 					// Otherwise it matches it with what is in the .clisso.yaml file
 					if pArn != "" {
 						if components[0] == pArn {
-							log.Trace("Preferred ARN matches first component")
+							log.Log.Trace("Preferred ARN matches first component")
 							arn = ARN{components[0], components[1], ""}
 						} else if components[1] == pArn {
-							log.Trace("Preferred ARN matches second component")
+							log.Log.Trace("Preferred ARN matches second component")
 							arn = ARN{components[1], components[0], ""}
 						} else {
-							log.Trace("Preferred ARN does not match either component")
+							log.Log.Trace("Preferred ARN does not match either component")
 							continue
 						}
 					} else {
@@ -125,20 +126,20 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 						idp := regexp.MustCompile(idpRegex)
 
 						if role.MatchString(components[0]) && idp.MatchString(components[1]) {
-							log.Trace("First component is role, second component is IdP")
+							log.Log.Trace("First component is role, second component is IdP")
 							arn = ARN{components[0], components[1], ""}
 						} else if role.MatchString(components[1]) && idp.MatchString(components[0]) {
-							log.Trace("First component is IdP, second component is role")
+							log.Log.Trace("First component is IdP, second component is role")
 							arn = ARN{components[1], components[0], ""}
 						} else {
-							log.Trace("Neither component matches expected pattern")
+							log.Log.Trace("Neither component matches expected pattern")
 							continue
 						}
 
 						// Look up the human friendly name, if available
 						if len(accounts) > 0 {
 							ids := role.FindStringSubmatch(arn.Role)
-							log.WithField("matches", ids).Trace("Role regex matches")
+							log.Log.WithField("matches", ids).Trace("Role regex matches")
 
 							// if the regex matches we should have 3 entries from the regex match
 							// 1) the matching string
@@ -146,7 +147,7 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 							// 3) the match for Name
 							// we want to match the Id to any accounts/roles in our config
 							if len(ids) == 3 && accounts[ids[1]] != "" && accounts[ids[1]] != nil {
-								log.Trace("Found human friendly name for account")
+								log.Log.Trace("Found human friendly name for account")
 								arn.Name = fmt.Sprintf("%s - %s", accounts[ids[1]].(string), ids[2])
 							}
 						}
@@ -159,7 +160,7 @@ func extractArns(stmts []saml.AttributeStatement, pArn string) []ARN {
 			}
 		}
 	}
-	log.Trace("No statements in SAML assertion or no ARNs found.")
+	log.Log.Trace("No statements in SAML assertion or no ARNs found.")
 	// Empty :(
 	return arns
 }

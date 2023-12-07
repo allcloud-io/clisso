@@ -16,10 +16,11 @@ import (
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/config"
 	"github.com/allcloud-io/clisso/keychain"
+	"github.com/allcloud-io/clisso/log"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/icza/gog"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -42,12 +43,12 @@ var (
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
 func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool) (*aws.Credentials, error) {
-	log.WithFields(log.Fields{
-		"app":       app,
-		"provider":  provider,
-		"pArn":      pArn,
-		"awsRegion": awsRegion,
-		"duration":  duration,
+	log.Log.WithFields(logrus.Fields{
+		"app":         app,
+		"provider":    provider,
+		"pArn":        pArn,
+		"awsRegion":   awsRegion,
+		"duration":    duration,
 		"interactive": interactive,
 	}).Trace("Getting credentials from OneLogin")
 	// Read config
@@ -71,7 +72,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	// Get OneLogin access token
 	s.Start()
-	log.Trace("Generating access token")
+	log.Log.Trace("Generating access token")
 	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
 	s.Stop()
 	if err != nil {
@@ -80,7 +81,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	user := p.Username
 	if user == "" {
-		log.Trace("No username provided")
+		log.Log.Trace("No username provided")
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
 		fmt.Scanln(&user)
@@ -101,10 +102,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		Subdomain: p.Subdomain,
 	}
 
-	log.WithFields(log.Fields{
+	log.Log.WithFields(logrus.Fields{
 		"UsernameOrEmail": user,
 		// print password only in Trace Log Level
-		"Password":  gog.If(log.GetLevel() == log.TraceLevel, string(pass), "<redacted>"),
+		"Password":  gog.If(log.Log.GetLevel() == logrus.TraceLevel, string(pass), "<redacted>"),
 		"AppId":     a.ID,
 		"Subdomain": p.Subdomain,
 	}).Debug("Calling GenerateSamlAssertion")
@@ -116,14 +117,14 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
 
-	log.WithField("Message", rSaml.Message).Debug("GenerateSamlAssertion is done")
+	log.Log.WithField("Message", rSaml.Message).Debug("GenerateSamlAssertion is done")
 
 	var rData string
 	if rSaml.Message != "Success" {
 		st := rSaml.StateToken
 
 		devices := rSaml.Devices
-		log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
+		log.Log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
 		device, err := getDevice(devices)
 		if err != nil {
 			return nil, fmt.Errorf("error getting devices: %s", err)
@@ -143,7 +144,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 				OtpToken:    "",
 				DoNotNotify: false,
 			}
-			log.WithFields(log.Fields{
+			log.Log.WithFields(logrus.Fields{
 				"AppId":      a.ID,
 				"DeviceId":   device.DeviceID,
 				"StateToken": st,
@@ -168,7 +169,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 			s.Start()
 			for strings.Contains(rMfa.Message, "pending") && timeout > 0 {
 				time.Sleep(time.Duration(MFAInterval) * time.Second)
-				log.Trace("MFAInterval completed, calling VerifyFactor again")
+				log.Log.Trace("MFAInterval completed, calling VerifyFactor again")
 				rMfa, err = c.VerifyFactor(token, &pMfa)
 				if err != nil {
 					s.Stop()
@@ -208,7 +209,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 			}
 		}
 		rData = rMfa.Data
-		log.Trace("Factor is verified")
+		log.Log.Trace("Factor is verified")
 	} else {
 		rData = rSaml.Data
 	}
@@ -224,7 +225,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
-			log.Warn(aws.DurationExceededMessage)
+			log.Log.Warn(aws.DurationExceededMessage)
 			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, awsRegion, 3600)
 			s.Stop()
@@ -247,7 +248,7 @@ func getDevice(devices []Device) (device *Device, err error) {
 	}
 
 	if len(devices) == 1 {
-		log.Trace("Only one MFA device returned by Onelogin, automatically selecting it.")
+		log.Log.Trace("Only one MFA device returned by Onelogin, automatically selecting it.")
 		device = &Device{DeviceID: devices[0].DeviceID, DeviceType: devices[0].DeviceType}
 		return
 	}

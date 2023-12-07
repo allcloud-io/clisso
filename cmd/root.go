@@ -9,26 +9,22 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/allcloud-io/clisso/log"
 	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var logFile string
 
 var RootCmd = &cobra.Command{
 	Use:     "clisso",
 	Version: "0.0.0",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// get log level flag value
 		logLevelFlag := cmd.Flag("log-level").Value.String()
-		// parse log level flag and set log level
-		logLevel, err := log.ParseLevel(logLevelFlag)
-		if err != nil {
-			log.Fatalf("Error parsing log level: %v", err)
-		}
-		log.SetLevel(logLevel)
+		log.Log = log.NewLogger(logLevelFlag, logFile, true)
 	},
 }
 
@@ -80,7 +76,19 @@ func init() {
 	)
 	// Add a global log level flag
 	RootCmd.PersistentFlags().String("log-level", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
+	err := viper.BindPFlag("global.logs.level", RootCmd.PersistentFlags().Lookup("log-level"))
+	if err != nil {
+		// log isn't available yet, so we can't use it
+		logrus.Fatalf("Error binding flag global.logs.level: %v", err)
+	}
 
+	RootCmd.PersistentFlags().StringVarP(
+		&logFile, "log-file", "", "~/.clisso.log", "log file location (~/.clisso.log)",
+	)
+	err = viper.BindPFlag("global.logs.path", RootCmd.PersistentFlags().Lookup("log-file"))
+	if err != nil {
+		logrus.Fatalf("Error binding flag global.logs.path: %v", err)
+	}
 	RootCmd.SetUsageTemplate(usageTemplate)
 	RootCmd.SetVersionTemplate(versionTemplate)
 }
@@ -91,7 +99,7 @@ func Execute(version, commit, date string) {
 	RootCmd.Version = version + " (" + commit + " " + date + ")"
 	err := RootCmd.Execute()
 	if err != nil {
-		log.Fatalf("Failed to execute: %v", err)
+		log.Log.Fatalf("Failed to execute: %v", err)
 	}
 }
 
@@ -101,7 +109,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			log.Fatalf("Error getting home directory: %v", err)
+			log.Log.Fatalf("Error getting home directory: %v", err)
 		}
 
 		viper.SetConfigType("yaml")
@@ -113,7 +121,7 @@ func initConfig() {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			_, err := os.Create(file)
 			if err != nil {
-				log.Fatalf("Error creating config file: %v", err)
+				log.Log.Fatalf("Error creating config file: %v", err)
 			}
 		}
 
@@ -122,6 +130,6 @@ func initConfig() {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Can't read config: %v", err)
+		log.Log.Fatalf("Can't read config: %v", err)
 	}
 }
