@@ -112,6 +112,8 @@ func WriteToStdOutAsEnvironment(c *Credentials, windows bool, w io.Writer) {
 // WriteCredentialsToStdOutAsCredentialProcess writes (prints) credentials to stdout in the format required by the AWS CLI.
 // The output can be used to set the credential_process option in the AWS CLI configuration file.
 func WriteCredentialsToStdOutAsCredentialProcess(c *Credentials, w io.Writer) {
+	log.Log.Trace("Writing credentials to stdout in credential_process format")
+	log.Log.Infof("Credentials expire at %s, in %d Minutes", c.Expiration.Format(time.RFC3339), int(c.Expiration.Sub(time.Now().UTC()).Minutes()))
 	fmt.Fprintf(
 		w,
 		`{ "Version": 1, "AccessKeyId": %q, "SecretAccessKey": %q, "SessionToken": %q, "Expiration": %q }`,
