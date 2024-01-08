@@ -4,10 +4,10 @@ go 1.21
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
-	github.com/aws/aws-sdk-go-v2 v1.23.4
+	github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/config v1.25.10
 	github.com/aws/aws-sdk-go-v2/service/sts v1.26.1
-	github.com/aws/smithy-go v1.18.1
+	github.com/aws/smithy-go v1.19.0
 	github.com/briandowns/spinner v1.23.0
 	github.com/crewjam/saml v0.4.14
 	github.com/go-ini/ini v1.67.0
