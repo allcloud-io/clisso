@@ -19,13 +19,19 @@ import (
 	"github.com/allcloud-io/clisso/log"
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
+	"github.com/allcloud-io/clisso/yubikey"
 	"github.com/icza/gog"
+	"github.com/spf13/viper"
+
 )
 
 const (
 	// MFADeviceOneLoginProtect symbolizes the OneLogin Protect mobile app, which supports push
 	// notifications. More info here: https://developers.onelogin.com/api-docs/1/saml-assertions/verify-factor
 	MFADeviceOneLoginProtect = "OneLogin Protect"
+
+	// MFADeviceYubicoYubiKey symbolizes a Yubico YubiKey device.
+	MFADeviceYubicoYubiKey = "Yubico YubiKey"
 
 	// MFAPushTimeout represents the number of seconds to wait for a successful push attempt before
 	// falling back to OTP input.
@@ -38,6 +44,10 @@ const (
 var (
 	keyChain = keychain.DefaultKeychain{}
 )
+
+type DeviceOptions struct {
+	AutodetectYubiKey bool
+}
 
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
@@ -128,7 +138,12 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 		devices := rSaml.Devices
 		log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
-		device, err := getDevice(devices)
+
+		deviceOpts := DeviceOptions{
+			AutodetectYubiKey: autodetectYubiKey(app),
+		}
+
+		device, err := getDevice(devices, deviceOpts)
 		if err != nil {
 			return nil, fmt.Errorf("error getting devices: %s", err)
 		}
@@ -246,7 +261,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 // getDevice gets a slice of MFA devices, prompts the user to select one and returns the selected device.
 // If the slice contains only a single device, that device is returned. If the slice is empty, an error is returned.
-func getDevice(devices []Device) (device *Device, err error) {
+func getDevice(devices []Device, opts DeviceOptions) (device *Device, err error) {
 	if len(devices) == 0 {
 		// This should never happen
 		err = errors.New("no MFA device returned by Onelogin")
@@ -257,6 +272,16 @@ func getDevice(devices []Device) (device *Device, err error) {
 		log.Trace("Only one MFA device returned by Onelogin, automatically selecting it.")
 		device = &Device{DeviceID: devices[0].DeviceID, DeviceType: devices[0].DeviceType}
 		return
+	}
+
+	if opts.AutodetectYubiKey && yubikey.IsAttached(){
+		for _, d := range devices {
+			if d.DeviceType == MFADeviceYubicoYubiKey {
+				device = &d
+				fmt.Println("YubiKey detected, automatically selecting it.")
+				return
+			}
+		}
 	}
 
 	var selection int
@@ -289,4 +314,16 @@ func getDevice(devices []Device) (device *Device, err error) {
 	}
 	device = &Device{DeviceID: devices[selection-1].DeviceID, DeviceType: devices[selection-1].DeviceType}
 	return
+}
+
+// autodetectYubiKey returns a bool if YubiKey Autodetection should be used
+func autodetectYubiKey(app string) bool {
+	y := fmt.Sprintf("apps.%s.autodetect-yubikey", app)
+	if viper.IsSet(y) {
+		return viper.GetBool(y)
+	}
+	if viper.IsSet("global.autodetect-yubikey") {
+		return viper.GetBool("global.autodetect-yubikey")
+	}
+	return false
 }
