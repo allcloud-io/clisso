@@ -377,7 +377,7 @@ To use a regional endpoint, specify the region via the `global.aws-region` field
 
 ## YubiKey Autodetection
 
-YubiKey Autodetection is available for the OneLogin provider. To enable this feature set the `global.autodetect-yubikey` field to `true`. A per app configuration using `apps.<app>.autodetect-yubikey` is also available. Clisso will look at attached USB devices and automatically select the YubiKey as an MFA device if it is available. 
+YubiKey Autodetection is available for the OneLogin provider. To enable this feature set the `global.autodetect-yubikey` field to `true`. Clisso will look at attached USB devices and automatically select the YubiKey as an MFA device if it is available. 
 
 ## Caveats and Limitations
 
