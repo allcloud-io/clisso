@@ -6,7 +6,6 @@ apps:
     role-arn: arn:aws:iam::123456789012:role/OneLoginDev-SSO
     arn: arn:aws:iam::012345678012:role/Dev
     aws-region: eu-west-1
-    autodetect-yubikey: true
   sample-app-2:
     principal-arn: arn:aws:iam::123456789012:saml-provider/Okta
     provider: sample-okta-provider
