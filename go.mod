@@ -18,6 +18,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.9.3
+<<<<<<< HEAD
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
@@ -25,6 +26,14 @@ require (
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/net v0.31.0
 	golang.org/x/term v0.26.0
+=======
+	github.com/spf13/cobra v1.8.0
+	github.com/spf13/viper v1.17.0
+	github.com/stretchr/testify v1.8.4
+	github.com/zalando/go-keyring v0.2.3
+	golang.org/x/net v0.19.0
+	golang.org/x/term v0.15.0
+>>>>>>> 2af92c5 (add mfa-device flag)
 )
 
 require (
@@ -35,7 +44,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.4 // indirect
 	github.com/beevik/etree v1.2.0 // indirect
+<<<<<<< HEAD
 	github.com/danieljoos/wincred v1.2.2 // indirect
+=======
+	github.com/danieljoos/wincred v1.2.0 // indirect
+>>>>>>> 2af92c5 (add mfa-device flag)
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -48,7 +61,11 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+<<<<<<< HEAD
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+=======
+	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+>>>>>>> 2af92c5 (add mfa-device flag)
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/russellhaering/goxmldsig v1.4.0 // indirect

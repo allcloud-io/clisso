@@ -296,6 +296,9 @@ To save the credentials to a custom file, use the `--output` flag with a custom 
 To print the credentials to the shell instead of storing them in a file, use the `--output environment` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
 
+To select a specific MFA device by name instead of choosing from a list, use the `-m` flag. The 
+configuration field `global.mfa-device` may also be set.
+
 ### Running as `credential_process`
 
 AWS CLI v2 introduced the `credential_process` feature which allows you to use an external command to obtain temporal credentials.
@@ -346,7 +349,6 @@ clisso cp status # to check the status
 If you disable the `credential_process` functionality, all refreshes will be disabled. While cached credentials will still be used, new credentials will not be fetched. This can be useful if you lock your computer with an active, e.g., VSCode session with CodeCommit. If you wouldn't disable the `credential_process` functionality, the VSCode would constantly trigger new credential requests to refresh the remote CodeCommit repository.
 
 If you want to check the status programmatically, you can use the exit code of the `clisso cp status` command. If the exit code is `0`, the `credential_process` functionality is enabled. If the exit code is `1`, the `credential_process` functionality is disabled.
-
 
 ### Storing the password in the key chain
 
