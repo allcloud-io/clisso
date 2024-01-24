@@ -124,11 +124,18 @@ func Get(app, provider, pArn, awsRegion string, duration int32) (*aws.Credential
 				return nil, fmt.Errorf("verifying MFA: %v", err)
 			}
 
+            // true if correct answer for Okta Verify has already been shown in CLI
+            // to avoid spamming the user
+			var answerShown bool
+
 			for vfResp.FactorResult == VerifyFactorStatusWaiting {
 				vfResp, err = c.VerifyFactor(&VerifyFactorParams{
 					FactorID:   factor.ID,
 					StateToken: stateToken,
 				})
+				if answer := vfResp.Embedded.Factor.Embedded.Challenge.CorrectAnswer; answer != 0 && !answerShown {
+					fmt.Printf("Okta marked the attempt as unusual, select number %d in Okta Verify", answer)
+				}
 				time.Sleep(2 * time.Second)
 			}
 			s.Stop()

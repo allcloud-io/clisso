@@ -105,6 +105,15 @@ type VerifyFactorResponse struct {
 	SessionToken string    `json:"sessionToken"`
 	Status       string    `json:"status"`
 	FactorResult string    `json:"factorResult,omitempty"`
+	Embedded     struct {
+		Factor struct {
+			Embedded struct {
+				Challenge struct {
+					CorrectAnswer int `json:"correctAnswer"`
+				} `json:"challenge"`
+			} `json:"_embedded"`
+		} `json:"factor"`
+	} `json:"_embedded"`
 }
 
 // VerifyFactor performs MFA verification.
