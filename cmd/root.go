@@ -6,25 +6,28 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/allcloud-io/clisso/log"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
 var logFile string
+var logLevel string
 
 var RootCmd = &cobra.Command{
 	Use:     "clisso",
 	Version: "0.0.0",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		logLevelFlag := cmd.Flag("log-level").Value.String()
-		log.Log = log.NewLogger(logLevelFlag, logFile, true)
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return initConfig(cmd)
 	},
 }
 
@@ -70,25 +73,24 @@ one at https://mozilla.org/MPL/2.0/.
 `
 
 func init() {
-	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "",
 		"config file (default is $HOME/.clisso.yaml)",
 	)
 	// Add a global log level flag
-	RootCmd.PersistentFlags().String("log-level", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
-	err := viper.BindPFlag("global.logs.level", RootCmd.PersistentFlags().Lookup("log-level"))
-	if err != nil {
-		// log isn't available yet, so we can't use it
-		logrus.Fatalf("Error binding flag global.logs.level: %v", err)
-	}
+	RootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
+	// err := viper.BindPFlag("global.log.level", RootCmd.PersistentFlags().Lookup("log-level"))
+	// if err != nil {
+	// 	// log isn't available yet, so we can't use it
+	// 	logrus.Fatalf("Error binding flag global.log.level: %v", err)
+	// }
 
 	RootCmd.PersistentFlags().StringVarP(
 		&logFile, "log-file", "", "~/.clisso.log", "log file location (~/.clisso.log)",
 	)
-	err = viper.BindPFlag("global.logs.path", RootCmd.PersistentFlags().Lookup("log-file"))
-	if err != nil {
-		logrus.Fatalf("Error binding flag global.logs.path: %v", err)
-	}
+	// err = viper.BindPFlag("global.log.file", RootCmd.PersistentFlags().Lookup("log-file"))
+	// if err != nil {
+	// 	logrus.Fatalf("Error binding flag global.log.file: %v", err)
+	// }
 	RootCmd.SetUsageTemplate(usageTemplate)
 	RootCmd.SetVersionTemplate(versionTemplate)
 }
@@ -99,11 +101,11 @@ func Execute(version, commit, date string) {
 	RootCmd.Version = version + " (" + commit + " " + date + ")"
 	err := RootCmd.Execute()
 	if err != nil {
-		log.Log.Fatalf("Failed to execute: %v", err)
+		logrus.Fatalf("Failed to execute: %v", err)
 	}
 }
 
-func initConfig() {
+func initConfig(cmd *cobra.Command) error {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -125,11 +127,35 @@ func initConfig() {
 			}
 		}
 
-		// Set default config values
-		viper.SetDefault("global.credentials-path", filepath.Join(home, ".aws", "credentials"))
+		// // Set default config values
+		// viper.SetDefault("global.credentials-path", filepath.Join(home, ".aws", "credentials"))
+		// viper.SetDefault("global.cache.path", filepath.Join(home, ".aws", "credentials-cache"))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Log.Fatalf("Can't read config: %v", err)
 	}
+	bindFlags(cmd, viper.GetViper())
+	log.Log = log.NewLogger(logLevel, logFile, logFile != "")
+	return nil
+}
+
+// Bind each cobra flag to its associated viper configuration (config file and environment variable)
+func bindFlags(cmd *cobra.Command, v *viper.Viper) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+
+		// Determine the naming convention of the flags when represented in the config file
+		configName := fmt.Sprintf("global.%s", f.Name)
+		configName = strings.ReplaceAll(configName, "-", ".")
+		fmt.Printf("Checking Flag: %s\n", configName)
+
+		// Apply the viper config value to the flag when the flag is not set and viper has a value
+		if !f.Changed && v.IsSet(configName) {
+			fmt.Printf("Setting Flag %s by config: %s\n", f.Name, configName)
+			val := v.Get(configName)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		} else {
+			fmt.Printf("Using Flag %s default: %v\n", f.Name, f.DefValue)
+		}
+	})
 }

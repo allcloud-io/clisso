@@ -33,10 +33,10 @@ type Profile struct {
 
 const expireKey = "aws_expiration"
 
-// WriteToFile writes credentials to an AWS CLI credentials file
+// OutputFile writes credentials to an AWS CLI credentials file
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
-func WriteToFile(c *Credentials, filename string, section string) error {
+func OutputFile(c *Credentials, filename string, section string) error {
 	log.Log.WithFields(logrus.Fields{
 		"filename": filename,
 		"section":  section,
@@ -86,9 +86,9 @@ func WriteToFile(c *Credentials, filename string, section string) error {
 	return cfg.SaveTo(filename)
 }
 
-// WriteToStdOutAsEnvironment writes (prints) credentials to stdout. If windows is true, Windows syntax will be
+// OutputEnvironment writes (prints) credentials to stdout. If windows is true, Windows syntax will be
 // used. The output can be used to set environment variables.
-func WriteToStdOutAsEnvironment(c *Credentials, windows bool, w io.Writer) {
+func OutputEnvironment(c *Credentials, windows bool, w io.Writer) {
 	fmt.Print("Please paste the following in your shell:")
 	if windows {
 		fmt.Fprintf(
@@ -109,9 +109,9 @@ func WriteToStdOutAsEnvironment(c *Credentials, windows bool, w io.Writer) {
 	}
 }
 
-// WriteCredentialsToStdOutAsCredentialProcess writes (prints) credentials to stdout in the format required by the AWS CLI.
+// OutputCredentialProcess writes (prints) credentials to stdout in the format required by the AWS CLI.
 // The output can be used to set the credential_process option in the AWS CLI configuration file.
-func WriteCredentialsToStdOutAsCredentialProcess(c *Credentials, w io.Writer) {
+func OutputCredentialProcess(c *Credentials, w io.Writer) {
 	log.Log.Trace("Writing credentials to stdout in credential_process format")
 	log.Log.Infof("Credentials expire at %s, in %d Minutes", c.Expiration.Format(time.RFC3339), int(c.Expiration.Sub(time.Now().UTC()).Minutes()))
 	fmt.Fprintf(

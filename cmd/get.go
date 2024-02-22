@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+var output string
 var printToShell bool
 var printToCredentialProcess bool
 var cacheCredentials bool
@@ -29,79 +30,146 @@ var cacheToFile string
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
+	cmdGet.Flags().StringVarP(
+		&output, "output", "o", "~/.aws/credentials", "How or where to output credentials. Two special values are supported `environment` and `credential_process`. All other values are interpreted as file paths (default: $HOME/.aws/credentials)",
+	)
+
+	cmdGet.Flags().BoolVarP(
+		&cacheCredentials, "cache-enable", "", false,
+		"Should credentials be cached to a file if run as a credential_process (default: false)",
+	)
+	cmdGet.Flags().StringVarP(
+		&cacheToFile, "cache-path", "", "~/.aws/credentials-cache",
+		"Write credentials to this file instead of the default ($HOME/.aws/credentials-cache)",
+	)
+
+	// Keep the old flags as is.
+	cmdGet.Flags().StringVarP(
+		&writeToFile, "write-to-file", "w", "",
+		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
+	)
 	cmdGet.Flags().BoolVarP(
 		&printToShell, "shell", "s", false, "Print credentials to shell to be sourced as environment variables",
 	)
-	cmdGet.Flags().BoolVarP(
-		&printToCredentialProcess, "credential_process", "p", false, "Print credentials in the format used by the AWS CLI credential_process",
-	)
-	cmdGet.Flags().BoolVarP(
-		&cacheCredentials, "cache-credentials", "", false,
-		"Should credentials be cached to a file if run as a credential_process (default: false)",
-	)
-	err := viper.BindPFlag("global.cache-credentials", cmdGet.Flags().Lookup("cache-credentials"))
+
+	// Mark the old flag as deprecated.
+	cmdGet.Flags().MarkDeprecated("write-to-file", "please use output-file instead.")
+	cmdGet.Flags().MarkDeprecated("shell", "please use output-environment instead.")
+
+	// SetNormalize function to translate the use of `old-flag` to `new-flag`
+	// cmdGet.Flags().SetNormalizeFunc(normalizeFlagName)
+
+	// cmdGet.MarkFlagsMutuallyExclusive("output-environment", "output-process")
+
+}
+
+// func normalizeFlagName(f *pflag.FlagSet, name string) pflag.NormalizedName {
+// 	switch name {
+// 	case "write-to-file":
+// 		name = "output"
+// 	case "shell":
+// 		name = "output"
+// 		writeToFile = "environment"
+// 	}
+// 	return pflag.NormalizedName(name)
+// }
+
+func preferredOutput(cmd *cobra.Command, app string) string {
+	// Order of preference:
+	// * output flag
+	// * write-to-file flag (deprecated)
+	// * app specific config file
+	// * global config file
+	// * default to ~/.aws/credentials
+	out, err := cmd.Flags().GetString("output")
 	if err != nil {
-		log.Log.Fatalf("Error binding flag global.credentials-cache-path: %v", err)
+		log.Log.Warnf("Error getting output flag: %v", err)
 	}
-	cmdGet.Flags().StringVarP(
-		&cacheToFile, "cache-file", "", "~/.aws/credentials-cache",
-		"Write credentials to this file instead of the default (~/.aws/credentials-cache)",
-	)
-	err = viper.BindPFlag("global.credentials-cache-path", cmdGet.Flags().Lookup("cache-file"))
-	if err != nil {
-		log.Log.Fatalf("Error binding flag global.credentials-cache-path: %v", err)
+	if out != "" {
+		return out
 	}
-	cmdGet.Flags().StringVarP(
-		&writeToFile, "write-to-file", "w", "~/.aws/credentials",
-		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
-	)
-	err = viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
+
+	out, err = cmd.Flags().GetString("write-to-file")
 	if err != nil {
-		log.Log.Fatalf("Error binding flag global.credentials-path: %v", err)
+		log.Log.Warnf("Error getting write-to-file flag: %v", err)
+	}
+	if out != "" {
+		return out
+	}
+
+	out = viper.GetString(fmt.Sprintf("apps.%s.output", app))
+	if out != "" {
+		return out
+	}
+
+	out = viper.GetString("global.output")
+	if out != "" {
+		return out
+	}
+
+	return "~/.aws/credentials"
+}
+
+func setOutput(cmd *cobra.Command, app string) {
+	o := preferredOutput(cmd, app)
+	writeToFile = ""
+	switch o {
+	case "environment":
+		printToShell = true
+	case "credential_process":
+		printToCredentialProcess = true
+	default:
+		writeToFile = o
 	}
 }
 
 // processCredentials prints the given Credentials to a file and/or to the shell.
 func processCredentials(creds *aws.Credentials, app string) error {
-	if printToCredentialProcess && printToShell {
-		return fmt.Errorf("cannot use both --shell and --credential-process")
-	}
 	if printToShell {
 		// Print credentials to shell using the correct syntax for the OS.
-		aws.WriteToStdOutAsEnvironment(creds, runtime.GOOS == "windows", os.Stdout)
-		return nil
+		aws.OutputEnvironment(creds, runtime.GOOS == "windows", os.Stdout)
 	}
 
-	var viperPathString string
 	if printToCredentialProcess {
-		aws.WriteCredentialsToStdOutAsCredentialProcess(creds, os.Stdout)
-		if cacheCredentials {
-			viperPathString = "global.credentials-cache-path"
-		}
-	} else {
-		viperPathString = "global.credentials-path"
+		aws.OutputCredentialProcess(creds, os.Stdout)
 	}
-	if viperPathString != "" {
-		path, err := homedir.Expand(viper.GetString(viperPathString))
-		if err != nil {
-			return fmt.Errorf("expanding config file path: %v", err)
-		}
-		// Create the `global.credentials-path` directory if it doesn't exist.
-		credsFileParentDir := filepath.Dir(path)
-		if _, err := os.Stat(credsFileParentDir); os.IsNotExist(err) {
-			log.Log.Warnf("Credentials directory '%s' does not exist - creating it", credsFileParentDir)
-			// Lets default to strict permissions on the folders we create
-			err = os.MkdirAll(credsFileParentDir, 0700)
-			if err != nil {
-				return fmt.Errorf("creating credentials directory: %v", err)
-			}
-		}
 
-		if err := aws.WriteToFile(creds, path, app); err != nil {
+	if cacheCredentials {
+		if err := writeCredentialsToFile(creds, app, cacheToFile); err != nil {
+			log.Log.Errorf("writing credentials to file: %v", err)
+		}
+	}
+
+	// if writeToFile is set, write the credentials to the file, might be the cache file or the credentials file
+	if writeToFile != "" {
+		if err := writeCredentialsToFile(creds, app, writeToFile); err != nil {
 			return fmt.Errorf("writing credentials to file: %v", err)
 		}
-		log.Log.Printf("Credentials written successfully to '%s'", path)
 	}
+	return nil
+}
+
+func writeCredentialsToFile(creds *aws.Credentials, app, file string) error {
+	log.Log.Tracef("Writing credentials to '%s'", file)
+	path, err := homedir.Expand(file)
+	if err != nil {
+		return fmt.Errorf("expanding config file path: %v", err)
+	}
+	// Create the `global.credentials-path` directory if it doesn't exist.
+	credsFileParentDir := filepath.Dir(path)
+	if _, err := os.Stat(credsFileParentDir); os.IsNotExist(err) {
+		log.Log.Warnf("Credentials directory '%s' does not exist - creating it", credsFileParentDir)
+		// Lets default to strict permissions on the folders we create
+		err = os.MkdirAll(credsFileParentDir, 0700)
+		if err != nil {
+			return fmt.Errorf("creating credentials directory: %v", err)
+		}
+	}
+
+	if err := aws.OutputFile(creds, path, app); err != nil {
+		return fmt.Errorf("writing credentials to file: %v", err)
+	}
+	log.Log.Printf("Credentials written successfully to '%s'", path)
 	return nil
 }
 
@@ -137,7 +205,8 @@ func awsRegion(app string) string {
 
 func getCachedCredential(app string) (*aws.Credentials, error) {
 	// get the credentials from the cache file
-	credentialFile, err := homedir.Expand(viper.GetString("global.credentials-cache-path"))
+	log.Log.Tracef("Looking for cached credentials in '%s'", cacheToFile)
+	credentialFile, err := homedir.Expand(cacheToFile)
 	if err != nil {
 		log.Log.Fatalf("Failed to expand home: %s", err)
 	}
@@ -201,15 +270,17 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		awsRegion := awsRegion(app)
 
+		setOutput(cmd, app)
+
 		if printToCredentialProcess && cacheCredentials {
-			log.Log.Trace("Using --cache-credentials and --credential-process")
+			log.Log.Trace("Using --cache-credentials and --output-process")
 			// we need to cache the credentials to a file and return valid credentials instead of constantly hitting the IdPs
 			credential, err := getCachedCredential(app)
 			if err != nil {
 				log.Log.WithError(err).Debugf("Failed to find cached credentials for app '%s'", app)
 			}
 			if credential != nil {
-				aws.WriteCredentialsToStdOutAsCredentialProcess(credential, os.Stdout)
+				aws.OutputCredentialProcess(credential, os.Stdout)
 				return
 			}
 		}

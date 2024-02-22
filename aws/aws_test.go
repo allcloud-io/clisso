@@ -32,7 +32,7 @@ func TestWriteToFile(t *testing.T) {
 	p := "expiredprofile"
 
 	// Write credentials
-	err := WriteToFile(&c, fn, p)
+	err := OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -55,7 +55,7 @@ func TestWriteToFile(t *testing.T) {
 	p = "testprofile"
 
 	// Write credentials
-	err = WriteToFile(&c, fn, p)
+	err = OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -139,7 +139,7 @@ func TestGetValidProfiles(t *testing.T) {
 	p := "expired"
 
 	// Write credentials
-	err := WriteToFile(&c, fn, p)
+	err := OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -149,7 +149,7 @@ func TestGetValidProfiles(t *testing.T) {
 	p = "valid"
 
 	// Write credentials
-	err = WriteToFile(&c, fn, p)
+	err = OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -222,7 +222,7 @@ func TestWriteToShellUnix(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToStdOutAsEnvironment(&c, false, &b)
+	OutputEnvironment(&c, false, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(
@@ -251,7 +251,7 @@ func TestWriteToShellWindows(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToStdOutAsEnvironment(&c, true, &b)
+	OutputEnvironment(&c, true, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(

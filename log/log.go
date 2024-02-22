@@ -14,13 +14,14 @@ var Log *logrus.Logger
 
 func NewLogger(logLevelFlag, logFilePath string, enableLogFile bool) *logrus.Logger {
 	if Log != nil {
+		Log.Tracef("Logger already initialized")
 		return Log
 	}
 
 	// parse log level flag and set log level
 	logLevel, err := logrus.ParseLevel(logLevelFlag)
 	if err != nil {
-		Log.Fatalf("Error parsing log level: %v", err)
+		logrus.Fatalf("Error parsing log level: %v", err)
 	}
 	Log = logrus.New()
 	Log.SetLevel(logLevel)
@@ -31,8 +32,15 @@ func NewLogger(logLevelFlag, logFilePath string, enableLogFile bool) *logrus.Log
 			Log.Fatalf("Error expanding homedir: %v", err)
 		}
 
+		// set all log levels to write to the log file
 		pathMap := lfshook.PathMap{
-			logLevel: logFile,
+			logrus.TraceLevel: logFile,
+			logrus.DebugLevel: logFile,
+			logrus.InfoLevel:  logFile,
+			logrus.WarnLevel:  logFile,
+			logrus.ErrorLevel: logFile,
+			logrus.FatalLevel: logFile,
+			logrus.PanicLevel: logFile,
 		}
 		Log.Hooks.Add(lfshook.NewHook(
 			pathMap,
@@ -47,7 +55,7 @@ func NewLogger(logLevelFlag, logFilePath string, enableLogFile bool) *logrus.Log
 		}
 		Log.SetFormatter(&logrus.TextFormatter{PadLevelText: true})
 	}
-	Log.Infof("Log level set to %s", logLevelFlag)
+	Log.Warning("This is a warning")
+	Log.Warnf("Log level set to %s", logLevelFlag)
 	return Log
 }
-
