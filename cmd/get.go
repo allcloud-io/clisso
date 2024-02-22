@@ -23,6 +23,7 @@ import (
 
 var printToShell bool
 var writeToFile string
+var mfaDevice string
 
 func init() {
 	RootCmd.AddCommand(cmdGet)
@@ -36,6 +37,15 @@ func init() {
 	err := viper.BindPFlag("global.credentials-path", cmdGet.Flags().Lookup("write-to-file"))
 	if err != nil {
 		log.Fatalf("Error binding flag global.credentials-path: %v", err)
+	}
+	cmdGet.Flags().StringVarP(
+		&mfaDevice, "mfa-device", "m", "",
+		"Specify an MFA device to use (OneLogin Only)",
+	)
+	// Bind mfa-device to viper so it can be easily accessed.
+	err = viper.BindPFlag("global.mfa-device", cmdGet.Flags().Lookup("mfa-device"))
+	if err != nil {
+		log.Fatalf("Error binding flag global.mfa-device: %v", err)
 	}
 }
 

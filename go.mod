@@ -12,12 +12,14 @@ require (
 	github.com/crewjam/saml v0.4.14
 	github.com/go-ini/ini v1.67.0
 	github.com/icza/gog v0.0.0-20230509085756-00e776132a34
+	github.com/karalabe/hid v1.0.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
+	github.com/stretchr/testify v1.8.4
 	github.com/zalando/go-keyring v0.2.3
 	golang.org/x/net v0.19.0
 	golang.org/x/term v0.15.0
@@ -37,6 +39,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.1 // indirect
 	github.com/beevik/etree v1.2.0 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
@@ -49,6 +52,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/russellhaering/goxmldsig v1.4.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
