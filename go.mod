@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.25.0
 	github.com/aws/aws-sdk-go-v2/config v1.25.10
 	github.com/aws/aws-sdk-go-v2/service/sts v1.27.0
-	github.com/aws/smithy-go v1.20.0
+	github.com/aws/smithy-go v1.20.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/crewjam/saml v0.4.14
 	github.com/go-ini/ini v1.67.0
