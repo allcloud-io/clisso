@@ -60,13 +60,13 @@ git clone github.com/allcloud-io/clisso
 
 # Build the binary
 cd clisso
-make
+go build
 
 # Install the binary in $GOPATH/bin
-make install
+go install
 
 # Clean up
-make clean
+go clean
 ```
 
 ## Configuration
