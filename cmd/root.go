@@ -153,7 +153,11 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 		if !f.Changed && v.IsSet(configName) {
 			//fmt.Fprintf(os.Stderr, "Setting Flag %s by config: %s\n", f.Name, configName)
 			val := v.Get(configName)
-			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+			err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+			if err != nil {
+				// no logger yet, so print to stderr
+				fmt.Fprintf(os.Stderr, "Error setting flag %s: %v\n", f.Name, err)
+			}
 		/*} else {
 			fmt.Fprintf(os.Stderr, "Using Flag %s default: %v\n", f.Name, f.DefValue)*/
 		}
