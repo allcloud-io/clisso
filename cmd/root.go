@@ -85,7 +85,7 @@ func init() {
 	// }
 
 	RootCmd.PersistentFlags().StringVarP(
-		&logFile, "log-file", "", "~/.clisso.log", "log file location (~/.clisso.log)",
+		&logFile, "log-file", "", "$HOME/.clisso.log", "log file location",
 	)
 	// err = viper.BindPFlag("global.log.file", RootCmd.PersistentFlags().Lookup("log-file"))
 	// if err != nil {

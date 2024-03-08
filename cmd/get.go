@@ -31,30 +31,38 @@ var cacheToFile string
 func init() {
 	RootCmd.AddCommand(cmdGet)
 	cmdGet.Flags().StringVarP(
-		&output, "output", "o", "~/.aws/credentials", "How or where to output credentials. Two special values are supported `environment` and `credential_process`. All other values are interpreted as file paths (default: $HOME/.aws/credentials)",
+		&output, "output", "o", "$HOME/.aws/credentials", "How or where to output credentials. Two special values are supported 'environment' and 'credential_process'. All other values are interpreted as file paths",
 	)
 
 	cmdGet.Flags().BoolVarP(
 		&cacheCredentials, "cache-enable", "", false,
-		"Should credentials be cached to a file if run as a credential_process (default: false)",
+		"Should credentials be cached to a file, important when run as a credential_process (default: false)",
 	)
 	cmdGet.Flags().StringVarP(
-		&cacheToFile, "cache-path", "", "~/.aws/credentials-cache",
-		"Write credentials to this file instead of the default ($HOME/.aws/credentials-cache)",
+		&cacheToFile, "cache-path", "", "$HOME/.aws/credentials-cache",
+		"Write credentials to this file instead of the default",
 	)
 
 	// Keep the old flags as is.
 	cmdGet.Flags().StringVarP(
-		&writeToFile, "write-to-file", "w", "",
-		"Write credentials to this file instead of the default ($HOME/.aws/credentials)",
+		&writeToFile, "write-to-file", "w", "$HOME/.aws/credentials",
+		"Write credentials to this file instead of the default",
 	)
 	cmdGet.Flags().BoolVarP(
 		&printToShell, "shell", "s", false, "Print credentials to shell to be sourced as environment variables",
 	)
 
 	// Mark the old flag as deprecated.
-	cmdGet.Flags().MarkDeprecated("write-to-file", "please use output-file instead.")
-	cmdGet.Flags().MarkDeprecated("shell", "please use output-environment instead.")
+	err := cmdGet.Flags().MarkDeprecated("write-to-file", "please use output-file instead.")
+	if err != nil {
+		// we don't have a logger yet, so we can't use it but need to print the error to the console
+		fmt.Printf("Error marking flag as deprecated: %v", err)
+	}
+	err = cmdGet.Flags().MarkDeprecated("shell", "please use output-environment instead.")
+	if err != nil {
+		// we don't have a logger yet, so we can't use it but need to print the error to the console
+		fmt.Printf("Error marking flag as deprecated: %v", err)
+	}
 
 	cmdGet.MarkFlagsMutuallyExclusive("output", "shell", "write-to-file")
 
