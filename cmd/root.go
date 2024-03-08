@@ -147,15 +147,15 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 		// Determine the naming convention of the flags when represented in the config file
 		configName := fmt.Sprintf("global.%s", f.Name)
 		configName = strings.ReplaceAll(configName, "-", ".")
-		fmt.Fprintf(os.Stderr, "Checking Flag: %s\n", configName)
+		//fmt.Fprintf(os.Stderr, "Checking Flag: %s\n", configName)
 
 		// Apply the viper config value to the flag when the flag is not set and viper has a value
 		if !f.Changed && v.IsSet(configName) {
-			fmt.Fprintf(os.Stderr, "Setting Flag %s by config: %s\n", f.Name, configName)
+			//fmt.Fprintf(os.Stderr, "Setting Flag %s by config: %s\n", f.Name, configName)
 			val := v.Get(configName)
 			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
-		} else {
-			fmt.Fprintf(os.Stderr, "Using Flag %s default: %v\n", f.Name, f.DefValue)
+		/*} else {
+			fmt.Fprintf(os.Stderr, "Using Flag %s default: %v\n", f.Name, f.DefValue)*/
 		}
 	})
 }

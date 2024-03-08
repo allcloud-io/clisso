@@ -56,23 +56,9 @@ func init() {
 	cmdGet.Flags().MarkDeprecated("write-to-file", "please use output-file instead.")
 	cmdGet.Flags().MarkDeprecated("shell", "please use output-environment instead.")
 
-	// SetNormalize function to translate the use of `old-flag` to `new-flag`
-	// cmdGet.Flags().SetNormalizeFunc(normalizeFlagName)
-
-	// cmdGet.MarkFlagsMutuallyExclusive("output-environment", "output-process")
+	cmdGet.MarkFlagsMutuallyExclusive("output", "shell", "write-to-file")
 
 }
-
-// func normalizeFlagName(f *pflag.FlagSet, name string) pflag.NormalizedName {
-// 	switch name {
-// 	case "write-to-file":
-// 		name = "output"
-// 	case "shell":
-// 		name = "output"
-// 		writeToFile = "environment"
-// 	}
-// 	return pflag.NormalizedName(name)
-// }
 
 func preferredOutput(cmd *cobra.Command, app string) string {
 	// Order of preference:
