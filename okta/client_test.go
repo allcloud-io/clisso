@@ -10,7 +10,11 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/allcloud-io/clisso/log"
 )
+
+var _ = log.NewLogger("panic","", false)
 
 func getTestServer(data string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -10,6 +10,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/allcloud-io/clisso/log"
 )
 
 func getTestServer(data string) *httptest.Server {
@@ -24,6 +26,8 @@ func getTestServer(data string) *httptest.Server {
 }
 
 var c = Client{}
+
+var _ = log.NewLogger("panic","", false)
 
 func TestNewClient(t *testing.T) {
 	for _, test := range []struct {

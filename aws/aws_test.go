@@ -12,8 +12,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/go-ini/ini"
 )
+
+var _ = log.NewLogger("panic","", false)
 
 func TestWriteToFile(t *testing.T) {
 	id := "expiredkey"
@@ -208,7 +211,7 @@ func TestGetValidProfiles(t *testing.T) {
 	}
 }
 
-func TestWriteToShellUnix(t *testing.T) {
+func TestOutputUnixEnvironment(t *testing.T) {
 	id := "testkey"
 	sec := "testsecret"
 	tok := "testtoken"
@@ -237,7 +240,7 @@ func TestWriteToShellUnix(t *testing.T) {
 	}
 }
 
-func TestWriteToShellWindows(t *testing.T) {
+func TestOutputWindowsEnvironment(t *testing.T) {
 	id := "testkey"
 	sec := "testsecret"
 	tok := "testtoken"
