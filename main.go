@@ -6,11 +6,6 @@
 package main
 
 import (
-	"runtime"
-
-	"github.com/mattn/go-colorable"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/allcloud-io/clisso/cmd"
 )
 
@@ -20,16 +15,6 @@ var (
 	commit  = "none"
 	date    = "unknown"
 )
-
-func init() {
-	if runtime.GOOS == "windows" {
-		// Handle terminal colors on Windows machines.
-		// TODO, check if still required with the switch to logrus
-		log.SetOutput(colorable.NewColorableStdout())
-	}
-
-	log.SetFormatter(&log.TextFormatter{PadLevelText: true})
-}
 
 func main() {
 	cmd.Execute(version, commit, date)

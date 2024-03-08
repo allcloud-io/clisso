@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/allcloud-io/clisso/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -63,7 +63,7 @@ var cmdAppsList = &cobra.Command{
 	Long:  "List all configured apps.",
 	Run: func(cmd *cobra.Command, args []string) {
 		apps := viper.GetStringMap("apps")
-		log.Trace("Listing apps")
+		log.Log.Trace("Listing apps")
 
 		if len(apps) == 0 {
 			fmt.Println("No apps configured")
@@ -105,18 +105,18 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 
 		// Verify app doesn't exist
 		if exists := viper.Get("apps." + name); exists != nil {
-			log.Fatalf("App '%s' already exists", name)
+			log.Log.Fatalf("App '%s' already exists", name)
 		}
 
 		// Verify provider exists
 		if exists := viper.Get("providers." + provider); exists == nil {
-			log.Fatalf("Provider '%s' doesn't exist", provider)
+			log.Log.Fatalf("Provider '%s' doesn't exist", provider)
 		}
 
 		// Verify provider type
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType != "onelogin" {
-			log.Fatalf(
+			log.Log.Fatalf(
 				"Invalid provider type '%s' for a OneLogin app. Type must be 'onelogin'.",
 				pType,
 			)
@@ -134,9 +134,9 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 		if duration != 0 {
 			// Duration specified - validate value
 			if duration < 3600 || duration > 43200 {
-				log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
+				log.Log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
 			}
-			log.Tracef("Setting duration to %d", duration)
+			log.Log.Tracef("Setting duration to %d", duration)
 			conf["duration"] = strconv.Itoa(duration)
 		}
 
@@ -145,9 +145,9 @@ var cmdAppsCreateOneLogin = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Log.Fatalf("Error writing config: %v", err)
 		}
-		log.Printf("App '%s' saved to config file", name)
+		log.Log.Printf("App '%s' saved to config file", name)
 	},
 }
 
@@ -161,18 +161,18 @@ var cmdAppsCreateOkta = &cobra.Command{
 
 		// Verify app doesn't exist
 		if exists := viper.Get("apps." + name); exists != nil {
-			log.Fatalf("App '%s' already exists", name)
+			log.Log.Fatalf("App '%s' already exists", name)
 		}
 
 		// Verify provider exists
 		if exists := viper.Get("providers." + provider); exists == nil {
-			log.Fatalf("Provider '%s' doesn't exist", provider)
+			log.Log.Fatalf("Provider '%s' doesn't exist", provider)
 		}
 
 		// Verify provider type
 		pType := viper.GetString(fmt.Sprintf("providers.%s.type", provider))
 		if pType != "okta" {
-			log.Fatalf(
+			log.Log.Fatalf(
 				"Invalid provider type '%s' for an Okta app. Type must be 'okta'.",
 				pType,
 			)
@@ -186,9 +186,9 @@ var cmdAppsCreateOkta = &cobra.Command{
 		if duration != 0 {
 			// Duration specified - validate value
 			if duration < 3600 || duration > 43200 {
-				log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
+				log.Log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
 			}
-			log.Tracef("Setting duration to %d", duration)
+			log.Log.Tracef("Setting duration to %d", duration)
 			conf["duration"] = strconv.Itoa(duration)
 		}
 
@@ -197,9 +197,9 @@ var cmdAppsCreateOkta = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Log.Fatalf("Error writing config: %v", err)
 		}
-		log.Printf("App '%s' saved to config file", name)
+		log.Log.Printf("App '%s' saved to config file", name)
 	},
 }
 
@@ -213,19 +213,19 @@ var cmdAppsSelect = &cobra.Command{
 
 		if app == "" {
 			viper.Set("global.selected-app", "")
-			log.Println("Unsetting selected app")
+			log.Log.Println("Unsetting selected app")
 		} else {
 			if exists := viper.Get("apps." + app); exists == nil {
-				log.Fatalf("App '%s' doesn't exist", app)
+				log.Log.Fatalf("App '%s' doesn't exist", app)
 			}
-			log.Printf("Setting selected app to '%s'", app)
+			log.Log.Printf("Setting selected app to '%s'", app)
 			viper.Set("global.selected-app", app)
 		}
 
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Fatalf("Error writing config: %v", err)
+			log.Log.Fatalf("Error writing config: %v", err)
 		}
 	},
 }
