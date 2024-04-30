@@ -9,8 +9,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/crewjam/saml"
 )
+
+var _ = log.NewLogger("panic", "", false)
 
 func TestExtractArns(t *testing.T) {
 	for _, test := range []struct {

@@ -12,12 +12,13 @@ package spinner
 import (
 	"time"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/briandowns/spinner"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-func new() SpinnerWrapper {
-	if log.GetLevel() >= log.DebugLevel {
+func new(interactive bool) SpinnerWrapper {
+	if log.Log.GetLevel() >= logrus.DebugLevel || !interactive {
 		return &noopSpinner{}
 	}
 	return spinner.New(spinner.CharSets[14], 50*time.Millisecond)

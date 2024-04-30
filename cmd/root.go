@@ -6,29 +6,28 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/allcloud-io/clisso/log"
 	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var logFile string
+var logLevel string
 
 var RootCmd = &cobra.Command{
 	Use:     "clisso",
 	Version: "0.0.0",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// get log level flag value
-		logLevelFlag := cmd.Flag("log-level").Value.String()
-		// parse log level flag and set log level
-		logLevel, err := log.ParseLevel(logLevelFlag)
-		if err != nil {
-			log.Fatalf("Error parsing log level: %v", err)
-		}
-		log.SetLevel(logLevel)
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return initConfig(cmd)
 	},
 }
 
@@ -74,13 +73,24 @@ one at https://mozilla.org/MPL/2.0/.
 `
 
 func init() {
-	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "",
-		"config file (default is $HOME/.clisso.yaml)",
+		"config file (default is ~/.clisso.yaml)",
 	)
 	// Add a global log level flag
-	RootCmd.PersistentFlags().String("log-level", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
+	RootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
+	// err := viper.BindPFlag("global.log.level", RootCmd.PersistentFlags().Lookup("log-level"))
+	// if err != nil {
+	// 	// log isn't available yet, so we can't use it
+	// 	logrus.Fatalf("Error binding flag global.log.level: %v", err)
+	// }
 
+	RootCmd.PersistentFlags().StringVarP(
+		&logFile, "log-file", "", "~/.clisso.log", "log file location",
+	)
+	// err = viper.BindPFlag("global.log.file", RootCmd.PersistentFlags().Lookup("log-file"))
+	// if err != nil {
+	// 	logrus.Fatalf("Error binding flag global.log.file: %v", err)
+	// }
 	RootCmd.SetUsageTemplate(usageTemplate)
 	RootCmd.SetVersionTemplate(versionTemplate)
 }
@@ -91,17 +101,17 @@ func Execute(version, commit, date string) {
 	RootCmd.Version = version + " (" + commit + " " + date + ")"
 	err := RootCmd.Execute()
 	if err != nil {
-		log.Fatalf("Failed to execute: %v", err)
+		logrus.Fatalf("Failed to execute: %v", err)
 	}
 }
 
-func initConfig() {
+func initConfig(cmd *cobra.Command) error {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			log.Fatalf("Error getting home directory: %v", err)
+			log.Log.Fatalf("Error getting home directory: %v", err)
 		}
 
 		viper.SetConfigType("yaml")
@@ -113,15 +123,44 @@ func initConfig() {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			_, err := os.Create(file)
 			if err != nil {
-				log.Fatalf("Error creating config file: %v", err)
+				panic(fmt.Errorf("can't create config file: %v", err))
 			}
 		}
 
-		// Set default config values
-		viper.SetDefault("global.credentials-path", filepath.Join(home, ".aws", "credentials"))
+		// // Set default config values
+		// viper.SetDefault("global.credentials-path", filepath.Join(home, ".aws", "credentials"))
+		// viper.SetDefault("global.cache.path", filepath.Join(home, ".aws", "credentials-cache"))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Can't read config: %v", err)
+		// no logger yet, panic
+		panic(fmt.Errorf("can't read config: %v", err))
 	}
+	bindFlags(cmd, viper.GetViper())
+	_ = log.NewLogger(logLevel, logFile, logFile != "")
+	return nil
+}
+
+// Bind each cobra flag to its associated viper configuration (config file and environment variable)
+func bindFlags(cmd *cobra.Command, v *viper.Viper) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+
+		// Determine the naming convention of the flags when represented in the config file
+		configName := fmt.Sprintf("global.%s", f.Name)
+		configName = strings.ReplaceAll(configName, "-", ".")
+		//fmt.Fprintf(os.Stderr, "Checking Flag: %s\n", configName)
+
+		// Apply the viper config value to the flag when the flag is not set and viper has a value
+		if !f.Changed && v.IsSet(configName) {
+			//fmt.Fprintf(os.Stderr, "Setting Flag %s by config: %s\n", f.Name, configName)
+			val := v.Get(configName)
+			err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+			if err != nil {
+				// no logger yet, so print to stderr
+				fmt.Fprintf(os.Stderr, "Error setting flag %s: %v\n", f.Name, err)
+			}
+			/*} else {
+			fmt.Fprintf(os.Stderr, "Using Flag %s default: %v\n", f.Name, f.DefValue)*/
+		}
+	})
 }
