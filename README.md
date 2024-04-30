@@ -283,10 +283,41 @@ with the app's name as the [profile name][10]. You can use the temporary credent
 the profile name as an argument to the AWS CLI (`--profile my-profile`), by setting the
 `AWS_PROFILE` environment variable or by configuring any AWS SDK to use the profile.
 
-To save the credentials to a custom file, use the `-w` flag.
+To save the credentials to a custom file, use the `--output` flag with a custom path. For example:
 
-To print the credentials to the shell instead of storing them in a file, use the `-s` flag. This
+    clisso get my-app --output /path/to/credentials
+
+To print the credentials to the shell instead of storing them in a file, use the `--output environment` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
+
+### Running as `credential_process`
+
+AWS CLI v2 introduced the `credential_process` feature which allows you to use an external command to obtain temporal credentials.
+Clisso can be used as a `credential_process` command by setting the `--output credential_process` flag. For example:
+
+    clisso get my-app --output credential_process
+
+You can use this by adding the following to your `~/.aws/credentials` file:
+
+```ini
+[my-app]
+credential_process = clisso get my-app --output credential_process
+```
+
+The AWS SDK does not cache any credentials obtained using `credential_process`. This means that every time you use the profile, Clisso will be called to obtain new credentials. If you want to cache the credentials, you can use the `--cache` flag. For example:
+
+```ini
+[my-app]
+credential_process = clisso get my-app --output credential_process --cache
+```
+
+Alternatively you can set it in the `~/.clisso.yaml` file:
+
+```yaml
+global:
+  cache:
+    enable: true
+```
 
 ### Storing the password in the key chain
 

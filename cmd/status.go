@@ -24,7 +24,7 @@ func init() {
 	RootCmd.AddCommand(cmdStatus)
 	cmdStatus.Flags().StringVarP(
 		&readFromFile, "read-from-file", "r", "",
-		"Read credentials from this file instead of the default ($HOME/.aws/credentials)",
+		"Read credentials from this file instead of the default (~/.aws/credentials)",
 	)
 	err := viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
 	if err != nil {

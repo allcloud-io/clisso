@@ -74,7 +74,7 @@ one at https://mozilla.org/MPL/2.0/.
 
 func init() {
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "",
-		"config file (default is $HOME/.clisso.yaml)",
+		"config file (default is ~/.clisso.yaml)",
 	)
 	// Add a global log level flag
 	RootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "", "info", "set log level to trace, debug, info, warn, error, fatal or panic")
@@ -85,7 +85,7 @@ func init() {
 	// }
 
 	RootCmd.PersistentFlags().StringVarP(
-		&logFile, "log-file", "", "$HOME/.clisso.log", "log file location",
+		&logFile, "log-file", "", "~/.clisso.log", "log file location",
 	)
 	// err = viper.BindPFlag("global.log.file", RootCmd.PersistentFlags().Lookup("log-file"))
 	// if err != nil {
@@ -123,7 +123,7 @@ func initConfig(cmd *cobra.Command) error {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			_, err := os.Create(file)
 			if err != nil {
-				log.Log.Fatalf("Error creating config file: %v", err)
+				panic(fmt.Errorf("can't create config file: %v", err))
 			}
 		}
 
@@ -133,10 +133,11 @@ func initConfig(cmd *cobra.Command) error {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Log.Fatalf("Can't read config: %v", err)
+		// no logger yet, panic
+		panic(fmt.Errorf("can't read config: %v", err))
 	}
 	bindFlags(cmd, viper.GetViper())
-	log.Log = log.NewLogger(logLevel, logFile, logFile != "")
+	_ = log.NewLogger(logLevel, logFile, logFile != "")
 	return nil
 }
 

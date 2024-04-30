@@ -31,7 +31,7 @@ var cacheToFile string
 func init() {
 	RootCmd.AddCommand(cmdGet)
 	cmdGet.Flags().StringVarP(
-		&output, "output", "o", "$HOME/.aws/credentials", "How or where to output credentials. Two special values are supported 'environment' and 'credential_process'. All other values are interpreted as file paths",
+		&output, "output", "o", "~/.aws/credentials", "How or where to output credentials. Two special values are supported 'environment' and 'credential_process'. All other values are interpreted as file paths",
 	)
 
 	cmdGet.Flags().BoolVarP(
@@ -39,13 +39,13 @@ func init() {
 		"Should credentials be cached to a file, important when run as a credential_process (default: false)",
 	)
 	cmdGet.Flags().StringVarP(
-		&cacheToFile, "cache-path", "", "$HOME/.aws/credentials-cache",
+		&cacheToFile, "cache-path", "", "~/.aws/credentials-cache",
 		"Write credentials to this file instead of the default",
 	)
 
 	// Keep the old flags as is.
 	cmdGet.Flags().StringVarP(
-		&writeToFile, "write-to-file", "w", "$HOME/.aws/credentials",
+		&writeToFile, "write-to-file", "w", "~/.aws/credentials",
 		"Write credentials to this file instead of the default",
 	)
 	cmdGet.Flags().BoolVarP(
