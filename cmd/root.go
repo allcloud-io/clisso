@@ -159,7 +159,7 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 				// no logger yet, so print to stderr
 				fmt.Fprintf(os.Stderr, "Error setting flag %s: %v\n", f.Name, err)
 			}
-		/*} else {
+			/*} else {
 			fmt.Fprintf(os.Stderr, "Using Flag %s default: %v\n", f.Name, f.DefValue)*/
 		}
 	})

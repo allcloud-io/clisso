@@ -12,7 +12,7 @@ import (
 	"github.com/allcloud-io/clisso/log"
 )
 
-var _ = log.NewLogger("panic","", false)
+var _ = log.NewLogger("panic", "", false)
 
 func randSeq(n int, letters []rune) []byte {
 	b := make([]rune, n)

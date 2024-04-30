@@ -27,7 +27,7 @@ func getTestServer(data string) *httptest.Server {
 
 var c = Client{}
 
-var _ = log.NewLogger("panic","", false)
+var _ = log.NewLogger("panic", "", false)
 
 func TestNewClient(t *testing.T) {
 	for _, test := range []struct {
