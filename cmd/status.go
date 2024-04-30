@@ -23,12 +23,12 @@ var readFromFile string
 func init() {
 	RootCmd.AddCommand(cmdStatus)
 	cmdStatus.Flags().StringVarP(
-		&readFromFile, "read-from-file", "r", "",
+		&readFromFile, "read-from-file", "r", "~/.aws/credentials",
 		"Read credentials from this file instead of the default (~/.aws/credentials)",
 	)
-	err := viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
+	err := viper.BindPFlag("global.output", cmdStatus.Flags().Lookup("read-from-file"))
 	if err != nil {
-		log.Log.Fatalf("Error binding flag global.credentials-path: %v", err)
+		log.Log.Fatalf("Error binding flag global.output: %v", err)
 	}
 }
 
@@ -42,9 +42,13 @@ var cmdStatus = &cobra.Command{
 }
 
 func printStatus() {
-	credentialFile, err := homedir.Expand(viper.GetString("global.credentials-path"))
+	credentialFile, err := homedir.Expand(viper.GetString("global.output"))
 	if err != nil {
 		log.Log.Fatalf("Failed to expand home: %s", err)
+	}
+	log.Log.Trace("Credential file: ", credentialFile)
+	if credentialFile == "credential_process" || credentialFile == "environment" {
+		return
 	}
 
 	profiles, err := aws.GetValidProfiles(credentialFile)

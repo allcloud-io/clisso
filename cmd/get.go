@@ -53,12 +53,12 @@ func init() {
 	)
 
 	// Mark the old flag as deprecated.
-	err := cmdGet.Flags().MarkDeprecated("write-to-file", "please use output-file instead.")
+	err := cmdGet.Flags().MarkDeprecated("write-to-file", "please use output instead.")
 	if err != nil {
 		// we don't have a logger yet, so we can't use it but need to print the error to the console
 		fmt.Printf("Error marking flag as deprecated: %v", err)
 	}
-	err = cmdGet.Flags().MarkDeprecated("shell", "please use output-environment instead.")
+	err = cmdGet.Flags().MarkDeprecated("shell", "please use output instead.")
 	if err != nil {
 		// we don't have a logger yet, so we can't use it but need to print the error to the console
 		fmt.Printf("Error marking flag as deprecated: %v", err)
@@ -149,7 +149,6 @@ func writeCredentialsToFile(creds *aws.Credentials, app, file string) error {
 	if err != nil {
 		return fmt.Errorf("expanding config file path: %v", err)
 	}
-	// Create the `global.credentials-path` directory if it doesn't exist.
 	credsFileParentDir := filepath.Dir(path)
 	if _, err := os.Stat(credsFileParentDir); os.IsNotExist(err) {
 		log.Log.Warnf("Credentials directory '%s' does not exist - creating it", credsFileParentDir)

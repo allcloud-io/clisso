@@ -127,9 +127,6 @@ func initConfig(cmd *cobra.Command) error {
 			}
 		}
 
-		// // Set default config values
-		// viper.SetDefault("global.credentials-path", filepath.Join(home, ".aws", "credentials"))
-		// viper.SetDefault("global.cache.path", filepath.Join(home, ".aws", "credentials-cache"))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {

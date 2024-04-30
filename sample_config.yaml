@@ -13,7 +13,7 @@ apps:
     url: https://xxxxxxxx.oktapreview.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137
 global:
   aws-region: us-east-1
-  credentials-path: ~/.aws/credentials
+  output: ~/.aws/credentials
   selected-app: sample-app-1
   accounts:
     "0000000000000": Dev
