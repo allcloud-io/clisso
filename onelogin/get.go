@@ -59,7 +59,7 @@ func NewDeviceOptions() *DeviceOptions {
 	d.setAutodetectYubiKey()
 	d.setMfaDevice()
 
-	log.WithFields(log.Fields{
+	log.Log.WithFields(logrus.Fields{
 		"autodetectYubiKey": d.AutodetectYubiKey,
 		"MfaDevice":         d.MfaDevice,
 	}).Debug("created device options configuration")
