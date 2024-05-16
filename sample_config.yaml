@@ -12,6 +12,7 @@ apps:
     role-arn: arn:aws:iam::123456789012:role/OktaDevSSO
     url: https://xxxxxxxx.oktapreview.com/home/amazon_aws/xxxxxxxxxxxxxxxxxxxx/137
 global:
+  autodetect-yubikey: true
   aws-region: us-east-1
   output: ~/.aws/credentials
   selected-app: sample-app-1
