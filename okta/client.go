@@ -16,7 +16,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/sirupsen/logrus"
+	"github.com/allcloud-io/clisso/log"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -105,6 +106,15 @@ type VerifyFactorResponse struct {
 	SessionToken string    `json:"sessionToken"`
 	Status       string    `json:"status"`
 	FactorResult string    `json:"factorResult,omitempty"`
+	Embedded     struct {
+		Factor struct {
+			Embedded struct {
+				Challenge struct {
+					CorrectAnswer int `json:"correctAnswer"`
+				} `json:"challenge"`
+			} `json:"_embedded"`
+		} `json:"factor"`
+	} `json:"_embedded"`
 }
 
 // VerifyFactor performs MFA verification.
@@ -177,7 +187,7 @@ func (c *Client) LaunchApp(p *LaunchAppParams) (*string, error) {
 // using the client, handles any HTTP-related errors and returns any data as a string.
 func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
-	log.WithFields(log.Fields{
+	log.Log.WithFields(logrus.Fields{
 		"status": resp.Status,
 		"url":    resp.Request.URL,
 		"host":   resp.Request.Host,

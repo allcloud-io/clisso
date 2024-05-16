@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/allcloud-io/clisso/aws"
+	"github.com/allcloud-io/clisso/log"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/olekukonko/tablewriter"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,12 +23,12 @@ var readFromFile string
 func init() {
 	RootCmd.AddCommand(cmdStatus)
 	cmdStatus.Flags().StringVarP(
-		&readFromFile, "read-from-file", "r", "",
-		"Read credentials from this file instead of the default ($HOME/.aws/credentials)",
+		&readFromFile, "read-from-file", "r", "~/.aws/credentials",
+		"Read credentials from this file instead of the default (~/.aws/credentials)",
 	)
-	err := viper.BindPFlag("global.credentials-path", cmdStatus.Flags().Lookup("read-from-file"))
+	err := viper.BindPFlag("global.output", cmdStatus.Flags().Lookup("read-from-file"))
 	if err != nil {
-		log.Fatalf("Error binding flag global.credentials-path: %v", err)
+		log.Log.Fatalf("Error binding flag global.output: %v", err)
 	}
 }
 
@@ -42,14 +42,18 @@ var cmdStatus = &cobra.Command{
 }
 
 func printStatus() {
-	configfile, err := homedir.Expand(viper.GetString("global.credentials-path"))
+	credentialFile, err := homedir.Expand(viper.GetString("global.output"))
 	if err != nil {
-		log.Fatalf("Failed to expand home: %s", err)
+		log.Log.Fatalf("Failed to expand home: %s", err)
+	}
+	log.Log.Trace("Credential file: ", credentialFile)
+	if credentialFile == "credential_process" || credentialFile == "environment" {
+		return
 	}
 
-	profiles, err := aws.GetValidCredentials(configfile)
+	profiles, err := aws.GetValidProfiles(credentialFile)
 	if err != nil {
-		log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
+		log.Log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
 	}
 
 	if len(profiles) == 0 {
@@ -60,7 +64,7 @@ func printStatus() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"App", "Expire At", "Remaining"})
 
-	log.Print("The following apps currently have valid credentials:")
+	log.Log.Print("The following apps currently have valid credentials:")
 	for _, p := range profiles {
 		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAtUnix), p.LifetimeLeft.Round(time.Second).String()})
 	}

@@ -14,7 +14,7 @@ apps:
 global:
   autodetect-yubikey: true
   aws-region: us-east-1
-  credentials-path: ~/.aws/credentials
+  output: ~/.aws/credentials
   selected-app: sample-app-1
   accounts:
     "0000000000000": Dev

@@ -8,7 +8,11 @@ package onelogin
 import (
 	"net/url"
 	"testing"
+
+	"github.com/allcloud-io/clisso/log"
 )
+
+var _ = log.NewLogger("panic", "", false)
 
 func TestEndpoints_SetBase(t *testing.T) {
 	for _, test := range []struct {

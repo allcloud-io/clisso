@@ -12,8 +12,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/allcloud-io/clisso/log"
 	"github.com/go-ini/ini"
 )
+
+var _ = log.NewLogger("panic", "", false)
 
 func TestWriteToFile(t *testing.T) {
 	id := "expiredkey"
@@ -32,7 +35,7 @@ func TestWriteToFile(t *testing.T) {
 	p := "expiredprofile"
 
 	// Write credentials
-	err := WriteToFile(&c, fn, p)
+	err := OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -55,7 +58,7 @@ func TestWriteToFile(t *testing.T) {
 	p = "testprofile"
 
 	// Write credentials
-	err = WriteToFile(&c, fn, p)
+	err = OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -120,7 +123,7 @@ func TestWriteToFile(t *testing.T) {
 	}
 }
 
-func TestGetValidCredentials(t *testing.T) {
+func TestGetValidProfiles(t *testing.T) {
 	fn := "test_creds.txt"
 
 	id := "testkey"
@@ -139,7 +142,7 @@ func TestGetValidCredentials(t *testing.T) {
 	p := "expired"
 
 	// Write credentials
-	err := WriteToFile(&c, fn, p)
+	err := OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -149,7 +152,7 @@ func TestGetValidCredentials(t *testing.T) {
 	p = "valid"
 
 	// Write credentials
-	err = WriteToFile(&c, fn, p)
+	err = OutputFile(&c, fn, p)
 	if err != nil {
 		t.Fatal("Could not write credentials to file: ", err)
 	}
@@ -179,7 +182,7 @@ func TestGetValidCredentials(t *testing.T) {
 
 	time.Sleep(time.Duration(1) * time.Second)
 
-	profiles, err := GetValidCredentials(fn)
+	profiles, err := GetValidProfiles(fn)
 	if err != nil {
 		t.Fatal("Failed to get NonExpiredCredentials")
 	}
@@ -202,13 +205,13 @@ func TestGetValidCredentials(t *testing.T) {
 		t.Fatalf("Could not remove file %v during cleanup", fn)
 	}
 
-	_, err = GetValidCredentials(fn)
+	_, err = GetValidProfiles(fn)
 	if err != nil {
 		t.Fatal("Function did crash on missing file")
 	}
 }
 
-func TestWriteToShellUnix(t *testing.T) {
+func TestOutputUnixEnvironment(t *testing.T) {
 	id := "testkey"
 	sec := "testsecret"
 	tok := "testtoken"
@@ -222,7 +225,7 @@ func TestWriteToShellUnix(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToShell(&c, false, &b)
+	OutputEnvironment(&c, false, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(
@@ -237,7 +240,7 @@ func TestWriteToShellUnix(t *testing.T) {
 	}
 }
 
-func TestWriteToShellWindows(t *testing.T) {
+func TestOutputWindowsEnvironment(t *testing.T) {
 	id := "testkey"
 	sec := "testsecret"
 	tok := "testtoken"
@@ -251,7 +254,7 @@ func TestWriteToShellWindows(t *testing.T) {
 	}
 	var b bytes.Buffer
 
-	WriteToShell(&c, true, &b)
+	OutputEnvironment(&c, true, &b)
 
 	got := b.String()
 	want := fmt.Sprintf(
