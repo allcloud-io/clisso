@@ -1,0 +1,15 @@
+builds:
+  - skip: true
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+release:
+  draft: true
+  mode: append
+  extra_files:
+    - glob: ./release/**/*
+    - glob: ./release/checksums.txt
+  name_template: "Release {{.Tag}}"

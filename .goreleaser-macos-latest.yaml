@@ -1,0 +1,33 @@
+project_name: clisso
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: macos-amd64
+    binary: clisso
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - darwin
+    goarch:
+      - "amd64"
+    # hooks:
+    #   post: gon gon-amd64.json
+  - id: macos-arm64
+    binary: clisso
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - darwin
+    goarch:
+      - "arm64"
+    # hooks:
+    #   post: gon gon-arm64.json
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"

@@ -21,8 +21,8 @@ import (
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/allcloud-io/clisso/yubikey"
 	"github.com/icza/gog"
-	"github.com/spf13/viper"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -171,7 +171,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		st := rSaml.StateToken
 
 		devices := rSaml.Devices
-    log.Log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
+		log.Log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
 
 		deviceOpts := NewDeviceOptions()
 

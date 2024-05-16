@@ -1,0 +1,82 @@
+name: Build release artifacts and draft release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  build-binary:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+        - uses: actions/setup-go@v5
+          with:
+            go-version: 1.22
+            check-latest: true
+            cache: true
+        - if: ${{ matrix.platform == 'ubuntu-latest' }}
+          name: Install dependencies
+          run: |
+            sudo apt-get update
+            sudo apt-get install gcc-multilib
+        - name: Build
+          uses: goreleaser/goreleaser-action@v5
+          with:
+            args: release --skip=publish --config .goreleaser-${{ matrix.platform }}.yaml
+        - name: Upload
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{ matrix.platform }}-binary
+            path: dist/clisso*
+            retention-days: 2
+
+  draft-release:
+    needs: [build-binary]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+          check-latest: true
+          cache: true
+      - name: Make directories
+        run: |
+          mkdir -p ./release/linux
+          mkdir -p ./release/darwin
+          mkdir -p ./release/windows
+      - name: Download linux binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-latest-binary
+          path: ./release/linux
+      - name: Download MacOS binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-binary
+          path: ./release/darwin
+      - name: Download windows binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-latest-binary
+          path: ./release/windows
+      - name: Merge checksum file
+        run: |
+          cd ./release
+          find .
+          find . -name "clisso*checksums.txt" -exec sh -c 'cat {} >> checksums.txt' \;
+          find . -name "clisso*checksums.txt" -delete
+      - name: Release
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          args: release --config .goreleaser-release.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
