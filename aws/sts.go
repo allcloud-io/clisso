@@ -13,7 +13,6 @@ import (
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/icza/gog"
@@ -79,23 +78,18 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 
 	ctx := context.Background()
 
-	config, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion), config.WithSharedConfigProfile("default"))
-	if err != nil {
-		log.Log.WithError(err).Debug("Error loading default configuration")
-		return nil, err
-	}
-	log.Log.WithField("awsRegion", config.Region).Trace("Loaded default config")
-
 	// If we request credentials for China we need to provide a Chinese region
 	idp := regexp.MustCompile(`^arn:aws-cn:iam::\d+:saml-provider\/\S+$`)
 	if idp.MatchString(PrincipalArn) && !strings.HasPrefix(awsRegion, "cn-") {
-		log.Log.Trace("Setting region to cn-north-1")
-		config.Region = "cn-north-1"
+		log.Log.Trace("Changing region to cn-north-1 as we are assuming a role in China")
+		awsRegion = "cn-north-1"
 	}
-	svc := sts.NewFromConfig(config, func(o *sts.Options) {
+	svc := sts.New(sts.Options{
+		Region: awsRegion,
 		// see https://github.com/aws/aws-sdk-go-v2/issues/2392 for reasoning
-		o.Credentials = nil
+		Credentials: nil,
 	})
+	log.Log.WithField("awsRegion", awsRegion).Trace("Setup STS")
 
 	aResp, err := svc.AssumeRoleWithSAML(ctx, &input)
 	if err != nil {
