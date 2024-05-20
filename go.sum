@@ -4,8 +4,8 @@ github.com/alessio/shellescape v1.4.2 h1:MHPfaU+ddJ0/bYWpgIeUnQUqKrlJ1S7BfEYPM4u
 github.com/alessio/shellescape v1.4.2/go.mod h1:PZAiSCk0LJaZkiCSkPv8qIobYglO3FPpyFjDCtHLS30=
 github.com/andybalholm/cascadia v1.3.2 h1:3Xi6Dw5lHF15JtdcmAHD3i1+T8plmv7BQ/nsViSLyss=
 github.com/andybalholm/cascadia v1.3.2/go.mod h1:7gtRlve5FxPPgIgX36uWBX58OdBsSS6lUvCFb+h7KvU=
-github.com/aws/aws-sdk-go-v2 v1.26.2 h1:OTRAL8EPdNoOdiq5SUhCaHhVPBU2wxAUe5uwasoJGRM=
-github.com/aws/aws-sdk-go-v2 v1.26.2/go.mod h1:ffIFB97e2yNsv4aTSGkqtHnppsIJzw7G7BReUZ3jCXM=
+github.com/aws/aws-sdk-go-v2 v1.27.0 h1:7bZWKoXhzI+mMR/HjdMx8ZCC5+6fY0lS5tr0bbgiLlo=
+github.com/aws/aws-sdk-go-v2 v1.27.0/go.mod h1:ffIFB97e2yNsv4aTSGkqtHnppsIJzw7G7BReUZ3jCXM=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.6 h1:yrfbQyxO73opeqep8FohU4LJx56iiQuvf4/XPgFB4To=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.6/go.mod h1:bFtlRACYBPG2AUYst0ky5TPtgeYqWCksozVTGsZ1zq0=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.6 h1:DXsuqiAp1mGkelZCUSex8DsRtkeK4mW3oreyjNSegoo=
