@@ -87,10 +87,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		Password: string(pass),
 	})
 	s.Stop()
-	log.Log.WithField("Status", resp.Status).WithError(err).Trace("GetSessionToken done")
 	if err != nil {
 		return nil, fmt.Errorf("getting session token: %v", err)
 	}
+	log.Log.WithField("Status", resp.Status).Trace("GetSessionToken done")
 
 	var st string
 
