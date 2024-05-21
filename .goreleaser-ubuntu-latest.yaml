@@ -8,43 +8,33 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:
-  - id: other
+  - id: linux
+    binary: clisso
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+    goarch:
+      - "amd64"
+      - "386"
+
+  # The build-chain does not support CGO for ARM64 on Linux
+  - id: unsupported-cgo
     binary: clisso
     env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
+    goarch:
+      - "arm64"
     goarm:
       - "6"
       - "7"
-  - id: macos-amd64
-    binary: clisso
-    env:
-      - CGO_ENABLED=1
-    goos:
-      - darwin
-    goarch:
-      - "amd64"
-    # hooks:
-    #   post: gon gon-amd64.json
-  - id: macos-arm64
-    binary: clisso
-    env:
-      - CGO_ENABLED=1
-    goos:
-      - darwin
-    goarch:
-      - "arm64"
-    # hooks:
-    #   post: gon gon-arm64.json
 
 archives:
-  - format: zip
-    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
-checksum:
-  name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:
@@ -53,13 +43,3 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-
-
-brews:
-  - repository:
-     owner: allcloud-io
-     name: homebrew-tools
-     branch: master
-
-env_files:
-  github_token: ~/.goreleaser
