@@ -290,6 +290,9 @@ To save the credentials to a custom file, use the `--output` flag with a custom 
 To print the credentials to the shell instead of storing them in a file, use the `--output environment` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
 
+To select a specific MFA device by name instead of choosing from a list, use the `-m` flag. The
+configuration field `global.mfa-device` may also be set.
+
 ### Running as `credential_process`
 
 AWS CLI v2 introduced the `credential_process` feature which allows you to use an external command to obtain temporal credentials.
@@ -344,6 +347,10 @@ AWS recommends using [regional STS endpoints](https://docs.aws.amazon.com/sdkref
 
 To use a regional endpoint, specify the region via the `global.aws-region` field in the config file. A per app configuration using `apps.<app>.aws-region` is also possible.
 
+## YubiKey Auto Detection
+
+YubiKey Auto Detection is available for the OneLogin provider. To enable this feature set the `global.autodetect-yubikey` field to `true`. Clisso will look at attached USB devices and automatically select the YubiKey as an MFA device if it is available. The feature is only available for OneLogin providers and will not work with Okta. The released binaries only support it on macOS (arm64 and amd64), Windows (amd64), and Linux (amd64). If you need support for other platforms, you will have to build Clisso from source.
+
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
@@ -372,6 +379,12 @@ else
     eval $(echo "$(/lib/cryptsetup/askpass 'Password: ')" | gnome-keyring-daemon --unlock);
 fi
 ```
+
+### YubiKey Auto Detection is not working
+
+YubiKey Auto Detection is only available for OneLogin providers. Make sure that the `global.autodetect-yubikey` field is set to `true` in the config file.
+Additionally, the feature is only available on macOS (arm64 and amd64), Windows (amd64), and Linux (amd64) in the released binaries. If you need support for other platforms, you will have to build Clisso from source.
+
 ## Contributing
 
 TODO
