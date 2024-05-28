@@ -84,7 +84,11 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		log.Log.Trace("No username provided")
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
-		fmt.Scanln(&user)
+		_, err = fmt.Scanln(&user)
+		if err != nil {
+			return nil, fmt.Errorf("reading username: %v", err)
+		}
+
 	}
 
 	pass, err := keyChain.Get(provider)
@@ -190,7 +194,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 			// Push failed or not supported by the selected MFA device
 			fmt.Print("Please enter the OTP from your MFA device: ")
 			var otp string
-			fmt.Scanln(&otp)
+			_, err = fmt.Scanln(&otp)
+			if err != nil {
+				return nil, fmt.Errorf("reading OTP: %v", err)
+			}
 
 			// Verify MFA
 			pMfa := VerifyFactorParams{

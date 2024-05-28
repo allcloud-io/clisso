@@ -64,7 +64,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 	if user == "" {
 		// Get credentials from the user
 		fmt.Print("Okta username: ")
-		fmt.Scanln(&user)
+		_, err = fmt.Scanln(&user)
+		if err != nil {
+			return nil, fmt.Errorf("reading username: %v", err)
+		}
 	}
 
 	pass, err := keyChain.Get(provider)
@@ -148,7 +151,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		case MFATypeTOTP:
 			fmt.Print("Please enter the OTP from your MFA device: ")
 			var otp string
-			fmt.Scanln(&otp)
+			_, err = fmt.Scanln(&otp)
+			if err != nil {
+				return nil, fmt.Errorf("reading OTP: %v", err)
+			}
 
 			s.Start()
 			vfResp, err = c.VerifyFactor(&VerifyFactorParams{

@@ -255,7 +255,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			log.Log.Fatalf("Could not get provider type for provider '%s'", provider)
 		}
 
-		log.Log.Infof("Getting credentials for app '%s' using provider '%s' (type: %s)" , app, provider, pType)
+		log.Log.Infof("Getting credentials for app '%s' using provider '%s' (type: %s)", app, provider, pType)
 
 		// allow preferred "arn" to be specified in the config file for each app
 		// if this is not specified the value will be empty ("")
