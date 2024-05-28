@@ -55,7 +55,6 @@ func NewLogger(logLevelFlag, logFilePath string, enableLogFile bool) *logrus.Log
 		}
 		Log.SetFormatter(&logrus.TextFormatter{PadLevelText: true})
 	}
-	Log.Warning("This is a warning")
 	Log.Warnf("Log level set to %s", logLevelFlag)
 	return Log
 }
