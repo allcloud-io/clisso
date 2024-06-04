@@ -354,6 +354,24 @@ To use a regional endpoint, specify the region via the `global.aws-region` field
 
 Clisso logs to `stderr` by default. To enable more detailed logging, set the `--log-level` flag to `debug` or `trace`. With `trace` log level, sensitive information will be logged.
 
+### Creating a trace log
+
+If you run into issues, you can create a trace log by setting the `--log-level` flag to `trace`. This will create a file called `.clisso.log` your home directory. You can alter the location of the log file by setting the `--log-file` flag. The below example will create a trace log in the current directory in
+a file called `trace.log`.
+
+    clisso --log-level trace --log-file trace.log get my-app
+
+Alternatively, you can configure logging via the config file. The below example will create a trace log in your home directory in a file called `clisso.log`.
+
+```yaml
+global:
+  log:
+    level: trace
+    file: ~/clisso.log
+```
+
+When attaching the log file to an issue, please make sure to remove any sensitive information.
+
 ### Storing passwords is not working
 
 `dbus: couldn't determine address of session bus` This behavior has been [observed][13] on Ubuntu 20.04 WSL.
