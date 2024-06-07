@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/mitchellh/go-homedir"
@@ -17,6 +18,7 @@ import (
 	"github.com/allcloud-io/clisso/aws"
 	"github.com/allcloud-io/clisso/okta"
 	"github.com/allcloud-io/clisso/onelogin"
+	"github.com/nightlyone/lockfile"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -27,10 +29,12 @@ var printToCredentialProcess bool
 var cacheCredentials bool
 var writeToFile string
 var cacheToFile string
+var lock lockfile.Lockfile
 
 const defaultOutput = "~/.aws/credentials"
 
 func init() {
+
 	RootCmd.AddCommand(cmdGet)
 	cmdGet.Flags().StringVarP(
 		&output, "output", "o", defaultOutput, "How or where to output credentials. Two special values are supported 'environment' and 'credential_process'. All other values are interpreted as file paths",
@@ -68,6 +72,10 @@ func init() {
 
 	cmdGet.MarkFlagsMutuallyExclusive("output", "shell", "write-to-file")
 
+	lock, err = lockfile.New(filepath.Join(os.TempDir(), "clisso.lock"))
+	if err != nil {
+		log.Log.Fatalf("Failed to create lock: %v", err)
+	}
 }
 
 func preferredOutput(cmd *cobra.Command, app string) string {
@@ -274,6 +282,9 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 
 		setOutput(cmd, app)
 
+		ensureLocked()
+		defer unlock()
+
 		if printToCredentialProcess && cacheCredentials {
 			log.Log.Trace("Using --cache-credentials and --output-process")
 			// we need to cache the credentials to a file and return valid credentials instead of constantly hitting the IdPs
@@ -315,4 +326,25 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			printStatus()
 		}
 	},
+}
+
+func ensureLocked() {
+	// try getting the lock within 60s
+	for i := 0; i < 600; i++ {
+		// Error handling is essential, as we only try to get the lock.
+		err := lock.TryLock()
+		if err == nil {
+			return
+		}
+		log.Log.Tracef("Sleeping, failed to get lock: %v", err)
+		time.Sleep(100 * time.Millisecond)
+
+	}
+	log.Log.Fatalf("Failed to get lock")
+}
+
+func unlock() {
+	if err := lock.Unlock(); err != nil {
+		log.Log.Fatalf("Failed to unlock: %v", err)
+	}
 }
