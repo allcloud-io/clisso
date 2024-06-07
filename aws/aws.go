@@ -33,6 +33,25 @@ type Profile struct {
 
 const expireKey = "aws_expiration"
 
+func validateSection(cfg *ini.File, section string) error {
+	// if it doesn't exist, we're good
+	if cfg.Section(section) == nil {
+		return nil
+	}
+	s := cfg.Section(section)
+	// it should not have any of source_profile, role_arn, mfa_serial, external_id, or credential_source
+	for _, key := range []string{"source_profile", "role_arn", "mfa_serial", "external_id", "credential_source", "credential_process"} {
+		if s.HasKey(key) {
+			log.Log.WithFields(logrus.Fields{
+				"section": section,
+				"key":     key,
+			}).Errorf("Profile contains key %s, which indicates, it should not be used by clisso", key)
+			return fmt.Errorf("profile %s contains key %s, which indicates, it should not be used by clisso", section, key)
+		}
+	}
+	return nil
+}
+
 // OutputFile writes credentials to an AWS CLI credentials file
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
@@ -45,7 +64,14 @@ func OutputFile(c *Credentials, filename string, section string) error {
 	if err != nil {
 		return err
 	}
-	cfg.DeleteSection(section)
+	err = validateSection(cfg, section)
+	if err != nil {
+		return err
+	}
+	if cfg.HasSection(section) {
+		log.Log.Tracef("Section %s exists and has passed validation, adding aws_access_key_id, aws_secret_access_key, aws_session_token, %s keys to it", section, expireKey)
+	}
+
 	_, err = cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyID)
 	if err != nil {
 		return err
@@ -77,7 +103,13 @@ func OutputFile(c *Credentials, filename string, section string) error {
 		}
 		if time.Now().UTC().Unix() > v.Unix() {
 			log.Log.Tracef("Removing expired credentials for profile %s", s.Name())
-			cfg.DeleteSection(s.Name())
+			for _, key := range []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey} {
+				cfg.Section(s.Name()).DeleteKey(key)
+			}
+			if len(cfg.Section(s.Name()).Keys()) == 0 {
+				log.Log.Tracef("Removing empty profile %s", s.Name())
+				cfg.DeleteSection(s.Name())
+			}
 			continue
 		}
 		log.Log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
