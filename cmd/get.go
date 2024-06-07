@@ -28,10 +28,12 @@ var cacheCredentials bool
 var writeToFile string
 var cacheToFile string
 
+const defaultOutput = "~/.aws/credentials"
+
 func init() {
 	RootCmd.AddCommand(cmdGet)
 	cmdGet.Flags().StringVarP(
-		&output, "output", "o", "~/.aws/credentials", "How or where to output credentials. Two special values are supported 'environment' and 'credential_process'. All other values are interpreted as file paths",
+		&output, "output", "o", defaultOutput, "How or where to output credentials. Two special values are supported 'environment' and 'credential_process'. All other values are interpreted as file paths",
 	)
 
 	cmdGet.Flags().BoolVarP(
@@ -45,7 +47,7 @@ func init() {
 
 	// Keep the old flags as is.
 	cmdGet.Flags().StringVarP(
-		&writeToFile, "write-to-file", "w", "~/.aws/credentials",
+		&writeToFile, "write-to-file", "w", defaultOutput,
 		"Write credentials to this file instead of the default",
 	)
 	cmdGet.Flags().BoolVarP(
@@ -79,7 +81,8 @@ func preferredOutput(cmd *cobra.Command, app string) string {
 	if err != nil {
 		log.Log.Warnf("Error getting output flag: %v", err)
 	}
-	if out != "" {
+	if out != "" && out != defaultOutput {
+		log.Log.Tracef("output flag sets output to: %s", out)
 		return out
 	}
 
@@ -87,25 +90,29 @@ func preferredOutput(cmd *cobra.Command, app string) string {
 	if err != nil {
 		log.Log.Warnf("Error getting write-to-file flag: %v", err)
 	}
-	if out != "" {
+	if out != "" && out != defaultOutput {
+		log.Log.Tracef("write-to-file flag sets output: %s", out)
 		return out
 	}
 
 	out = viper.GetString(fmt.Sprintf("apps.%s.output", app))
 	if out != "" {
+		log.Log.Tracef("App specific config sets output to: %s", out)
 		return out
 	}
 
 	out = viper.GetString("global.output")
 	if out != "" {
+		log.Log.Tracef("Global config sets output to: %s", out)
 		return out
 	}
 
-	return "~/.aws/credentials"
+	return defaultOutput
 }
 
 func setOutput(cmd *cobra.Command, app string) {
 	o := preferredOutput(cmd, app)
+	log.Log.Tracef("Preferred output: %s", o)
 	writeToFile = ""
 	switch o {
 	case "environment":
