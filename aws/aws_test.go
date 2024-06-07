@@ -31,16 +31,31 @@ func TestWriteToFile(t *testing.T) {
 		Expiration:      exp,
 	}
 
-	fn := "test_creds.txt"
-	p := "expiredprofile"
-
-	// Write credentials
-	err := OutputFile(&c, fn, p)
+	fn := "TestWriteToFile.txt"
+	inifile := ini.Empty()
+	// add some other config options to ensure we don't overwrite them
+	// key value pairs
+	test := map[string]string{
+		"region": "us-west-2",
+		"output": "json",
+	}
+	for k, v := range test {
+		inifile.Section("expiredprofile_with_config").Key(k).SetValue(v)
+	}
+	err := inifile.SaveTo(fn)
 	if err != nil {
-		t.Fatal("Could not write credentials to file: ", err)
+		t.Fatal("Could not write INI file: ", err)
 	}
 
-	// Sleep so above credentials expire, we can't fake it but have to wait. The WriteToFile func call above should not save expired credentials.
+	for _, p := range []string{"expiredprofile", "expiredprofile_with_config"} {
+		// Write credentials
+		err := OutputFile(&c, fn, p)
+		if err != nil {
+			t.Fatal("Could not write credentials to file: ", err)
+		}
+	}
+
+	// Sleep so above credentials expire, we can't fake it since WriteToFile should not write expired credentials but have to wait.
 	time.Sleep(time.Duration(2) * time.Second)
 
 	id = "testkey"
@@ -55,7 +70,7 @@ func TestWriteToFile(t *testing.T) {
 		Expiration:      exp,
 	}
 
-	p = "testprofile"
+	p := "testprofile"
 
 	// Write credentials
 	err = OutputFile(&c, fn, p)
@@ -70,13 +85,34 @@ func TestWriteToFile(t *testing.T) {
 	}
 
 	p = "expiredprofile"
+	if cfg.HasSection(p) {
+		t.Fatalf("Expired profile was not cleaned up")
+	}
+
+	p = "expiredprofile_with_config"
+	if !cfg.HasSection(p) {
+		t.Fatalf("Expired profile with config was cleaned up")
+	}
+
 	s := cfg.Section(p)
 
 	// Verify File
 	keys := []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", "aws_expiration"}
 	for _, k := range keys {
 		if s.HasKey(k) {
-			t.Fatal("Expired profile was not cleaned up")
+			t.Fatal("expiredprofile_with_config was not cleaned up correctly")
+		}
+	}
+
+	// Verify other sections
+	for k, v := range test {
+		s = cfg.Section(p)
+		k, err := s.GetKey(k)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if k.String() != v {
+			t.Fatalf("Wrong %s: got %s, want %s", k, k.String(), v)
 		}
 	}
 
@@ -115,6 +151,101 @@ func TestWriteToFile(t *testing.T) {
 	f := exp.UTC().Format(time.RFC3339)
 	if k.String() != f {
 		t.Fatalf("Wrong expiration: got %s, want %s", k.String(), f)
+	}
+
+	err = os.Remove(fn)
+	if err != nil {
+		t.Fatalf("Could not remove file %v during cleanup", fn)
+	}
+}
+
+func TestProtectSections(t *testing.T) {
+	id := "expiredkey"
+	sec := "expiredsecret"
+	tok := "expiredtoken"
+	exp := time.Now()
+
+	c := Credentials{
+		AccessKeyID:     id,
+		SecretAccessKey: sec,
+		SessionToken:    tok,
+		Expiration:      exp,
+	}
+
+	fn := "TestProtectSections.txt"
+	inifile := ini.Empty()
+	// add some other config options to ensure we don't overwrite them
+	inifile.Section("default").Key("region").SetValue("us-west-2")
+	inifile.Section("default").Key("output").SetValue("json")
+
+	inifile.Section("cred-process").Key("credential_process").SetValue("echo")
+
+	inifile.Section("child-profile").Key("source-profile").SetValue("cred-process")
+	inifile.Section("child-profile").Key("role_arn").SetValue("arn:aws:iam::123456789012:role/role-name")
+
+	err := inifile.SaveTo(fn)
+	if err != nil {
+		t.Fatal("Could not write INI file: ", err)
+	}
+	err = OutputFile(&c, fn, "default")
+	if err != nil {
+		t.Fatal("Could not write credentials to file: ", err)
+	}
+
+	for _, p := range []string{"cred-process", "child-profile"} {
+		err = OutputFile(&c, fn, p)
+
+		if err == nil {
+			t.Fatalf("Write to %s should have been aborted", p)
+		}
+	}
+
+	cfg, err := ini.Load(fn)
+	if err != nil {
+		t.Fatal("Could not load INI file: ", err)
+	}
+	// Verify other sections
+	s := cfg.Section("default")
+	k, err := s.GetKey("region")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if k.String() != "us-west-2" {
+		t.Fatalf("Wrong region: got %s, want us-west-2", k.String())
+	}
+
+	k, err = s.GetKey("output")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if k.String() != "json" {
+		t.Fatalf("Wrong output: got %s, want json", k.String())
+	}
+
+	s = cfg.Section("cred-process")
+	k, err = s.GetKey("credential_process")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if k.String() != "echo" {
+		t.Fatalf("Wrong credential_process: got %s, want echo", k.String())
+	}
+
+	s = cfg.Section("child-profile")
+	k, err = s.GetKey("source-profile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if k.String() != "cred-process" {
+		t.Fatalf("Wrong source-profile: got %s, want cred-process", k.String())
+	}
+
+	k, err = s.GetKey("role_arn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if k.String() != "arn:aws:iam::123456789012:role/role-name" {
+		t.Fatalf("Wrong role_arn: got %s, want arn:aws:iam::123456789012:role/role-name", k.String())
 	}
 
 	err = os.Remove(fn)
