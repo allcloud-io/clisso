@@ -26,7 +26,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install gcc-multilib
         - name: Build
-          uses: goreleaser/goreleaser-action@v5
+          uses: goreleaser/goreleaser-action@v6
           with:
             args: release --skip=publish --config .goreleaser-${{ matrix.platform }}.yaml
         - name: Upload
@@ -75,7 +75,7 @@ jobs:
           find . -name "clisso*checksums.txt" -exec sh -c 'cat {} >> checksums.txt' \;
           find . -name "clisso*checksums.txt" -delete
       - name: Release
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           args: release --config .goreleaser-release.yaml
         env:
