@@ -49,6 +49,7 @@ func init() {
 	cmdAppsCreate.AddCommand(cmdAppsCreateOneLogin)
 	cmdAppsCreate.AddCommand(cmdAppsCreateOkta)
 	cmdApps.AddCommand(cmdAppsSelect)
+	cmdApps.AddCommand(cmdAppsDelete)
 }
 
 var cmdApps = &cobra.Command{
@@ -227,5 +228,29 @@ var cmdAppsSelect = &cobra.Command{
 		if err != nil {
 			log.Log.Fatalf("Error writing config: %v", err)
 		}
+	},
+}
+
+var cmdAppsDelete = &cobra.Command{
+	Use:   "delete [app name]",
+	Short: "Delete an app",
+	Long:  "Delete an app from the config file.",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app := args[0]
+
+		if exists := viper.Get("apps." + app); exists == nil {
+			log.Log.Fatalf("App '%s' doesn't exist", app)
+		}
+
+		// Delete app
+		delete(viper.Get("apps").(map[string]interface{}), app)
+
+		// Write config to file
+		err := viper.WriteConfig()
+		if err != nil {
+			log.Log.Fatalf("Error writing config: %v", err)
+		}
+		log.Log.Printf("App '%s' deleted from config file", app)
 	},
 }
