@@ -265,7 +265,7 @@ configured maximum Clisso will fallback to 3600 seconds.
 
 ### Deleting Apps
 
-For deleteing apps, use the following command:
+For deleting apps, use the following command:
 
     clisso apps delete my-app
 
