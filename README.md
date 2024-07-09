@@ -265,8 +265,12 @@ configured maximum Clisso will fallback to 3600 seconds.
 
 ### Deleting Apps
 
-Deleting apps using the `clisso` command isn't currently supported. To delete an app, remove its
-configuration from the config file.
+For deleteing apps, use the following command:
+
+    clisso apps delete my-app
+
+Deletion of an app will remove its configuration from the config file. You can also do it manually
+by editing the config file.
 
 ### Obtaining Credentials
 
