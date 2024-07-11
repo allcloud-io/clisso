@@ -16,7 +16,7 @@ import (
 	"github.com/go-ini/ini"
 )
 
-var _ = log.NewLogger("panic", "", false)
+var _, _ = log.SetupLogger("panic", "", false, true)
 
 func TestWriteToFile(t *testing.T) {
 	id := "expiredkey"

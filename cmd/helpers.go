@@ -13,6 +13,6 @@ import (
 func mandatoryFlag(cmd *cobra.Command, name string) {
 	err := cmd.MarkFlagRequired(name)
 	if err != nil {
-		log.Log.Fatalf("Error marking flag %s as required: %v", name, err)
+		log.Fatalf("Error marking flag %s as required: %v", name, err)
 	}
 }

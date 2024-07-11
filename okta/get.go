@@ -16,7 +16,6 @@ import (
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/icza/gog"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -33,7 +32,7 @@ var (
 
 // Get gets temporary credentials for the given app.
 func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool) (*aws.Credentials, error) {
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"app":         app,
 		"provider":    provider,
 		"pArn":        pArn,
@@ -80,10 +79,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	// Get session token
 	s.Start()
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"Username": user,
 		// print password only in Trace Log Level
-		"Password": gog.If(log.Log.GetLevel() == logrus.TraceLevel, string(pass), "<redacted>"),
+		"Password": gog.If(log.GetLevel() == log.TraceLevel, string(pass), "<redacted>"),
 	}).Debug("Calling GetSessionToken")
 	resp, err := c.GetSessionToken(&GetSessionTokenParams{
 		Username: user,
@@ -93,7 +92,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 	if err != nil {
 		return nil, fmt.Errorf("getting session token: %v", err)
 	}
-	log.Log.WithField("Status", resp.Status).Trace("GetSessionToken done")
+	log.WithField("Status", resp.Status).Trace("GetSessionToken done")
 
 	var st string
 
@@ -104,7 +103,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 	case StatusMFARequired:
 		factor := resp.Embedded.Factors[0]
 		stateToken := resp.StateToken
-		log.Log.WithFields(logrus.Fields{
+		log.WithFields(log.Fields{
 			"factorID":   factor.ID,
 			"factorLink": factor.Links.Verify.Href,
 			"stateToken": stateToken,
@@ -174,7 +173,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		// Handle failed MFA verification (verification rejected or timed out)
 		if vfResp.Status != VerifyFactorStatusSuccess {
 			err = fmt.Errorf("MFA verification failed")
-			log.Log.WithField("status", vfResp.Status).WithError(err).Warn("MFA verification failed")
+			log.WithField("status", vfResp.Status).WithError(err).Warn("MFA verification failed")
 			return nil, fmt.Errorf("MFA verification failed")
 		}
 
@@ -185,7 +184,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	// Launch Okta app with session token
 	s.Start()
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"SessionToken": st,
 		"URL":          a.URL,
 	}).Trace("Calling LaunchApp")
@@ -206,7 +205,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
-			log.Log.Warn(aws.DurationExceededMessage)
+			log.Warn(aws.DurationExceededMessage)
 			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, *samlAssertion, awsRegion, 3600)
 			s.Stop()

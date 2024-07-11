@@ -43,15 +43,15 @@ func (DefaultKeychain) Set(provider string, password []byte) (err error) {
 // and just ask the user for the password instead. Error could be anything from access denied to
 // password not found.
 func (DefaultKeychain) Get(provider string) (pw []byte, err error) {
-	log.Log.WithField("provider", provider).Trace("Reading password from keychain")
+	log.WithField("provider", provider).Trace("Reading password from keychain")
 	pass, err := get(provider)
 	if err != nil {
-		log.Log.WithError(err).Trace("Couldn't read password from keychain")
+		log.WithError(err).Trace("Couldn't read password from keychain")
 		fmt.Printf("Please enter %s password: ", provider)
 		pass, err = term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
 			err = fmt.Errorf("couldn't read password from terminal: %w", err)
-			log.Log.WithError(err).Trace("Couldn't read password from terminal")
+			log.WithError(err).Trace("Couldn't read password from terminal")
 			return nil, err
 		}
 	}

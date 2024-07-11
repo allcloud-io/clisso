@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/allcloud-io/clisso/log"
-	"github.com/sirupsen/logrus"
 )
 
 // Client represents a OneLogin API client.
@@ -116,7 +115,7 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
 
 	if resp != nil {
-		log.Log.WithFields(logrus.Fields{
+		log.WithFields(log.Fields{
 			"status": resp.Status,
 			"url":    resp.Request.URL,
 			"host":   resp.Request.Host,

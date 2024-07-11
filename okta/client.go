@@ -17,7 +17,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/allcloud-io/clisso/log"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -187,7 +186,7 @@ func (c *Client) LaunchApp(p *LaunchAppParams) (*string, error) {
 // using the client, handles any HTTP-related errors and returns any data as a string.
 func (c *Client) doRequest(r *http.Request) (string, error) {
 	resp, err := c.Do(r)
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"status": resp.Status,
 		"url":    resp.Request.URL,
 		"host":   resp.Request.Host,

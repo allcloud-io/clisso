@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var _ = log.NewLogger("panic", "", false)
+var _, _ = log.SetupLogger("panic", "", false, true)
 
 var testdata = []struct {
 	app      int32

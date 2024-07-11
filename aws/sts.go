@@ -16,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/icza/gog"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -41,13 +40,13 @@ const (
 // returns a specific error message to indicate that. In this case we return a custom error to the
 // caller to allow special handling such as retrying with a lower duration.
 func AssumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, duration int32) (*Credentials, error) {
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"PrincipalArn": PrincipalArn,
 		"RoleArn":      RoleArn,
 		"awsRegion":    awsRegion,
 		"duration":     duration,
 	}).Debug("Assuming role with SAML assertion")
-	log.Log.WithField("SAMLAssertion", SAMLAssertion).Trace("SAML assertion")
+	log.WithField("SAMLAssertion", SAMLAssertion).Trace("SAML assertion")
 	creds, err := assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion, duration)
 	if err != nil {
 		// Check if API error returned by AWS
@@ -81,7 +80,7 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 	// If we request credentials for China we need to provide a Chinese region
 	idp := regexp.MustCompile(`^arn:aws-cn:iam::\d+:saml-provider\/\S+$`)
 	if idp.MatchString(PrincipalArn) && !strings.HasPrefix(awsRegion, "cn-") {
-		log.Log.Trace("Changing region to cn-north-1 as we are assuming a role in China")
+		log.Trace("Changing region to cn-north-1 as we are assuming a role in China")
 		awsRegion = "cn-north-1"
 	}
 	svc := sts.New(sts.Options{
@@ -89,11 +88,11 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 		// see https://github.com/aws/aws-sdk-go-v2/issues/2392 for reasoning
 		Credentials: nil,
 	})
-	log.Log.WithField("awsRegion", awsRegion).Trace("Setup STS")
+	log.WithField("awsRegion", awsRegion).Trace("Setup STS")
 
 	aResp, err := svc.AssumeRoleWithSAML(ctx, &input)
 	if err != nil {
-		log.Log.WithError(err).Debug("Error assuming role with SAML assertion")
+		log.WithError(err).Debug("Error assuming role with SAML assertion")
 		return nil, err
 	}
 
@@ -102,10 +101,10 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 	sessionToken := *aResp.Credentials.SessionToken
 	expiration := *aResp.Credentials.Expiration
 
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"AccessKeyID":     keyID,
-		"SecretAccessKey": gog.If(log.Log.GetLevel() == logrus.TraceLevel, secretKey, "<redacted>"),
-		"SessionToken":    gog.If(log.Log.GetLevel() == logrus.TraceLevel, sessionToken, "<redacted>"),
+		"SecretAccessKey": gog.If(log.GetLevel() == log.TraceLevel, secretKey, "<redacted>"),
+		"SessionToken":    gog.If(log.GetLevel() == log.TraceLevel, sessionToken, "<redacted>"),
 		"Expiration":      expiration,
 	}).Debug("Got temporary credentials")
 

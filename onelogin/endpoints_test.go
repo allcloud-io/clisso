@@ -12,7 +12,7 @@ import (
 	"github.com/allcloud-io/clisso/log"
 )
 
-var _ = log.NewLogger("panic", "", false)
+var _, _ = log.SetupLogger("panic", "", false, true)
 
 func TestEndpoints_SetBase(t *testing.T) {
 	for _, test := range []struct {
