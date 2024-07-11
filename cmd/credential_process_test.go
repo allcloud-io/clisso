@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var logger, hook = log.SetupLogger("panic", "", false, true)
+var _, hook = log.SetupLogger("panic", "", false, true)
 
 func TestEmptyConfig(t *testing.T) {
 	// set viper config file to a temporary file
@@ -75,21 +75,22 @@ func TestCheckCredentialProcessActive(t *testing.T) {
 	viper.SetConfigFile("TestCheckCredentialProcessActive.yaml")
 	viper.Set("global.credential-process", "disabled")
 
+	assert.Equal("disabled", viper.GetString("global.credential-process"), "Expected credential process to be disabled, but got: %s", viper.GetString("global.credential-process"))
+
 	// if we're not running as a credential process, the checkCredentialProcessActive function should just continue
 	checkCredentialProcessActive(false)
 	// check hook for log.Fatal
 	assert.Nil(hook.LastEntry(), "Expected no log.Fatal, but got: %v", hook.LastEntry())
 	assert.Equal(0, len(hook.Entries), "Expected no log messages, but got: %v", hook.Entries)
-	if hook.LastEntry() != nil {
-		t.Errorf("Expected no log.Fatal, but got: %v", hook.LastEntry())
-	}
 
 	// // if we're running as a credential process, the checkCredentialProcessActive function should log a fatal message
 	checkCredentialProcessActive(true)
 
-	assert.Equal(hook.LastEntry().Message, "running as credential_process is disabled")
-	assert.Equal(hook.LastEntry().Level, logrus.FatalLevel)
 	assert.Equal(1, len(hook.Entries), "Expected 1 log message, but got: %v", hook.Entries)
+	if len(hook.Entries) == 1 {
+		assert.Equal(hook.LastEntry().Message, "running as credential_process is disabled")
+		assert.Equal(hook.LastEntry().Level, logrus.FatalLevel)
+	}
 
 	os.Remove("TestCheckCredentialProcessActive.yaml")
 

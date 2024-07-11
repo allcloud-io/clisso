@@ -11,28 +11,39 @@ import (
 	"github.com/sirupsen/logrus/hooks/test"
 )
 
-var Log = logrus.New()
 var logger = logrus.New()
 var Hook *test.Hook
+var isTestLogger bool
 
 func SetupLogger(logLevelFlag, logFilePath string, enableLogFile, testLogger bool) (*logrus.Logger, *test.Hook) {
-
-	if logger != nil {
-		logger.Tracef("Logger already initialized")
-		return Log, Hook
+	// set isTestLogger to true if testLogger is true or if it was already set to true
+	isTestLogger = testLogger || isTestLogger
+	// if testLogger is true, return a test logger
+	if isTestLogger {
+		return setupTestLogger()
 	}
-	if testLogger {
-		logger, Hook = test.NewNullLogger()
-		logger.ExitFunc = func(int) {}
+	return setupProdLogger(logLevelFlag, logFilePath, enableLogFile), nil
+}
+
+func setupTestLogger() (*logrus.Logger, *test.Hook) {
+	if Hook != nil {
+		// don't overwrite the test hook, we might loose the logs
 		return logger, Hook
 	}
+	logger, Hook = test.NewNullLogger()
+	logger.ExitFunc = func(int) {}
+	return logger, Hook
+}
 
+func setupProdLogger(logLevelFlag, logFilePath string, enableLogFile bool) *logrus.Logger {
 	// parse log level flag and set log level
 	logLevel, err := logrus.ParseLevel(logLevelFlag)
 	if err != nil {
 		logrus.Fatalf("Error parsing log level: %v", err)
 	}
 	logger.SetLevel(logLevel)
+	// reset Hooks to avoid duplicate entries
+	logger.Hooks = make(logrus.LevelHooks)
 
 	if enableLogFile {
 		logFile, err := homedir.Expand(logFilePath)
@@ -50,6 +61,7 @@ func SetupLogger(logLevelFlag, logFilePath string, enableLogFile, testLogger boo
 			logrus.FatalLevel: logFile,
 			logrus.PanicLevel: logFile,
 		}
+		// add the hook to the logger
 		logger.Hooks.Add(lfshook.NewHook(
 			pathMap,
 			&logrus.JSONFormatter{},
@@ -64,7 +76,7 @@ func SetupLogger(logLevelFlag, logFilePath string, enableLogFile, testLogger boo
 		logger.SetFormatter(&logrus.TextFormatter{PadLevelText: true})
 	}
 	logger.Warnf("Log level set to %s", logLevelFlag)
-	return logger, nil
+	return logger
 }
 
 // Fatal is a wrapper for Logrus Fatal
