@@ -439,7 +439,7 @@ func TestSetCredentialProcess(t *testing.T) {
 	assert.NotNil(err, "Expected an error, but got nil")
 	assert.GreaterOrEqual(len(hook.Entries), 1, "Expected 1 or more log message, but got: %v", hook.Entries)
 	expected = fmt.Sprintf(errCannotBeUsed, "child-profile", "role_arn")
-	assert.Equal(expected, err.Error(), "Expected '%s', but got: %v",expected, err.Error())
+	assert.Equal(expected, err.Error(), "Expected '%s', but got: %v", expected, err.Error())
 	hook.Reset()
 
 	// set credential process on expired and valid profile should work and remove the profile keys
