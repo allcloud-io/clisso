@@ -308,6 +308,12 @@ You can use this by adding the following to your `~/.aws/credentials` file:
 credential_process = clisso get my-app --output credential_process
 ```
 
+Alternatively you can run the following command to configure all Apps for use with `credential_process`:
+
+```bash
+clisso cp configure
+```
+
 The AWS SDK does not cache any credentials obtained using `credential_process`. This means that every time you use the profile, Clisso will be called to obtain new credentials. If you want to cache the credentials, you can use the `--cache` flag. For example:
 
 ```ini
@@ -322,6 +328,21 @@ global:
   cache:
     enable: true
 ```
+
+#### Temporarily Disabling Credential Process Functionality
+
+Different processes on your system might continue using AWS Profiles configured for use with Clisso. To temporarily disable the `credential_process` functionality, you can use the `clisso cp` submenu. For example:
+
+```bash
+clisso cp disable # to disable
+clisso cp enable # to enable
+clisso cp status # to check the status
+```
+
+If you disable the `credential_process` functionality, all refreshes will be disabled. While cached credentials will still be used, new credentials will not be fetched. This can be useful if you lock your computer with an active, e.g., VSCode session with CodeCommit. If you wouldn't disable the `credential_process` functionality, the VSCode would constantly trigger new credential requests to refresh the remote CodeCommit repository.
+
+If you want to check the status programmatically, you can use the exit code of the `clisso cp status` command. If the exit code is `0`, the `credential_process` functionality is enabled. If the exit code is `1`, the `credential_process` functionality is disabled.
+
 
 ### Storing the password in the key chain
 

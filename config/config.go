@@ -11,7 +11,6 @@ import (
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/icza/gog"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -28,14 +27,14 @@ type OneLoginProviderConfig struct {
 // GetOneLoginProvider returns a OneLoginProviderConfig struct containing the configuration for
 // provider p.
 func GetOneLoginProvider(p string) (*OneLoginProviderConfig, error) {
-	log.Log.WithField("provider", p).Trace("Reading OneLogin provider config")
+	log.WithField("provider", p).Trace("Reading OneLogin provider config")
 	clientSecret := viper.GetString(fmt.Sprintf("providers.%s.client-secret", p))
 	clientID := viper.GetString(fmt.Sprintf("providers.%s.client-id", p))
 	subdomain := viper.GetString(fmt.Sprintf("providers.%s.subdomain", p))
 	username := viper.GetString(fmt.Sprintf("providers.%s.username", p))
 	region := viper.GetString(fmt.Sprintf("providers.%s.region", p))
-	log.Log.WithFields(logrus.Fields{
-		"clientSecret": gog.If(log.Log.GetLevel() == logrus.TraceLevel, clientSecret, "<redacted>"),
+	log.WithFields(log.Fields{
+		"clientSecret": gog.If(log.GetLevel() == log.TraceLevel, clientSecret, "<redacted>"),
 		"clientID":     clientID,
 		"subdomain":    subdomain,
 		"username":     username,

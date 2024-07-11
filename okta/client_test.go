@@ -14,7 +14,7 @@ import (
 	"github.com/allcloud-io/clisso/log"
 )
 
-var _ = log.NewLogger("panic", "", false)
+var _, _ = log.SetupLogger("panic", "", false, true)
 
 func getTestServer(data string) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

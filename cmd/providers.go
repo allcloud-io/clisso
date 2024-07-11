@@ -77,7 +77,7 @@ var cmdProvidersList = &cobra.Command{
 		providers := viper.GetStringMap("providers")
 
 		if len(providers) == 0 {
-			log.Log.Println("No providers configured")
+			log.Println("No providers configured")
 			return
 		}
 
@@ -88,7 +88,7 @@ var cmdProvidersList = &cobra.Command{
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			log.Log.Println(k)
+			log.Println(k)
 		}
 	},
 }
@@ -104,16 +104,16 @@ var cmdProvidersPassword = &cobra.Command{
 		fmt.Printf("Please enter the password for the '%s' provider: ", provider)
 		pass, err := term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
-			log.Log.Fatalf("Could not read password")
+			log.Fatalf("Could not read password")
 		}
 
 		keyChain := keychain.DefaultKeychain{}
 
 		err = keyChain.Set(provider, pass)
 		if err != nil {
-			log.Log.Fatalf("Could not save to keychain: %+v", err)
+			log.Fatalf("Could not save to keychain: %+v", err)
 		}
-		log.Log.Printf("Saved password for Provider '%s'", provider)
+		log.Printf("Saved password for Provider '%s'", provider)
 	},
 }
 
@@ -133,13 +133,13 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 
 		// Verify provider doesn't exist
 		if exists := viper.Get("providers." + name); exists != nil {
-			log.Log.Fatalf("Provider '%s' already exists", name)
+			log.Fatalf("Provider '%s' already exists", name)
 		}
 
 		switch region {
 		case "US", "EU":
 		default:
-			log.Log.Fatal("Region must be either US or EU")
+			log.Fatal("Region must be either US or EU")
 		}
 
 		conf := map[string]string{
@@ -153,7 +153,7 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 		if providerDuration != 0 {
 			// Duration specified - validate value
 			if providerDuration < 3600 || providerDuration > 43200 {
-				log.Log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
+				log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
 			}
 			conf["duration"] = strconv.Itoa(providerDuration)
 		}
@@ -162,9 +162,9 @@ var cmdProvidersCreateOneLogin = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Log.Fatalf("Error writing config: %v", err)
+			log.Fatalf("Error writing config: %v", err)
 		}
-		log.Log.Printf("Provider '%s' saved to config file", name)
+		log.Printf("Provider '%s' saved to config file", name)
 	},
 }
 
@@ -178,7 +178,7 @@ var cmdProvidersCreateOkta = &cobra.Command{
 
 		// Verify provider doesn't exist
 		if exists := viper.Get("providers." + name); exists != nil {
-			log.Log.Fatalf("Provider '%s' already exists", name)
+			log.Fatalf("Provider '%s' already exists", name)
 		}
 
 		conf := map[string]string{
@@ -189,7 +189,7 @@ var cmdProvidersCreateOkta = &cobra.Command{
 		if providerDuration != 0 {
 			// Duration specified - validate value
 			if providerDuration < 3600 || providerDuration > 43200 {
-				log.Log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
+				log.Fatal("Invalid duration Specified. Valid values: 3600 - 43200")
 			}
 			conf["duration"] = strconv.Itoa(providerDuration)
 		}
@@ -198,8 +198,8 @@ var cmdProvidersCreateOkta = &cobra.Command{
 		// Write config to file
 		err := viper.WriteConfig()
 		if err != nil {
-			log.Log.Fatalf("Error writing config: %v", err)
+			log.Fatalf("Error writing config: %v", err)
 		}
-		log.Log.Printf("Provider '%s' saved to config file", name)
+		log.Printf("Provider '%s' saved to config file", name)
 	},
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/crewjam/saml"
 )
 
-var _ = log.NewLogger("panic", "", false)
+var _, _ = log.SetupLogger("panic", "", false, true)
 
 func TestExtractArns(t *testing.T) {
 	for _, test := range []struct {

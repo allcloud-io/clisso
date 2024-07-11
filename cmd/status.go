@@ -28,7 +28,7 @@ func init() {
 	)
 	err := viper.BindPFlag("global.output", cmdStatus.Flags().Lookup("read-from-file"))
 	if err != nil {
-		log.Log.Fatalf("Error binding flag global.output: %v", err)
+		log.Fatalf("Error binding flag global.output: %v", err)
 	}
 }
 
@@ -44,16 +44,17 @@ var cmdStatus = &cobra.Command{
 func printStatus() {
 	credentialFile, err := homedir.Expand(viper.GetString("global.output"))
 	if err != nil {
-		log.Log.Fatalf("Failed to expand home: %s", err)
+		log.Fatalf("Failed to expand home: %s", err)
 	}
-	log.Log.Trace("Credential file: ", credentialFile)
+	log.Trace("Credential file: ", credentialFile)
 	if credentialFile == "credential_process" || credentialFile == "environment" {
+		// TODO: Implement checking the cache file for valid credentials
 		return
 	}
 
 	profiles, err := aws.GetValidProfiles(credentialFile)
 	if err != nil {
-		log.Log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
+		log.Fatalf("Failed to retrieve non-expired credentials: %s", err)
 	}
 
 	if len(profiles) == 0 {
@@ -64,7 +65,7 @@ func printStatus() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"App", "Expire At", "Remaining"})
 
-	log.Log.Print("The following apps currently have valid credentials:")
+	log.Print("The following apps currently have valid credentials:")
 	for _, p := range profiles {
 		table.Append([]string{p.Name, fmt.Sprintf("%d", p.ExpireAtUnix), p.LifetimeLeft.Round(time.Second).String()})
 	}

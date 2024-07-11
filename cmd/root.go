@@ -111,7 +111,7 @@ func initConfig(cmd *cobra.Command) error {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			log.Log.Fatalf("Error getting home directory: %v", err)
+			log.Fatalf("Error getting home directory: %v", err)
 		}
 
 		viper.SetConfigType("yaml")
@@ -134,7 +134,7 @@ func initConfig(cmd *cobra.Command) error {
 		panic(fmt.Errorf("can't read config: %v", err))
 	}
 	bindFlags(cmd, viper.GetViper())
-	_ = log.NewLogger(logLevel, logFile, logFile != "")
+	_, _ = log.SetupLogger(logLevel, logFile, logFile != "", false)
 	return nil
 }
 

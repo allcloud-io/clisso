@@ -20,7 +20,6 @@ import (
 	"github.com/allcloud-io/clisso/saml"
 	"github.com/allcloud-io/clisso/spinner"
 	"github.com/icza/gog"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -43,7 +42,7 @@ var (
 // Get gets temporary credentials for the given app.
 // TODO Move AWS logic outside this function.
 func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool) (*aws.Credentials, error) {
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"app":         app,
 		"provider":    provider,
 		"pArn":        pArn,
@@ -72,7 +71,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	// Get OneLogin access token
 	s.Start()
-	log.Log.Trace("Generating access token")
+	log.Trace("Generating access token")
 	token, err := c.GenerateTokens(p.ClientID, p.ClientSecret)
 	s.Stop()
 	if err != nil {
@@ -81,7 +80,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	user := p.Username
 	if user == "" {
-		log.Log.Trace("No username provided")
+		log.Trace("No username provided")
 		// Get credentials from the user
 		fmt.Print("OneLogin username: ")
 		_, err = fmt.Scanln(&user)
@@ -106,10 +105,10 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		Subdomain: p.Subdomain,
 	}
 
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"UsernameOrEmail": user,
 		// print password only in Trace Log Level
-		"Password":  gog.If(log.Log.GetLevel() == logrus.TraceLevel, string(pass), "<redacted>"),
+		"Password":  gog.If(log.GetLevel() == log.TraceLevel, string(pass), "<redacted>"),
 		"AppId":     a.ID,
 		"Subdomain": p.Subdomain,
 	}).Debug("Calling GenerateSamlAssertion")
@@ -121,14 +120,14 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 		return nil, fmt.Errorf("generating SAML assertion: %v", err)
 	}
 
-	log.Log.WithField("Message", rSaml.Message).Debug("GenerateSamlAssertion is done")
+	log.WithField("Message", rSaml.Message).Debug("GenerateSamlAssertion is done")
 
 	var rData string
 	if rSaml.Message != "Success" {
 		st := rSaml.StateToken
 
 		devices := rSaml.Devices
-		log.Log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
+		log.WithField("Devices", devices).Trace("Devices returned by GenerateSamlAssertion")
 		device, err := getDevice(devices)
 		if err != nil {
 			return nil, fmt.Errorf("error getting devices: %s", err)
@@ -148,7 +147,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 				OtpToken:    "",
 				DoNotNotify: false,
 			}
-			log.Log.WithFields(logrus.Fields{
+			log.WithFields(log.Fields{
 				"AppId":      a.ID,
 				"DeviceId":   device.DeviceID,
 				"StateToken": st,
@@ -173,7 +172,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 			s.Start()
 			for strings.Contains(rMfa.Message, "pending") && timeout > 0 {
 				time.Sleep(time.Duration(MFAInterval) * time.Second)
-				log.Log.Trace("MFAInterval completed, calling VerifyFactor again")
+				log.Trace("MFAInterval completed, calling VerifyFactor again")
 				rMfa, err = c.VerifyFactor(token, &pMfa)
 				if err != nil {
 					s.Stop()
@@ -216,7 +215,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 			}
 		}
 		rData = rMfa.Data
-		log.Log.Trace("Factor is verified")
+		log.Trace("Factor is verified")
 	} else {
 		rData = rSaml.Data
 	}
@@ -232,7 +231,7 @@ func Get(app, provider, pArn, awsRegion string, duration int32, interactive bool
 
 	if err != nil {
 		if err.Error() == aws.ErrDurationExceeded {
-			log.Log.Warn(aws.DurationExceededMessage)
+			log.Warn(aws.DurationExceededMessage)
 			s.Start()
 			creds, err = aws.AssumeSAMLRole(arn.Provider, arn.Role, rData, awsRegion, 3600)
 			s.Stop()
@@ -255,7 +254,7 @@ func getDevice(devices []Device) (device *Device, err error) {
 	}
 
 	if len(devices) == 1 {
-		log.Log.Trace("Only one MFA device returned by Onelogin, automatically selecting it.")
+		log.Trace("Only one MFA device returned by Onelogin, automatically selecting it.")
 		device = &Device{DeviceID: devices[0].DeviceID, DeviceType: devices[0].DeviceType}
 		return
 	}

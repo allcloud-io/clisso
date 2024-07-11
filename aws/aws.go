@@ -12,7 +12,6 @@ import (
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/go-ini/ini"
-	"github.com/sirupsen/logrus"
 )
 
 // Credentials represents a set of temporary credentials received from AWS STS
@@ -33,6 +32,11 @@ type Profile struct {
 
 const expireKey = "aws_expiration"
 
+const credentialProcessFormat = "clisso -o credential_process get %s"
+const errCannotBeUsed = "Profile %s contains key %s, which indicates, it should not be used by clisso"
+const infoProfileConfigured = "Profile %s is now configured for credential_process"
+const infoProfileAlreadyConfigured = "Profile %s is already configured for credential_process"
+
 func validateSection(cfg *ini.File, section string) error {
 	// if it doesn't exist, we're good
 	if cfg.Section(section) == nil {
@@ -42,21 +46,60 @@ func validateSection(cfg *ini.File, section string) error {
 	// it should not have any of source_profile, role_arn, mfa_serial, external_id, or credential_source
 	for _, key := range []string{"source_profile", "role_arn", "mfa_serial", "external_id", "credential_source", "credential_process"} {
 		if s.HasKey(key) {
-			log.Log.WithFields(logrus.Fields{
+			log.WithFields(log.Fields{
 				"section": section,
 				"key":     key,
 			}).Errorf("Profile contains key %s, which indicates, it should not be used by clisso", key)
-			return fmt.Errorf("profile %s contains key %s, which indicates, it should not be used by clisso", section, key)
+			return fmt.Errorf(errCannotBeUsed, section, key)
 		}
 	}
 	return nil
+}
+
+// SetCredentialProcess writes the credential_process config to an AWS CLI credentials file in the format required by the SDK
+func SetCredentialProcess(filename string, section string) error {
+	log.WithFields(log.Fields{
+		"filename": filename,
+		"section":  section,
+	}).Debug("Writing credentials to file")
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		return err
+	}
+	err = validateSection(cfg, section)
+	if err != nil {
+		if err.Error() == fmt.Sprintf(errCannotBeUsed, section, "credential_process") {
+			log.Infof(infoProfileAlreadyConfigured, section)
+			return nil
+		}
+		log.WithError(err).Errorf("Profile %s cannot be configured for credential_process", section)
+		return err
+	}
+	if cfg.HasSection(section) {
+		log.Tracef("Section %s exists and has passed validation, adding credential_process key to it", section)
+	}
+
+	_, err = cfg.Section(section).NewKey("credential_process", fmt.Sprintf(credentialProcessFormat, section))
+	if err != nil {
+		return err
+	}
+	// unset aws_secret_access_key, aws_access_key_id, aws_session_token, aws_expiration
+	for _, key := range []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey} {
+		if cfg.Section(section).HasKey(key) {
+			log.Debugf("Removing key %s from profile %s", key, section)
+			cfg.Section(section).DeleteKey(key)
+		}
+	}
+	log.Infof("Profile %s is now configured for credential_process", section)
+
+	return cfg.SaveTo(filename)
 }
 
 // OutputFile writes credentials to an AWS CLI credentials file
 // (https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html). In addition, this
 // function removes expired temporary credentials from the credentials file.
 func OutputFile(c *Credentials, filename string, section string) error {
-	log.Log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"filename": filename,
 		"section":  section,
 	}).Debug("Writing credentials to file")
@@ -69,7 +112,7 @@ func OutputFile(c *Credentials, filename string, section string) error {
 		return err
 	}
 	if cfg.HasSection(section) {
-		log.Log.Tracef("Section %s exists and has passed validation, adding aws_access_key_id, aws_secret_access_key, aws_session_token, %s keys to it", section, expireKey)
+		log.Tracef("Section %s exists and has passed validation, adding aws_access_key_id, aws_secret_access_key, aws_session_token, %s keys to it", section, expireKey)
 	}
 
 	_, err = cfg.Section(section).NewKey("aws_access_key_id", c.AccessKeyID)
@@ -92,27 +135,27 @@ func OutputFile(c *Credentials, filename string, section string) error {
 	// Remove expired credentials.
 	for _, s := range cfg.Sections() {
 		if !s.HasKey(expireKey) {
-			log.Log.Tracef("Skipping profile %s because it does not have an %s key", s.Name(), expireKey)
+			log.Tracef("Skipping profile %s because it does not have an %s key", s.Name(), expireKey)
 			continue
 		}
 		v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 		if err != nil {
-			log.Log.Warnf("Cannot parse date (%v) in profile %s: %s",
+			log.Warnf("Cannot parse date (%v) in profile %s: %s",
 				s.Key(expireKey), s.Name(), err)
 			continue
 		}
 		if time.Now().UTC().Unix() > v.Unix() {
-			log.Log.Tracef("Removing expired credentials for profile %s", s.Name())
+			log.Tracef("Removing expired credentials for profile %s", s.Name())
 			for _, key := range []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey} {
 				cfg.Section(s.Name()).DeleteKey(key)
 			}
 			if len(cfg.Section(s.Name()).Keys()) == 0 {
-				log.Log.Tracef("Removing empty profile %s", s.Name())
+				log.Tracef("Removing empty profile %s", s.Name())
 				cfg.DeleteSection(s.Name())
 			}
 			continue
 		}
-		log.Log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
+		log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
 	}
 
 	return cfg.SaveTo(filename)
@@ -144,8 +187,8 @@ func OutputEnvironment(c *Credentials, windows bool, w io.Writer) {
 // OutputCredentialProcess writes (prints) credentials to stdout in the format required by the AWS CLI.
 // The output can be used to set the credential_process option in the AWS CLI configuration file.
 func OutputCredentialProcess(c *Credentials, w io.Writer) {
-	log.Log.Trace("Writing credentials to stdout in credential_process format")
-	log.Log.Infof("Credentials expire at %s, in %d Minutes", c.Expiration.Format(time.RFC3339), int(c.Expiration.Sub(time.Now().UTC()).Minutes()))
+	log.Trace("Writing credentials to stdout in credential_process format")
+	log.Infof("Credentials expire at %s, in %d Minutes", c.Expiration.Format(time.RFC3339), int(c.Expiration.Sub(time.Now().UTC()).Minutes()))
 	fmt.Fprintf(
 		w,
 		`{ "Version": 1, "AccessKeyId": %q, "SecretAccessKey": %q, "SessionToken": %q, "Expiration": %q }`,
@@ -160,18 +203,18 @@ func OutputCredentialProcess(c *Credentials, w io.Writer) {
 // GetValidProfiles returns profiles which have a aws_expiration key but are not yet expired.
 func GetValidProfiles(filename string) ([]Profile, error) {
 	var profiles []Profile
-	log.Log.WithField("filename", filename).Trace("Loading AWS credentials file")
+	log.WithField("filename", filename).Trace("Loading AWS credentials file")
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		err = fmt.Errorf("%s contains errors: %w", filename, err)
-		log.Log.WithError(err).Trace("Failed to load AWS credentials file")
+		log.WithError(err).Trace("Failed to load AWS credentials file")
 		return nil, err
 	}
 	for _, s := range cfg.Sections() {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				log.Log.Warnf("Cannot parse date (%v) in section %s: %s",
+				log.Warnf("Cannot parse date (%v) in section %s: %s",
 					s.Key(expireKey), s.Name(), err)
 				continue
 			}
@@ -190,18 +233,18 @@ func GetValidProfiles(filename string) ([]Profile, error) {
 // returns a map of profile name to credentials
 func GetValidCredentials(filename string) (map[string]Credentials, error) {
 	credentials := make(map[string]Credentials)
-	log.Log.WithField("filename", filename).Trace("Loading credentials file")
+	log.WithField("filename", filename).Trace("Loading credentials file")
 	cfg, err := ini.LooseLoad(filename)
 	if err != nil {
 		err = fmt.Errorf("%s contains errors: %w", filename, err)
-		log.Log.WithError(err).Trace("Failed to load credentials file")
+		log.WithError(err).Trace("Failed to load credentials file")
 		return nil, err
 	}
 	for _, s := range cfg.Sections() {
 		if s.HasKey(expireKey) {
 			v, err := s.Key(expireKey).TimeFormat(time.RFC3339)
 			if err != nil {
-				log.Log.Warnf("Cannot parse date (%v) in section %s: %s",
+				log.Warnf("Cannot parse date (%v) in section %s: %s",
 					s.Key(expireKey), s.Name(), err)
 				continue
 			}
