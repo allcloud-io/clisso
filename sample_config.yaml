@@ -21,8 +21,8 @@ global:
     "2222222222222": QA
 providers:
   sample-onelogin-provider:
-    client-id: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    client-secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    client-id: abcdef-sample-client-id-ghijkl
+    client-secret: 123456-sample-client-secret-789012
     subdomain: sample
     type: onelogin
     username: example@example.com
