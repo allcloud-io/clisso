@@ -78,46 +78,6 @@ func init() {
 	}
 }
 
-func preferredOutput(cmd *cobra.Command, app string) string {
-	// Order of preference:
-	// * output flag
-	// * write-to-file flag (deprecated)
-	// * app specific config file
-	// * global config file
-	// * default to ~/.aws/credentials
-	out, err := cmd.Flags().GetString("output")
-	if err != nil {
-		log.Warnf("Error getting output flag: %v", err)
-	}
-	if out != "" && out != defaultOutput {
-		log.Tracef("output flag sets output to: %s", out)
-		return out
-	}
-
-	out, err = cmd.Flags().GetString("write-to-file")
-	if err != nil {
-		log.Warnf("Error getting write-to-file flag: %v", err)
-	}
-	if out != "" && out != defaultOutput {
-		log.Tracef("write-to-file flag sets output: %s", out)
-		return out
-	}
-
-	out = viper.GetString(fmt.Sprintf("apps.%s.output", app))
-	if out != "" {
-		log.Tracef("App specific config sets output to: %s", out)
-		return out
-	}
-
-	out = viper.GetString("global.output")
-	if out != "" {
-		log.Tracef("Global config sets output to: %s", out)
-		return out
-	}
-
-	return defaultOutput
-}
-
 func setOutput(cmd *cobra.Command, app string) {
 	o := preferredOutput(cmd, app)
 	log.Tracef("Preferred output: %s", o)

@@ -93,5 +93,24 @@ func TestCheckCredentialProcessActive(t *testing.T) {
 	}
 
 	os.Remove("TestCheckCredentialProcessActive.yaml")
+}
+
+func TestConfigureCredentialProcess(t *testing.T) {
+	assert := assert.New(t)
+
+	viper.SetConfigFile("TestConfigureCredentialProcess.yaml")
+
+	// test default values
+	err := configureCredentialProcess()
+	assert.Nil(err, "Expected no error, but got: %v", err)
+
+	for _, o := range []string{"credential_process", "environment"} {
+		viper.Set("global.output", o)
+		err = configureCredentialProcess()
+		assert.NotNil(err, "Expected an error, but got nil")
+		assert.EqualError(err, "output flag cannot be set to '"+o+"' when configuring credential_process")
+	}
+
+	os.Remove("TestConfigureCredentialProcess.yaml")
 
 }

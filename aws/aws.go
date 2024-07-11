@@ -32,6 +32,11 @@ type Profile struct {
 
 const expireKey = "aws_expiration"
 
+const credentialProcessFormat = "clisso -o credential_process get %s"
+const errCannotBeUsed = "Profile %s contains key %s, which indicates, it should not be used by clisso"
+const infoProfileConfigured = "Profile %s is now configured for credential_process"
+const infoProfileAlreadyConfigured = "Profile %s is already configured for credential_process"
+
 func validateSection(cfg *ini.File, section string) error {
 	// if it doesn't exist, we're good
 	if cfg.Section(section) == nil {
@@ -45,10 +50,49 @@ func validateSection(cfg *ini.File, section string) error {
 				"section": section,
 				"key":     key,
 			}).Errorf("Profile contains key %s, which indicates, it should not be used by clisso", key)
-			return fmt.Errorf("profile %s contains key %s, which indicates, it should not be used by clisso", section, key)
+			return fmt.Errorf(errCannotBeUsed, section, key)
 		}
 	}
 	return nil
+}
+
+// SetCredentialProcess writes the credential_process config to an AWS CLI credentials file in the format required by the SDK
+func SetCredentialProcess(filename string, section string) error {
+	log.WithFields(log.Fields{
+		"filename": filename,
+		"section":  section,
+	}).Debug("Writing credentials to file")
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		return err
+	}
+	err = validateSection(cfg, section)
+	if err != nil {
+		if err.Error() == fmt.Sprintf(errCannotBeUsed, section, "credential_process") {
+			log.Infof(infoProfileAlreadyConfigured, section)
+			return nil
+		}
+		log.WithError(err).Errorf("Profile %s cannot be configured for credential_process", section)
+		return err
+	}
+	if cfg.HasSection(section) {
+		log.Tracef("Section %s exists and has passed validation, adding credential_process key to it", section)
+	}
+
+	_, err = cfg.Section(section).NewKey("credential_process", fmt.Sprintf(credentialProcessFormat, section))
+	if err != nil {
+		return err
+	}
+	// unset aws_secret_access_key, aws_access_key_id, aws_session_token, aws_expiration
+	for _, key := range []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey} {
+		if cfg.Section(section).HasKey(key) {
+			log.Debugf("Removing key %s from profile %s", key, section)
+			cfg.Section(section).DeleteKey(key)
+		}
+	}
+	log.Infof("Profile %s is now configured for credential_process", section)
+
+	return cfg.SaveTo(filename)
 }
 
 // OutputFile writes credentials to an AWS CLI credentials file

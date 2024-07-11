@@ -14,9 +14,10 @@ import (
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/go-ini/ini"
+	"github.com/stretchr/testify/assert"
 )
 
-var _, _ = log.SetupLogger("panic", "", false, true)
+var _, hook = log.SetupLogger("panic", "", false, true)
 
 func TestWriteToFile(t *testing.T) {
 	id := "expiredkey"
@@ -159,6 +160,33 @@ func TestWriteToFile(t *testing.T) {
 	}
 }
 
+func initConfig(filename string) error {
+	inifile := ini.Empty()
+	// add some other config options to ensure we don't overwrite them
+	inifile.Section("default").Key("region").SetValue("us-west-2")
+	inifile.Section("default").Key("output").SetValue("json")
+
+	inifile.Section("cred-process").Key("credential_process").SetValue("echo")
+
+	// profile setup for using a source profile
+	inifile.Section("child-profile").Key("source-profile").SetValue("cred-process")
+	inifile.Section("child-profile").Key("role_arn").SetValue("arn:aws:iam::123456789012:role/role-name")
+
+	// mock an expired clisso temporary profile
+	inifile.Section("expiredprofile").Key("aws_access_key_id").SetValue("expiredkey")
+	inifile.Section("expiredprofile").Key("aws_secret_access_key").SetValue("expired")
+	inifile.Section("expiredprofile").Key("aws_session_token").SetValue("expiredtoken")
+	inifile.Section("expiredprofile").Key("aws_expiration").SetValue(time.Now().Add(-time.Duration(1) * time.Hour).UTC().Format(time.RFC3339))
+
+	// mock a valid clisso temporary profile
+	inifile.Section("validprofile").Key("aws_access_key_id").SetValue("testkey")
+	inifile.Section("validprofile").Key("aws_secret_access_key").SetValue("testsecret")
+	inifile.Section("validprofile").Key("aws_session_token").SetValue("testtoken")
+	inifile.Section("validprofile").Key("aws_expiration").SetValue(time.Now().Add(time.Duration(1) * time.Hour).UTC().Format(time.RFC3339))
+
+	return inifile.SaveTo(filename)
+
+}
 func TestProtectSections(t *testing.T) {
 	id := "expiredkey"
 	sec := "expiredsecret"
@@ -173,17 +201,8 @@ func TestProtectSections(t *testing.T) {
 	}
 
 	fn := "TestProtectSections.txt"
-	inifile := ini.Empty()
-	// add some other config options to ensure we don't overwrite them
-	inifile.Section("default").Key("region").SetValue("us-west-2")
-	inifile.Section("default").Key("output").SetValue("json")
+	err := initConfig(fn)
 
-	inifile.Section("cred-process").Key("credential_process").SetValue("echo")
-
-	inifile.Section("child-profile").Key("source-profile").SetValue("cred-process")
-	inifile.Section("child-profile").Key("role_arn").SetValue("arn:aws:iam::123456789012:role/role-name")
-
-	err := inifile.SaveTo(fn)
 	if err != nil {
 		t.Fatal("Could not write INI file: ", err)
 	}
@@ -255,7 +274,7 @@ func TestProtectSections(t *testing.T) {
 }
 
 func TestGetValidProfiles(t *testing.T) {
-	fn := "test_creds.txt"
+	fn := "TestGetValidProfiles.txt"
 
 	id := "testkey"
 	sec := "testsecret"
@@ -398,4 +417,51 @@ func TestOutputWindowsEnvironment(t *testing.T) {
 	if got != want {
 		t.Fatalf("Wrong info written to shell: got %v want %v", got, want)
 	}
+}
+
+func TestSetCredentialProcess(t *testing.T) {
+	assert := assert.New(t)
+	fn := "TestSetCredentialProcess.txt"
+	err := initConfig(fn)
+	assert.Nil(err, "Expected no error, but got: %v", err)
+
+	// nothing to todo, should be skipped
+	p := "cred-process"
+	err = SetCredentialProcess(fn, p)
+	assert.Nil(err, "Expected no error, but got: %v", err)
+	assert.GreaterOrEqual(len(hook.Entries), 1, "Expected 1 or more log message, but got: %v", hook.Entries)
+	expected := fmt.Sprintf(infoProfileAlreadyConfigured, p)
+	assert.Equal(expected, hook.LastEntry().Message, "Expected '%s', but got: %v", expected, hook.LastEntry().Message)
+	hook.Reset()
+
+	// set credential process on child-profile should fail
+	err = SetCredentialProcess(fn, "child-profile")
+	assert.NotNil(err, "Expected an error, but got nil")
+	assert.GreaterOrEqual(len(hook.Entries), 1, "Expected 1 or more log message, but got: %v", hook.Entries)
+	expected = fmt.Sprintf(errCannotBeUsed, "child-profile", "role_arn")
+	assert.Equal(expected, err.Error(), "Expected '%s', but got: %v",expected, err.Error())
+	hook.Reset()
+
+	// set credential process on expired and valid profile should work and remove the profile keys
+	for _, p := range []string{"expiredprofile", "validprofile"} {
+		err = SetCredentialProcess(fn, p)
+		assert.Nil(err, "Expected no error, but got: %v", err)
+		assert.GreaterOrEqual(len(hook.Entries), 1, "Expected 1 or more log message, but got: %v", hook.Entries)
+		expected = fmt.Sprintf(infoProfileConfigured, p)
+		assert.Equalf(expected, hook.LastEntry().Message, "Expected '%s', but got: %v", expected, hook.LastEntry().Message)
+		hook.Reset()
+
+		cfg, err := ini.Load(fn)
+		assert.Nil(err, "Expected no error, but got: %v", err)
+		// the section should only have on key left
+		s := cfg.Section(p)
+		assert.Equal(1, len(s.Keys()), "Expected 1 key, but got: %v", len(s.Keys()))
+		// the key should be credential_process
+		k, err := s.GetKey("credential_process")
+		assert.Nil(err, "Expected no error, but got: %v", err)
+		expected = fmt.Sprintf(credentialProcessFormat, p)
+		assert.Equal(expected, k.String(), "Expected '%s', but got: %v", expected, k.String())
+	}
+
+	os.Remove(fn)
 }
