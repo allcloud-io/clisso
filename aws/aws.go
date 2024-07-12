@@ -46,10 +46,6 @@ func validateSection(cfg *ini.File, section string) error {
 	// it should not have any of source_profile, role_arn, mfa_serial, external_id, or credential_source
 	for _, key := range []string{"source_profile", "role_arn", "mfa_serial", "external_id", "credential_source", "credential_process"} {
 		if s.HasKey(key) {
-			log.WithFields(log.Fields{
-				"section": section,
-				"key":     key,
-			}).Errorf("Profile contains key %s, which indicates, it should not be used by clisso", key)
 			return fmt.Errorf(errCannotBeUsed, section, key)
 		}
 	}

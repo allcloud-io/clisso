@@ -6,6 +6,7 @@ import (
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -101,12 +102,13 @@ func TestConfigureCredentialProcess(t *testing.T) {
 	viper.SetConfigFile("TestConfigureCredentialProcess.yaml")
 
 	// test default values
-	err := configureCredentialProcess()
+	cmd := &cobra.Command{}
+	err := configureCredentialProcess(cmd)
 	assert.Nil(err, "Expected no error, but got: %v", err)
 
 	for _, o := range []string{"credential_process", "environment"} {
 		viper.Set("global.output", o)
-		err = configureCredentialProcess()
+		err = configureCredentialProcess(cmd)
 		assert.NotNil(err, "Expected an error, but got nil")
 		assert.EqualError(err, "output flag cannot be set to '"+o+"' when configuring credential_process")
 	}
