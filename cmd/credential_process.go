@@ -72,7 +72,6 @@ func init() {
 	RootCmd.AddCommand(cmdCredentialProcess)
 	cmdCredentialProcess.AddCommand(unlockCmd, lockCmd, lockStatusCmd, configureCmd)
 
-
 	configureCmd.Flags().StringVarP(
 		&output, "output", "o", defaultOutput, "where to configure credentials_process profiles",
 	)
