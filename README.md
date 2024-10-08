@@ -310,6 +310,8 @@ You can use this by adding the following to your `~/.aws/credentials` file:
 credential_process = clisso get my-app --output credential_process
 ```
 
+> **IMPORTANT**: If `clisso get my-app --output credential_process` prompts for any input, the `credential_process` will not work as expected. Make sure to configure Clisso to not prompt for any input (Store the password in the key chain, use push MFA).
+
 Alternatively you can run the following command to configure all Apps for use with `credential_process`:
 
 ```bash
