@@ -153,7 +153,9 @@ The `--client-id` and `--client-secret` flags are OneLogin API credentials. You 
 instructions [here][8] to obtain them. OneLogin requires using static credentials even for
 **attempting authentication**, and for that reason Clisso needs them. Please be sure to select
 **Authentication Only** when generating the credentials. Higher-level permissions aren't used by
-Clisso and will only pose a security risk when stored at a client machine.
+Clisso and will only pose a security risk when stored at a client machine. You might have to open
+a ticket with your OneLogin administrator to obtain these credentials as administrator privileges
+are required.
 
 The `--subdomain` flag is the subdomain of your OneLogin account. You can see it in the URL when
 logging in to OneLogin. For example, if you log in to OneLogin using `mycompany.onelogin.com`, use
