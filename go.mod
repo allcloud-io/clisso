@@ -4,8 +4,8 @@ go 1.23
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.0
-	github.com/aws/aws-sdk-go-v2 v1.32.2
-	github.com/aws/aws-sdk-go-v2/service/sts v1.32.2
+	github.com/aws/aws-sdk-go-v2 v1.32.3
+	github.com/aws/aws-sdk-go-v2/service/sts v1.32.3
 	github.com/aws/smithy-go v1.22.0
 	github.com/briandowns/spinner v1.23.1
 	github.com/crewjam/saml v0.4.14
@@ -29,10 +29,10 @@ require (
 require (
 	github.com/alessio/shellescape v1.4.2 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.21 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.21 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.22 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.22 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.3 // indirect
 	github.com/beevik/etree v1.2.0 // indirect
 	github.com/danieljoos/wincred v1.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
