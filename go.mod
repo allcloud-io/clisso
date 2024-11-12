@@ -21,20 +21,20 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
-	github.com/zalando/go-keyring v0.2.5
+	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/net v0.31.0
 	golang.org/x/term v0.26.0
 )
 
 require (
-	github.com/alessio/shellescape v1.4.2 // indirect
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.23 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.23 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.4 // indirect
 	github.com/beevik/etree v1.2.0 // indirect
-	github.com/danieljoos/wincred v1.2.0 // indirect
+	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
