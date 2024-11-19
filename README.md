@@ -304,7 +304,7 @@ To save the credentials to a custom file, use the `--output` flag with a custom 
 To print the credentials to the shell instead of storing them in a file, use the `--output environment` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
 
-To select a specific MFA device by name instead of choosing from a list, use the `-m` flag. The 
+To select a specific MFA device by name instead of choosing from a list, use the `-m` flag. The
 configuration field `global.mfa-device` may also be set.
 
 ### Running as `credential_process`
@@ -390,7 +390,7 @@ YubiKey Autodetection is available for the OneLogin provider. To enable this fea
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
-- Yubikey Autodetection is only available on select platforms:
+- Yubikey Autodetection is only available with the prebuilt binaries on these platforms:
   - MacOS (ARM/x86)
   - Linux (x86)
   - Windows (x86)
