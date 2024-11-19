@@ -34,7 +34,6 @@ var mfaDevice string
 
 const defaultOutput = "~/.aws/credentials"
 
-
 func init() {
 
 	RootCmd.AddCommand(cmdGet)

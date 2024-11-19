@@ -314,7 +314,7 @@ func getDevice(devices []Device, opts *DeviceOptions) (device *Device, err error
 			if d.DeviceType == opts.MfaDevice {
 				device = &d
 				log.WithFields(log.Fields{
-					"MfaDevice":      opts.MfaDevice,
+					"MfaDevice": opts.MfaDevice,
 				}).Trace("MFA device found, automatically selecting it.")
 				return
 			}

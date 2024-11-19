@@ -1,11 +1,11 @@
 package yubikey
 
 import (
-	"github.com/karalabe/hid"
 	"github.com/allcloud-io/clisso/log"
+	"github.com/karalabe/hid"
 )
 
-// USB Vendor ID is a permanent ID issued by USB Implementers Forum 
+// USB Vendor ID is a permanent ID issued by USB Implementers Forum
 const yubiKeyVendorID uint16 = 0x1050
 
 // IsAttached queries the connected USB devices and returns true if a YubiKey is attached
