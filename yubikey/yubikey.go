@@ -2,7 +2,7 @@ package yubikey
 
 import (
 	"github.com/karalabe/hid"
-	log "github.com/sirupsen/logrus"
+	"github.com/allcloud-io/clisso/log"
 )
 
 // USB Vendor ID is a permanent ID issued by USB Implementers Forum 
