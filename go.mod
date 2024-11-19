@@ -18,7 +18,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.9.3
-<<<<<<< HEAD
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
@@ -26,14 +25,6 @@ require (
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/net v0.31.0
 	golang.org/x/term v0.26.0
-=======
-	github.com/spf13/cobra v1.8.0
-	github.com/spf13/viper v1.17.0
-	github.com/stretchr/testify v1.8.4
-	github.com/zalando/go-keyring v0.2.3
-	golang.org/x/net v0.19.0
-	golang.org/x/term v0.15.0
->>>>>>> 2af92c5 (add mfa-device flag)
 )
 
 require (
