@@ -30,9 +30,10 @@ var cacheCredentials bool
 var writeToFile string
 var cacheToFile string
 var lock lockfile.Lockfile
+var mfaDevice string
 
 const defaultOutput = "~/.aws/credentials"
-var mfaDevice string
+
 
 func init() {
 

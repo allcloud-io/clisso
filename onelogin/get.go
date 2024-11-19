@@ -313,7 +313,9 @@ func getDevice(devices []Device, opts *DeviceOptions) (device *Device, err error
 		for _, d := range devices {
 			if d.DeviceType == opts.MfaDevice {
 				device = &d
-				fmt.Printf("MFA device %s found, automatically selecting it.\n", opts.MfaDevice)
+				log.WithFields(log.Fields{
+					"MfaDevice":      opts.MfaDevice,
+				}).Trace("MFA device found, automatically selecting it.")
 				return
 			}
 		}
@@ -325,7 +327,7 @@ func getDevice(devices []Device, opts *DeviceOptions) (device *Device, err error
 		for _, d := range devices {
 			if d.DeviceType == MFADeviceYubicoYubiKey {
 				device = &d
-				fmt.Println("YubiKey detected, automatically selecting it.")
+				log.Trace("YubiKey detected, automatically selecting it as MFA device.")
 				return
 			}
 		}

@@ -5,9 +5,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// USB Vendor ID is a permanent ID issued by USB Implementers Forum 
+const yubiKeyVendorID uint16 = 0x1050
+
 // IsAttached queries the connected USB devices and returns true if a YubiKey is attached
 func IsAttached() bool {
-	var yubiKeyVendorID uint16 = 0x1050
 
 	// List all USB devices matching the YubiKey vendor ID
 	devices := hid.Enumerate(yubiKeyVendorID, 0)
