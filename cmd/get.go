@@ -30,6 +30,7 @@ var cacheCredentials bool
 var writeToFile string
 var cacheToFile string
 var lock lockfile.Lockfile
+var mfaDevice string
 
 const defaultOutput = "~/.aws/credentials"
 
@@ -71,6 +72,16 @@ func init() {
 	}
 
 	cmdGet.MarkFlagsMutuallyExclusive("output", "shell", "write-to-file")
+
+	cmdGet.Flags().StringVarP(
+		&mfaDevice, "mfa-device", "m", "",
+		"Specify an MFA device to use (OneLogin Only)",
+	)
+	// Bind mfa-device to viper so it can be easily accessed.
+	err = viper.BindPFlag("global.mfa-device", cmdGet.Flags().Lookup("mfa-device"))
+	if err != nil {
+		log.Fatalf("Error binding flag global.mfa-device: %v", err)
+	}
 
 	lock, err = lockfile.New(filepath.Join(os.TempDir(), "clisso.lock"))
 	if err != nil {

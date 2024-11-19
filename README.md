@@ -69,6 +69,14 @@ go install
 go clean
 ```
 
+#### MacOS Signing
+
+A [self-signed certificate](https://support.apple.com/guide/keychain-access/create-self-signed-certificates-kyca8916/mac) may be created and used to sign the binary when building Clisso from source on a MacOS machine with Gatekeeper enabled. After installing Clisso, sign the binary:
+
+```
+codesign -f -s "Your Certificate Name" $GOPATH/bin/clisso
+```
+
 ## Configuration
 
 Clisso stores configuration in a file called `.clisso.yaml` under the user's home directory. You
@@ -296,6 +304,9 @@ To save the credentials to a custom file, use the `--output` flag with a custom 
 To print the credentials to the shell instead of storing them in a file, use the `--output environment` flag. This
 will output shell commands which can be pasted in any shell to use the credentials.
 
+To select a specific MFA device by name instead of choosing from a list, use the `-m` flag. The
+configuration field `global.mfa-device` may also be set.
+
 ### Running as `credential_process`
 
 AWS CLI v2 introduced the `credential_process` feature which allows you to use an external command to obtain temporal credentials.
@@ -347,7 +358,6 @@ If you disable the `credential_process` functionality, all refreshes will be dis
 
 If you want to check the status programmatically, you can use the exit code of the `clisso cp status` command. If the exit code is `0`, the `credential_process` functionality is enabled. If the exit code is `1`, the `credential_process` functionality is disabled.
 
-
 ### Storing the password in the key chain
 
 > WARNING: Storing the password without having MFA enabled is a security risk. It allows anyone
@@ -373,9 +383,17 @@ AWS recommends using [regional STS endpoints](https://docs.aws.amazon.com/sdkref
 
 To use a regional endpoint, specify the region via the `global.aws-region` field in the config file. A per app configuration using `apps.<app>.aws-region` is also possible.
 
+## YubiKey Autodetection
+
+YubiKey Autodetection is available for the OneLogin provider. To enable this feature set the `global.autodetect-yubikey` field to `true`. Clisso will look at attached USB devices and automatically select the YubiKey as an MFA device if it is available. Only one YubiKey may be connected for this feature to work.
+
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
+- Yubikey Autodetection is only available with the prebuilt binaries on these platforms:
+  - MacOS (ARM/x86)
+  - Linux (x86)
+  - Windows (x86)
 
 ## Troubleshooting
 
