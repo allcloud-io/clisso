@@ -69,6 +69,14 @@ go install
 go clean
 ```
 
+#### MacOS Signing
+
+A [self-signed certificate](https://support.apple.com/guide/keychain-access/create-self-signed-certificates-kyca8916/mac) may be created and used to sign the binary when building Clisso from source on a MacOS machine with Gatekeeper enabled. After installing Clisso, sign the binary:
+
+```
+codesign -f -s "Your Certificate Name" $GOPATH/bin/clisso
+```
+
 ## Configuration
 
 Clisso stores configuration in a file called `.clisso.yaml` under the user's home directory. You
@@ -377,11 +385,15 @@ To use a regional endpoint, specify the region via the `global.aws-region` field
 
 ## YubiKey Autodetection
 
-YubiKey Autodetection is available for the OneLogin provider. To enable this feature set the `global.autodetect-yubikey` field to `true`. Clisso will look at attached USB devices and automatically select the YubiKey as an MFA device if it is available. 
+YubiKey Autodetection is available for the OneLogin provider. To enable this feature set the `global.autodetect-yubikey` field to `true`. Clisso will look at attached USB devices and automatically select the YubiKey as an MFA device if it is available. Only one YubiKey may be connected for this feature to work.
 
 ## Caveats and Limitations
 
 - No support for Okta applications with MFA enabled **at the application level**.
+- Yubikey Autodetection is only available on select platforms:
+  - MacOS (ARM/x86)
+  - Linux (x86)
+  - Windows (x86)
 
 ## Troubleshooting
 
