@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.0
-	github.com/aws/aws-sdk-go-v2 v1.32.5
+	github.com/aws/aws-sdk-go-v2 v1.32.6
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.1
 	github.com/aws/smithy-go v1.22.1
 	github.com/briandowns/spinner v1.23.1
