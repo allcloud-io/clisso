@@ -46,7 +46,7 @@ var (
 
 type DeviceOptions struct {
 	// Detect if a YubiKey is inserted and automatically select the device
-	AutodetectYubiKey bool
+	IsYubiKeyAutoDetected bool
 
 	// Override all other choices and select this device name if available
 	MfaDevice string
@@ -55,25 +55,26 @@ type DeviceOptions struct {
 // NewDeviceOptions returns a configured pointer to a DeviceOptions type
 func NewDeviceOptions() *DeviceOptions {
 	d := new(DeviceOptions)
-	d.setAutodetectYubiKey()
+	d.detectYubiKey()
 	d.setMfaDevice()
 
 	log.WithFields(log.Fields{
-		"autodetectYubiKey": d.AutodetectYubiKey,
-		"MfaDevice":         d.MfaDevice,
+		"IsYubiKeyAutoDetected": d.IsYubiKeyAutoDetected,
+		"MfaDevice":             d.MfaDevice,
 	}).Debug("created device options configuration")
 
 	return d
 }
 
-// setAutodetectYubiKey sets the AutodetectYubiKey parameter
-func (d *DeviceOptions) setAutodetectYubiKey() {
+// detectYubiKey sets the IsYubiKeyAutoDetected parameter
+func (d *DeviceOptions) detectYubiKey() {
 	var a bool
 	if viper.IsSet("global.autodetect-yubikey") {
 		a = viper.GetBool("global.autodetect-yubikey")
+		log.WithField("autodetect-yubikey", a).Trace("global.autodetect-yubikey is set in config")
 	}
 	if a && yubikey.IsAttached() {
-		d.AutodetectYubiKey = true
+		d.IsYubiKeyAutoDetected = true
 		return
 	}
 }
@@ -323,7 +324,7 @@ func getDevice(devices []Device, opts *DeviceOptions) (device *Device, err error
 		fmt.Printf("MFA device %s not found.\n", opts.MfaDevice)
 	}
 
-	if opts.AutodetectYubiKey {
+	if opts.IsYubiKeyAutoDetected {
 		for _, d := range devices {
 			if d.DeviceType == MFADeviceYubicoYubiKey {
 				device = &d
