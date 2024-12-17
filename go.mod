@@ -11,7 +11,7 @@ require (
 	github.com/crewjam/saml v0.4.14
 	github.com/go-ini/ini v1.67.0
 	github.com/icza/gog v0.0.0-20230509085756-00e776132a34
-	github.com/karalabe/hid v1.0.0
+	github.com/karalabe/hid v1.0.1-0.20240919124526-821c38d2678e
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v1.0.0

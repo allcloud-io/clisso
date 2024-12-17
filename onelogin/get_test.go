@@ -46,7 +46,7 @@ func TestGetDevice(t *testing.T) {
 		{
 			Name:           "AutodetectYubiKey",
 			Devices:        deviceList,
-			Opts:           &DeviceOptions{AutodetectYubiKey: true},
+			Opts:           &DeviceOptions{IsYubiKeyAutoDetected: true},
 			ExpectedDevice: &Device{DeviceID: 01, DeviceType: "Yubico YubiKey"},
 			ExpectedError:  nil,
 		},
@@ -60,7 +60,7 @@ func TestGetDevice(t *testing.T) {
 		{
 			Name:           "SelectedMfaDeviceOverride",
 			Devices:        deviceList,
-			Opts:           &DeviceOptions{AutodetectYubiKey: true, MfaDevice: "Google Authenticator"},
+			Opts:           &DeviceOptions{IsYubiKeyAutoDetected: true, MfaDevice: "Google Authenticator"},
 			ExpectedDevice: &Device{DeviceID: 03, DeviceType: "Google Authenticator"},
 			ExpectedError:  nil,
 		},

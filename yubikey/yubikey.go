@@ -12,7 +12,11 @@ const yubiKeyVendorID uint16 = 0x1050
 func IsAttached() bool {
 
 	// List all USB devices matching the YubiKey vendor ID
-	devices := hid.Enumerate(yubiKeyVendorID, 0)
+	devices, err := hid.Enumerate(yubiKeyVendorID, 0)
+	if err != nil {
+		log.WithError(err).Error("Failed to enumerate USB devices")
+		return false
+	}
 
 	if len(devices) == 0 {
 		log.Debug("No YubiKey device detected")
