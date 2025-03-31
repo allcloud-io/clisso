@@ -2,6 +2,8 @@ module github.com/allcloud-io/clisso
 
 go 1.23.0
 
+toolchain go1.24.1
+
 require (
 	github.com/PuerkitoBio/goquery v1.10.2
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -23,7 +25,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/zalando/go-keyring v0.2.6
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	golang.org/x/term v0.30.0
 )
 
