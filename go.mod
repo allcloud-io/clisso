@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.19
 	github.com/aws/smithy-go v1.22.3
 	github.com/briandowns/spinner v1.23.2
-	github.com/crewjam/saml v0.4.14
+	github.com/crewjam/saml v0.5.1
 	github.com/go-ini/ini v1.67.0
 	github.com/icza/gog v0.0.0-20230509085756-00e776132a34
 	github.com/karalabe/hid v1.0.1-0.20240919124526-821c38d2678e
@@ -34,7 +34,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.34 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.15 // indirect
-	github.com/beevik/etree v1.2.0 // indirect
+	github.com/beevik/etree v1.5.0 // indirect
 	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.14.1 // indirect
