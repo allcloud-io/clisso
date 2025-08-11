@@ -54,17 +54,17 @@ jobs:
           mkdir -p ./release/darwin
           mkdir -p ./release/windows
       - name: Download linux binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ubuntu-latest-binary
           path: ./release/linux
       - name: Download MacOS binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: macos-latest-binary
           path: ./release/darwin
       - name: Download windows binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: windows-latest-binary
           path: ./release/windows
