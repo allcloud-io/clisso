@@ -316,7 +316,8 @@ To remove credentials obtained by Clisso from the credentials file, use the foll
 
 If no profile is given, credentials of all profiles managed by Clisso are cleared. Only profiles
 written by Clisso (those with an `aws_expiration` key) are touched, other settings in the profile
-(e.g. `region`) are kept. Use `-f` to clear a file other than `~/.aws/credentials`.
+(e.g. `region`) are kept. Credentials are cleared from the file set in `global.output` (default `~/.aws/credentials`), use `-f` to
+clear a different file.
 
 ### Running as `credential_process`
 

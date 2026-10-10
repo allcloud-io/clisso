@@ -174,14 +174,17 @@ func ClearCredentials(filename string, profiles []string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s contains errors: %w", filename, err)
 	}
-	if len(profiles) == 0 {
+	named := len(profiles) > 0
+	if !named {
 		profiles = cfg.SectionStrings()
 	}
 	var cleared []string
 	for _, p := range profiles {
 		s, err := cfg.GetSection(p)
 		if err != nil || !s.HasKey(expireKey) {
-			log.Debugf("Profile %s has no clisso-managed credentials, skipping", p)
+			if named {
+				log.Warnf("Profile %s has no clisso-managed credentials in %s, skipping", p, filename)
+			}
 			continue
 		}
 		removeCredentials(cfg, p)

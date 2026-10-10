@@ -13,6 +13,7 @@ import (
 	"github.com/allcloud-io/clisso/log"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var clearFile string
@@ -21,7 +22,7 @@ func init() {
 	RootCmd.AddCommand(cmdClear)
 	cmdClear.Flags().StringVarP(
 		&clearFile, "file", "f", defaultOutput,
-		"Clear credentials from this file instead of the default (~/.aws/credentials)",
+		"Clear credentials from this file instead of global.output or the default (~/.aws/credentials)",
 	)
 }
 
@@ -32,6 +33,10 @@ var cmdClear = &cobra.Command{
 If no profile is given, credentials of all profiles managed by clisso are cleared.
 Profiles not written by clisso (without an aws_expiration key) are never touched.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Fall back to the configured global output file, as status does.
+		if out := viper.GetString("global.output"); !cmd.Flags().Changed("file") && out != "" && out != "environment" && out != "credential_process" {
+			clearFile = out
+		}
 		file, err := homedir.Expand(clearFile)
 		if err != nil {
 			log.Fatalf("Failed to expand home: %s", err)
