@@ -96,6 +96,7 @@ Clisso has the following commands:
 
     Available Commands:
         apps        Manage apps
+        clear       Clear credentials obtained by clisso
         completion  Generate the autocompletion script for the specified shell
         get         Get temporary credentials for an app
         help        Help about any command
@@ -306,6 +307,16 @@ will output shell commands which can be pasted in any shell to use the credentia
 
 To select a specific MFA device by name instead of choosing from a list, use the `-m` flag. The
 configuration field `global.mfa-device` may also be set.
+
+### Clearing Credentials
+
+To remove credentials obtained by Clisso from the credentials file, use the following command:
+
+    clisso clear [profile...]
+
+If no profile is given, credentials of all profiles managed by Clisso are cleared. Only profiles
+written by Clisso (those with an `aws_expiration` key) are touched, other settings in the profile
+(e.g. `region`) are kept. Use `-f` to clear a file other than `~/.aws/credentials`.
 
 ### Running as `credential_process`
 
