@@ -465,3 +465,39 @@ func TestSetCredentialProcess(t *testing.T) {
 
 	os.Remove(fn)
 }
+
+func TestClearCredentials(t *testing.T) {
+	fn := "TestClearCredentials.txt"
+	defer os.Remove(fn)
+
+	c := Credentials{AccessKeyID: "id", SecretAccessKey: "sec", SessionToken: "tok", Expiration: time.Now().Add(time.Hour)}
+	for _, p := range []string{"app1", "app2", "app3"} {
+		if err := OutputFile(&c, fn, p); err != nil {
+			t.Fatal("Could not write credentials to file: ", err)
+		}
+	}
+	cfg, _ := ini.Load(fn)
+	cfg.Section("app2").Key("region").SetValue("eu-west-1")
+	cfg.Section("static").Key("aws_access_key_id").SetValue("keep")
+	if err := cfg.SaveTo(fn); err != nil {
+		t.Fatal(err)
+	}
+
+	// clear a single profile, unknown and non-clisso profiles are skipped
+	cleared, err := ClearCredentials(fn, []string{"app1", "static", "missing"})
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"app1"}, cleared)
+	cfg, _ = ini.Load(fn)
+	assert.False(t, cfg.HasSection("app1"))
+	assert.True(t, cfg.Section("app3").HasKey(expireKey))
+
+	// clear all
+	cleared, err = ClearCredentials(fn, nil)
+	assert.NoError(t, err)
+	assert.ElementsMatch(t, []string{"app2", "app3"}, cleared)
+	cfg, _ = ini.Load(fn)
+	assert.False(t, cfg.HasSection("app3"))
+	assert.Equal(t, "eu-west-1", cfg.Section("app2").Key("region").String(), "non-credential keys are kept")
+	assert.False(t, cfg.Section("app2").HasKey("aws_session_token"))
+	assert.Equal(t, "keep", cfg.Section("static").Key("aws_access_key_id").String(), "non-clisso profiles are kept")
+}

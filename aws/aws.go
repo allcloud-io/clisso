@@ -32,6 +32,9 @@ type Profile struct {
 
 const expireKey = "aws_expiration"
 
+// credentialKeys are the keys clisso writes to a profile.
+var credentialKeys = []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey}
+
 const credentialProcessFormat = "clisso -o credential_process get %s"
 const errCannotBeUsed = "Profile %s contains key %s, which indicates, it should not be used by clisso"
 const infoProfileConfigured = "Profile %s is now configured for credential_process"
@@ -80,7 +83,7 @@ func SetCredentialProcess(filename string, section string) error {
 		return err
 	}
 	// unset aws_secret_access_key, aws_access_key_id, aws_session_token, aws_expiration
-	for _, key := range []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey} {
+	for _, key := range credentialKeys {
 		if cfg.Section(section).HasKey(key) {
 			log.Debugf("Removing key %s from profile %s", key, section)
 			cfg.Section(section).DeleteKey(key)
@@ -142,19 +145,55 @@ func OutputFile(c *Credentials, filename string, section string) error {
 		}
 		if time.Now().UTC().Unix() > v.Unix() {
 			log.Tracef("Removing expired credentials for profile %s", s.Name())
-			for _, key := range []string{"aws_access_key_id", "aws_secret_access_key", "aws_session_token", expireKey} {
-				cfg.Section(s.Name()).DeleteKey(key)
-			}
-			if len(cfg.Section(s.Name()).Keys()) == 0 {
-				log.Tracef("Removing empty profile %s", s.Name())
-				cfg.DeleteSection(s.Name())
-			}
+			removeCredentials(cfg, s.Name())
 			continue
 		}
 		log.Tracef("Profile %s expires at %s", s.Name(), v.Format(time.RFC3339))
 	}
 
 	return cfg.SaveTo(filename)
+}
+
+// removeCredentials deletes the keys clisso writes from a profile, and the profile itself if nothing else is left.
+func removeCredentials(cfg *ini.File, section string) {
+	for _, key := range credentialKeys {
+		cfg.Section(section).DeleteKey(key)
+	}
+	if len(cfg.Section(section).Keys()) == 0 {
+		log.Tracef("Removing empty profile %s", section)
+		cfg.DeleteSection(section)
+	}
+}
+
+// ClearCredentials removes clisso-managed credentials (profiles with an aws_expiration key) from an
+// AWS CLI credentials file. If no profiles are given, all clisso-managed profiles are cleared. Profiles
+// without an aws_expiration key were not written by clisso and are left untouched.
+// It returns the names of the cleared profiles.
+func ClearCredentials(filename string, profiles []string) ([]string, error) {
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		return nil, fmt.Errorf("%s contains errors: %w", filename, err)
+	}
+	named := len(profiles) > 0
+	if !named {
+		profiles = cfg.SectionStrings()
+	}
+	var cleared []string
+	for _, p := range profiles {
+		s, err := cfg.GetSection(p)
+		if err != nil || !s.HasKey(expireKey) {
+			if named {
+				log.Warnf("Profile %s has no clisso-managed credentials in %s, skipping", p, filename)
+			}
+			continue
+		}
+		removeCredentials(cfg, p)
+		cleared = append(cleared, p)
+	}
+	if len(cleared) == 0 {
+		return nil, nil
+	}
+	return cleared, cfg.SaveTo(filename)
 }
 
 // OutputEnvironment writes (prints) credentials to stdout. If windows is true, Windows syntax will be
