@@ -46,7 +46,7 @@ To update Clisso to the latest release, run the following command:
 
 #### Requirements
 
-- Go `1.12` or above
+- Go `1.26` or above
 - Git
 - Make
 
