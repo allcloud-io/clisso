@@ -14,3 +14,4 @@ bottle_output.txt
 dist/
 clisso.yaml
 release/
+.cursor/

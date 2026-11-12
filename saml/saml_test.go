@@ -11,6 +11,7 @@ import (
 
 	"github.com/allcloud-io/clisso/log"
 	"github.com/crewjam/saml"
+	"github.com/spf13/viper"
 )
 
 var _, _ = log.SetupLogger("panic", "", false, true)
@@ -159,5 +160,38 @@ func TestGet(t *testing.T) {
 				t.Errorf("expected %q, received %q", test.expectRole, arn.Role)
 			}
 		})
+	}
+}
+
+func TestGetPreferredArnAndAccountNames(t *testing.T) {
+	single, err := os.ReadFile("testdata/single-arn-response")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// preferred ARN picks the matching role without prompting
+	role := "arn:aws:iam::123456789012:role/OneLogin-MyRole"
+	a, err := Get(string(single), role)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.Role != role || a.Provider != "arn:aws:iam::123456789012:saml-provider/OneLogin-MyProvider" {
+		t.Errorf("unexpected arn %+v", a)
+	}
+
+	// preferred ARN that is not present
+	if _, err := Get(string(single), "arn:aws:iam::1:role/Nope"); err == nil {
+		t.Error("expected error for non-matching preferred arn")
+	}
+
+	// friendly names from global.accounts
+	viper.Set("global.accounts", map[string]interface{}{"123456789012": "Dev"})
+	defer viper.Set("global.accounts", nil)
+	a, err = Get(string(single), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.Name != "Dev - role/OneLogin-MyRole" {
+		t.Errorf("name = %q", a.Name)
 	}
 }
