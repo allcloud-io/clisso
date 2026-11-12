@@ -126,3 +126,48 @@ func TestVerifyFactor(t *testing.T) {
 		t.Errorf("Wrong response, got: %v, want: %v", resp.ExpiresAt, exp)
 	}
 }
+
+func TestLaunchApp(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		status    int
+		body      string
+		want      string
+		expectErr bool
+	}{
+		{"extracts SAMLResponse", 200,
+			`<html><body><form id="appForm" action="x" method="POST"><input name="SAMLResponse" type="hidden" value="PHNhbWw+YWJjPC9zYW1sPg=="/><input name="RelayState" value="r"/></form></body></html>`,
+			"PHNhbWw+YWJjPC9zYW1sPg==", false},
+		{"no form", 200, `<html><body><p>nothing</p></body></html>`, "", false},
+		{"http error", 500, `oops`, "", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Query().Get("sessionToken") != "tok" {
+					t.Errorf("sessionToken not passed, got %q", r.URL.RawQuery)
+				}
+				w.WriteHeader(tc.status)
+				_, _ = w.Write([]byte(tc.body))
+			}))
+			defer ts.Close()
+
+			cl, err := NewClient(ts.URL)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := cl.LaunchApp(&LaunchAppParams{SessionToken: "tok", URL: ts.URL})
+			if tc.expectErr {
+				if err == nil {
+					t.Fatal("expected error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if *got != tc.want {
+				t.Errorf("got %q, want %q", *got, tc.want)
+			}
+		})
+	}
+}

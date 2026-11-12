@@ -35,6 +35,9 @@ const (
 	ErrDurationExceeded = "DurationExceeded"
 )
 
+// STSClientOptions allows callers (tests) to customize the STS client. Empty in production.
+var STSClientOptions []func(*sts.Options)
+
 // AssumeSAMLRole assumes an AWS IAM role using a SAML assertion.
 // In cases where the requested session duration is higher than the maximum allowed on AWS, STS
 // returns a specific error message to indicate that. In this case we return a custom error to the
@@ -87,7 +90,7 @@ func assumeSAMLRole(PrincipalArn, RoleArn, SAMLAssertion, awsRegion string, dura
 		Region: awsRegion,
 		// see https://github.com/aws/aws-sdk-go-v2/issues/2392 for reasoning
 		Credentials: nil,
-	})
+	}, STSClientOptions...)
 	log.WithField("awsRegion", awsRegion).Trace("Setup STS")
 
 	aResp, err := svc.AssumeRoleWithSAML(ctx, &input)
