@@ -22,7 +22,7 @@ func TestEmptyConfig(t *testing.T) {
 	if hook.LastEntry() != nil {
 		t.Errorf("Expected no log.Fatal, but got: %v", hook.LastEntry())
 	}
-	os.Remove("TestEnableCredentialProcess.yaml")
+	_ = os.Remove("TestEnableCredentialProcess.yaml")
 }
 
 func TestEnableCredentialProcess(t *testing.T) {
@@ -45,7 +45,7 @@ func TestEnableCredentialProcess(t *testing.T) {
 	if credentialProcess != "enabled" {
 		t.Errorf("Expected credential process to be enabled, but got: %s", credentialProcess)
 	}
-	os.Remove("TestEnableCredentialProcess.yaml")
+	_ = os.Remove("TestEnableCredentialProcess.yaml")
 }
 
 func TestDisableCredentialProcess(t *testing.T) {
@@ -67,7 +67,7 @@ func TestDisableCredentialProcess(t *testing.T) {
 	if credentialProcess != "disabled" {
 		t.Errorf("Expected credential process to be disabled, but got: %s", credentialProcess)
 	}
-	os.Remove("TestDisableCredentialProcess.yaml")
+	_ = os.Remove("TestDisableCredentialProcess.yaml")
 }
 
 func TestCheckCredentialProcessActive(t *testing.T) {
@@ -93,7 +93,7 @@ func TestCheckCredentialProcessActive(t *testing.T) {
 		assert.Equal(hook.LastEntry().Level, logrus.FatalLevel)
 	}
 
-	os.Remove("TestCheckCredentialProcessActive.yaml")
+	_ = os.Remove("TestCheckCredentialProcessActive.yaml")
 }
 
 func TestConfigureCredentialProcess(t *testing.T) {
@@ -113,6 +113,6 @@ func TestConfigureCredentialProcess(t *testing.T) {
 		assert.EqualError(err, "output flag cannot be set to '"+o+"' when configuring credential_process")
 	}
 
-	os.Remove("TestConfigureCredentialProcess.yaml")
+	_ = os.Remove("TestConfigureCredentialProcess.yaml")
 
 }
