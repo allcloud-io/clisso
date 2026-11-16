@@ -34,24 +34,24 @@ func runE2E(t *testing.T, mfa bool) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/authn", func(w http.ResponseWriter, r *http.Request) {
 		if mfa {
-			fmt.Fprint(w, `{"status":"MFA_REQUIRED","stateToken":"st","_embedded":{"factors":[{"id":"f1","factorType":"push","_links":{"verify":{"href":"x"}}}]}}`)
+			_, _ = fmt.Fprint(w, `{"status":"MFA_REQUIRED","stateToken":"st","_embedded":{"factors":[{"id":"f1","factorType":"push","_links":{"verify":{"href":"x"}}}]}}`)
 			return
 		}
-		fmt.Fprint(w, `{"status":"SUCCESS","sessionToken":"sess"}`)
+		_, _ = fmt.Fprint(w, `{"status":"SUCCESS","sessionToken":"sess"}`)
 	})
 	mux.HandleFunc("/api/v1/authn/factors/f1/verify", func(w http.ResponseWriter, r *http.Request) {
 		if atomic.AddInt32(&verifyCalls, 1) < 2 {
-			fmt.Fprint(w, `{"status":"MFA_CHALLENGE","factorResult":"WAITING"}`)
+			_, _ = fmt.Fprint(w, `{"status":"MFA_CHALLENGE","factorResult":"WAITING"}`)
 			return
 		}
-		fmt.Fprint(w, `{"status":"SUCCESS","sessionToken":"sess"}`)
+		_, _ = fmt.Fprint(w, `{"status":"SUCCESS","sessionToken":"sess"}`)
 	})
 	mux.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("sessionToken") != "sess" {
-			http.Error(w, "no session", 401)
+			http.Error(w, "no session", http.StatusUnauthorized)
 			return
 		}
-		fmt.Fprintf(w, `<html><body><form id="appForm"><input name="SAMLResponse" value="%s"/></form></body></html>`, strings.TrimSpace(string(assertion)))
+		_, _ = fmt.Fprintf(w, `<html><body><form id="appForm"><input name="SAMLResponse" value="%s"/></form></body></html>`, strings.TrimSpace(string(assertion)))
 	})
 	okta := httptest.NewServer(mux)
 	defer okta.Close()
@@ -64,7 +64,7 @@ func runE2E(t *testing.T, mfa bool) {
 			return
 		}
 		w.Header().Set("Content-Type", "text/xml")
-		fmt.Fprint(w, e2eSTSXML)
+		_, _ = fmt.Fprint(w, e2eSTSXML)
 	}))
 	defer stsSrv.Close()
 	old := aws.STSClientOptions

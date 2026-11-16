@@ -22,7 +22,7 @@ func TestPrintStatus(t *testing.T) {
 	f, _ := os.OpenFile(fn, os.O_APPEND|os.O_WRONLY, 0600)
 	_, _ = f.WriteString("[expired-app]\naws_access_key_id = k\naws_secret_access_key = s\naws_session_token = t\naws_expiration = " +
 		time.Now().Add(-time.Hour).UTC().Format(time.RFC3339) + "\n")
-	f.Close()
+	_ = f.Close()
 
 	viper.Set("global.output", fn)
 	defer viper.Set("global.output", "")
@@ -31,7 +31,7 @@ func TestPrintStatus(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 	printStatus()
-	w.Close()
+	_ = w.Close()
 	os.Stdout = old
 	out, _ := io.ReadAll(r)
 

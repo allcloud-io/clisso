@@ -162,7 +162,7 @@ func (c *Client) LaunchApp(p *LaunchAppParams) (*string, error) {
 		return nil, fmt.Errorf("sending GET to app's root endpoint: %v", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP error: %d %s", resp.StatusCode, resp.Status)
 	}
@@ -201,7 +201,7 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 		return "", errors.New(resp.Status)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(resp.Body)
 	b := []byte(body)
 

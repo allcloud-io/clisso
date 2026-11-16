@@ -463,5 +463,5 @@ func TestSetCredentialProcess(t *testing.T) {
 		assert.Equal(expected, k.String(), "Expected '%s', but got: %v", expected, k.String())
 	}
 
-	os.Remove(fn)
+	_ = os.Remove(fn)
 }

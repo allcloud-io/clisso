@@ -272,7 +272,8 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 		checkCredentialProcessActive(printToCredentialProcess)
 
 		interactive := !printToShell && !printToCredentialProcess
-		if pType == "onelogin" {
+		switch pType {
+		case "onelogin":
 			creds, err := onelogin.Get(app, provider, pArn, awsRegion, duration, interactive)
 			if err != nil {
 				log.Fatal("Could not get temporary credentials: ", err)
@@ -282,7 +283,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			if err != nil {
 				log.Fatalf("Error processing credentials: %v", err)
 			}
-		} else if pType == "okta" {
+		case "okta":
 			creds, err := okta.Get(app, provider, pArn, awsRegion, duration, interactive)
 			if err != nil {
 				log.Fatal("Could not get temporary credentials: ", err)
@@ -292,7 +293,7 @@ If no app is specified, the selected app (if configured) will be assumed.`,
 			if err != nil {
 				log.Fatalf("Error processing credentials: %v", err)
 			}
-		} else {
+		default:
 			log.Fatalf("Unsupported identity provider type '%s' for app '%s'", pType, app)
 		}
 		if interactive {

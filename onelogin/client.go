@@ -132,7 +132,7 @@ func (c *Client) doRequest(r *http.Request) (string, error) {
 		return "", errors.New(resp.Status)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading request body: %v", err)

@@ -161,8 +161,9 @@ func OutputFile(c *Credentials, filename string, section string) error {
 // used. The output can be used to set environment variables.
 func OutputEnvironment(c *Credentials, windows bool, w io.Writer) {
 	fmt.Print("Please paste the following in your shell:")
+	var err error
 	if windows {
-		fmt.Fprintf(
+		_, err = fmt.Fprintf(
 			w,
 			"set AWS_ACCESS_KEY_ID=%v\nset AWS_SECRET_ACCESS_KEY=%v\nset AWS_SESSION_TOKEN=%v\n",
 			c.AccessKeyID,
@@ -170,13 +171,16 @@ func OutputEnvironment(c *Credentials, windows bool, w io.Writer) {
 			c.SessionToken,
 		)
 	} else {
-		fmt.Fprintf(
+		_, err = fmt.Fprintf(
 			w,
 			"export AWS_ACCESS_KEY_ID=%v\nexport AWS_SECRET_ACCESS_KEY=%v\nexport AWS_SESSION_TOKEN=%v\n",
 			c.AccessKeyID,
 			c.SecretAccessKey,
 			c.SessionToken,
 		)
+	}
+	if err != nil {
+		log.Errorf("Failed to write credentials: %v", err)
 	}
 }
 
@@ -185,7 +189,7 @@ func OutputEnvironment(c *Credentials, windows bool, w io.Writer) {
 func OutputCredentialProcess(c *Credentials, w io.Writer) {
 	log.Trace("Writing credentials to stdout in credential_process format")
 	log.Infof("Credentials expire at %s, in %d Minutes", c.Expiration.Format(time.RFC3339), int(c.Expiration.Sub(time.Now().UTC()).Minutes()))
-	fmt.Fprintf(
+	_, err := fmt.Fprintf(
 		w,
 		`{ "Version": 1, "AccessKeyId": %q, "SecretAccessKey": %q, "SessionToken": %q, "Expiration": %q }`,
 		c.AccessKeyID,
@@ -194,6 +198,9 @@ func OutputCredentialProcess(c *Credentials, w io.Writer) {
 		// Time must be in ISO8601 format
 		c.Expiration.Format(time.RFC3339),
 	)
+	if err != nil {
+		log.Errorf("Failed to write credentials: %v", err)
+	}
 }
 
 // GetValidProfiles returns profiles which have a aws_expiration key but are not yet expired.
